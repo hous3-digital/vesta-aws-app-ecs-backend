@@ -1,0 +1,22 @@
+# Yarn Audit Ignore File
+# 
+# Use este arquivo para ignorar vulnerabilidades conhecidas temporariamente
+# Formato: ID da vulnerabilidade (GHSA-*), uma por linha
+#
+# IMPORTANTE: Documente o motivo de cada ignore e crie issues para resolver
+# Exemplo:
+#
+# ============================================================================
+# GHSA-37qj-frw5-hhjh - fast-xml-parser RangeError DoS
+# ============================================================================
+# Severidade: HIGH
+# Pacote: fast-xml-parser
+# Versão corrigida: >=5.3.4
+# Dependência transitiva de: @aws-sdk/client-s3
+# Motivo: Dependência transitiva do AWS SDK - aguardando atualização do SDK
+# Path: @aws-sdk/client-s3 > ... > fast-xml-parser
+# Data: 2026-02-01
+# Issue: Criar issue para monitorar atualização do @aws-sdk/client-s3
+# Link: https://github.com/advisories/GHSA-37qj-frw5-hhjh
+# CVE: CVE-2026-25128
+# Revisão: Revisar quando @aws-sdk/client-s3 for atualizado

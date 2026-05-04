@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client"
+  output   = "./generated"
+}
+
+datasource db {
+  provider     = "postgresql"
+  relationMode = "prisma"
+}
+
+generator dbml {
+  provider = "prisma-dbml-generator"
+  output   = "./dbml"
+}
+
+model User {
+  id            String       @unique @map("user_id")
+  isActive      Boolean      @map("is_active")
+  status        String
+  name          String
+  email         String
+  password      String
+  createdAt     DateTime     @map("created_at")
+  updatedAt     DateTime     @map("updated_at")
+  activatedAt   DateTime?    @map("activated_at")
+  deactivatedAt DateTime?    @map("deactivated_at")
+  // computed fields
+  memberships   Membership[]
+
+  @@map("user")
+}
+
+model Role {
+  id            String       @unique @map("role_id")
+  isActive      Boolean      @map("is_active")
+  status        String
+  type          String       @unique
+  description   String
+  createdAt     DateTime     @map("created_at")
+  updatedAt     DateTime     @map("updated_at")
+  activatedAt   DateTime?    @map("activated_at")
+  deactivatedAt DateTime?    @map("deactivated_at")
+  // computed fields
+  memberships   Membership[]
+
+  @@map("role")
+}
+
+model Membership {
+  id            String    @unique @map("membership_id")
+  isActive      Boolean   @map("is_active")
+  status        String
+  createdAt     DateTime  @map("created_at")
+  updatedAt     DateTime  @map("updated_at")
+  deactivatedAt DateTime? @map("deactivated_at")
+  // fks
+  userId        String    @map("user_id")
+  roleId        String    @map("role_id")
+  // relations
+  user          User      @relation(fields: [userId], references: [id])
+  role          Role      @relation(fields: [roleId], references: [id])
+
+  @@index(userId)
+  @@index(roleId)
+  @@map("membership")
+}
+
+model File {
+  id            String    @unique @map("file_id")
+  isActive      Boolean   @map("is_active")
+  status        String
+  type          String
+  path          String
+  contentType   String    @map("content_type")
+  bucket        String
+  createdAt     DateTime  @map("created_at")
+  updatedAt     DateTime  @map("updated_at")
+  deactivatedAt DateTime? @map("deactivated_at")
+  processingAt  DateTime? @map("processing_at")
+  approvedAt    DateTime? @map("approved_at")
+  reprovedAt    DateTime? @map("reproved_at")
+  reason        String?   @map("reason")
+  parentId      String    @map("parent_id")
+
+  @@index(parentId)
+  @@map("file")
+}
+
+model Ingress {
+  id        String   @unique @map("ingress_id")
+  request   Json
+  response  Json
+  createdAt DateTime @map("created_at") @db.Timestamptz(6)
+
+  @@map("ingress")
+}
+
+model Egress {
+  id        String   @unique @map("egress_id")
+  request   Json
+  response  Json
+  createdAt DateTime @map("created_at") @db.Timestamptz(6)
+
+  @@map("egress")
+}

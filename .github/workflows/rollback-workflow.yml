@@ -1,0 +1,158 @@
+name: rollback-workflow
+
+on:
+  issues:
+    types: [opened, reopened]
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+
+jobs:
+  get-rollback-version:
+    name: Get Rollback Version
+    runs-on: ubuntu-latest
+    outputs:
+      branch: ${{ steps.set-branch-output.outputs.branch }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Creating comment
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          body: |
+            Realizando Rollback: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+
+      - name: Run Issue form parser
+        id: parse
+        uses: peter-murray/issue-forms-body-parser@v2.0.0
+        with:
+          issue_id: ${{ github.event.issue.number }}
+          separator: "###"
+          label_marker_start: ">>"
+          label_marker_end: "<<"
+
+      - name: Find Amplify branch for tag
+        run: |
+          echo "${{ steps.parse.outputs.payload }}"
+          output="${{ steps.parse.outputs.payload }}"
+          tag="$(echo $output | awk -F '[,:]' '{print $2}' | tr -d '{}')"
+          echo "Tag: $tag"
+
+          BRANCH="release/$tag"
+          echo "BRANCH=$BRANCH" >> "$GITHUB_ENV"
+
+          git fetch --tags
+
+          git checkout -b $BRANCH $tag
+          git push --set-upstream origin $BRANCH
+
+      - name: Set branch output
+        id: set-branch-output
+        run: echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+
+  build-and-deploy-image:
+    name: Build & Deploy Image to ECR
+    needs: [get-rollback-version]
+    runs-on: ubuntu-latest
+    outputs:
+      image-url: ${{ steps.login-ecr.outputs.registry }}/seu-app-name:${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ needs.get-rollback-version.outputs.branch }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
+          aws-region: ${{ secrets.AWS_REGION  }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image to ECR
+        uses: docker/build-push-action@v5
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: seu-app-name
+          IMAGE_TAG: ${{ github.sha }}
+        with:
+          context: ./app
+          push: true
+          tags: ${{ steps.login-ecr.outputs.registry }}/seu-app-name:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    name: Deploy Image APP to ECS
+    needs: build-and-deploy-image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print Image URL for Debugging
+        run: |
+          echo "Image URL: ${{ needs.ecr-deployment.outputs.image-url }}"
+
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ needs.get-rollback-version.outputs.branch }}
+
+      - name: Configure AWS Crendentials
+        id: deployment-aws-credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Get ECS Task Definition
+        id: get-task-definition
+        if: steps.deployment-aws-credentials.outcome == 'success'
+        run: |
+          TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition seu-app-name --query 'taskDefinition' --output json)
+          echo "$TASK_DEFINITION" > task-definition.json
+
+      - name: Render Amazon ECS task definition
+        id: task-definition
+        if: steps.get-task-definition.outcome == 'success'
+        uses: aws-actions/amazon-ecs-render-task-definition@v1.6.1
+        with:
+          task-definition: task-definition.json
+          task-definition-family: seu-app-name
+          container-name: seu-app-name
+          image: ${{ steps.login-ecr.outputs.registry }}/seu-app-name:${{ github.sha }}
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.task-definition.outputs.task-definition }}
+          service: seu-app-name
+          cluster: seu-ecs-name
+          wait-for-service-stability: true
+
+  close-github-issue:
+    name: Close GitHub Issue
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+      - name: Close issue
+        uses: peter-evans/close-issue@v2
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          comment: Auto-closing issue
