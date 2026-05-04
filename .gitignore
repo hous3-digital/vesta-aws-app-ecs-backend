@@ -1,0 +1,12 @@
+node_modules
+dist
+.env
+/src/infra/database/@prisma/generated
+**/.DS_Store
+
+# Cloud layer
+.terraform
+.external_modules
+.terraform.lock.*
+
+coverage

@@ -1,0 +1,32 @@
+project:
+  name: "Acme Corp Website"
+  description: ""
+
+client:
+  name: "Acme Corp"
+  contact_email: "tech@acmecorp.example"
+  billing_id: ""
+
+cloud:
+  - name: "AWS"
+    regions: ["us-east-1", "eu-west-1"] 
+    terraform_backend:
+      bucket: "acme-corp-tfstate"
+      key: "aws/acme-infra.tfstate" 
+  - name: "gcp"
+    regions: ["us-central1"]
+    terraform_backend:
+      bucket: "acme-corp-tfstate-gcp"
+      prefix: "gcp/acme-infra" 
+
+environments:
+  staging:
+    terraform_workspace: "staging"
+  prod:
+    terraform_workspace: "prod"
+    require_approval: true
+
+destroy:
+  enable: false
+  confirmation_required: false
+

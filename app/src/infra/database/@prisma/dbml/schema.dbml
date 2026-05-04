@@ -1,0 +1,79 @@
+//// ------------------------------------------------------
+//// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+//// ------------------------------------------------------
+
+Table user {
+  id String [unique, not null]
+  isActive Boolean [not null]
+  status String [not null]
+  name String [not null]
+  email String [not null]
+  password String [not null]
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+  activatedAt DateTime
+  deactivatedAt DateTime
+  memberships membership [not null]
+}
+
+Table role {
+  id String [unique, not null]
+  isActive Boolean [not null]
+  status String [not null]
+  type String [unique, not null]
+  description String [not null]
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+  activatedAt DateTime
+  deactivatedAt DateTime
+  memberships membership [not null]
+}
+
+Table membership {
+  id String [unique, not null]
+  isActive Boolean [not null]
+  status String [not null]
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+  deactivatedAt DateTime
+  userId String [not null]
+  roleId String [not null]
+  user user [not null]
+  role role [not null]
+}
+
+Table file {
+  id String [unique, not null]
+  isActive Boolean [not null]
+  status String [not null]
+  type String [not null]
+  path String [not null]
+  contentType String [not null]
+  bucket String [not null]
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+  deactivatedAt DateTime
+  processingAt DateTime
+  approvedAt DateTime
+  reprovedAt DateTime
+  reason String
+  parentId String [not null]
+}
+
+Table ingress {
+  id String [unique, not null]
+  request Json [not null]
+  response Json [not null]
+  createdAt DateTime [not null]
+}
+
+Table egress {
+  id String [unique, not null]
+  request Json [not null]
+  response Json [not null]
+  createdAt DateTime [not null]
+}
+
+Ref: membership.userId > user.id
+
+Ref: membership.roleId > role.id

@@ -1,0 +1,115 @@
+# Gitleaks Configuration
+# Docs: https://github.com/gitleaks/gitleaks
+
+title = "Gitleaks Configuration"
+
+[extend]
+# Extend the default gitleaks config
+useDefault = true
+
+# ============================================
+# CUSTOM RULES
+# ============================================
+
+[[rules]]
+id = "aws-access-key"
+description = "AWS Access Key"
+regex = '''(A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}'''
+tags = ["aws", "key"]
+
+[[rules]]
+id = "aws-secret-key"
+description = "AWS Secret Key"
+regex = '''(?i)aws_secret_access_key\s*[=:]\s*['\"]?[A-Za-z0-9/+=]{40}['\"]?'''
+tags = ["aws", "key"]
+
+[[rules]]
+id = "github-token"
+description = "GitHub Token"
+regex = '''gh[pousr]_[A-Za-z0-9_]{36,255}'''
+tags = ["github", "token"]
+
+[[rules]]
+id = "slack-webhook"
+description = "Slack Webhook URL"
+regex = '''https://hooks\.slack\.com/services/T[a-zA-Z0-9_]{8,}/B[a-zA-Z0-9_]{8,}/[a-zA-Z0-9_]{24}'''
+tags = ["slack", "webhook"]
+
+[[rules]]
+id = "sonar-token"
+description = "SonarQube Token"
+regex = '''(?i)(sonar[_.-]?token|SONAR_TOKEN)\s*[=:]\s*['\"]?[a-z0-9]{40}['\"]?'''
+tags = ["sonar", "token"]
+
+[[rules]]
+id = "jwt-token"
+description = "JWT Token"
+regex = '''eyJ[A-Za-z0-9_-]*\.eyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*'''
+tags = ["jwt", "token"]
+
+[[rules]]
+id = "private-key"
+description = "Private Key"
+regex = '''-----BEGIN (RSA|EC|DSA|OPENSSH|PGP) PRIVATE KEY-----'''
+tags = ["key", "private"]
+
+[[rules]]
+id = "database-url"
+description = "Database Connection String"
+regex = '''(?i)(postgres|mysql|mongodb|redis)://[^\s'"]+'''
+tags = ["database", "connection"]
+
+# ============================================
+# ALLOWLIST - Paths and patterns to ignore
+# ============================================
+
+[allowlist]
+description = "Global allowlist"
+
+# Ignore test files and configuration files
+paths = [
+    '''gitleaks\.toml''',
+    '''.gitleaksignore''',
+    '''(.*/)?test[s]?/.*''',
+    '''(.*/)?.*_test\.go''',
+    '''(.*/)?.*\.test\.(ts|js)''',
+    '''(.*/)?__tests__/.*''',
+    '''(.*/)?fixtures/.*''',
+    '''(.*/)?mocks/.*''',
+    '''\.github/workflows/.*\.yml''',
+    '''\.github/workflows/.*\.yaml''',
+    '''infra/terraform/.*\.tf''',
+    '''infra/terraform/.*\.tfvars''',
+    '''(.*/)?.*\.tf''',
+    '''(.*/)?.*\.tfvars''',
+    '''sonar-project\.properties''',
+]
+
+# Ignore specific files
+files = [
+    '''go\.sum''',
+    '''yarn\.lock''',
+    '''package-lock\.json''',
+    '''pnpm-lock\.yaml''',
+    '''\.gitleaks\.toml''',
+]
+
+# Ignore specific patterns (example values, documentation, GitHub Actions)
+regexes = [
+    '''(?i)example[_-]?(key|token|secret)''',
+    '''(?i)your[_-]?(api[_-]?key|token|secret)''',
+    '''(?i)xxx+''',
+    '''(?i)placeholder''',
+    '''(?i)dummy''',
+    '''REPLACE_ME''',
+    '''TODO:.*''',
+    '''\$\{\{\s*secrets\.''',
+    '''\$\{\{\s*env\.''',
+]
+
+# ============================================
+# RULE-SPECIFIC ALLOWLISTS
+# ============================================
+# Note: Rules with allowlists should only be used when you want to detect
+# secrets everywhere EXCEPT in specific files. For files that should be
+# completely ignored, use the global [allowlist] section above.

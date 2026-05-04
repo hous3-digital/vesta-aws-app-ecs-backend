@@ -1,0 +1,101 @@
+name: Staging Deployment
+
+on:
+  push:
+    branches:
+      - staging
+
+permissions:
+  contents: read
+  pull-requests: write
+  security-events: write
+  id-token: write
+  actions: read
+
+jobs:
+  call-shared-ci:
+    permissions: write-all
+    uses: hous3-digital/shared-workflows/.github/workflows/shared-backend-ci.yml@v1.18.0
+    with:
+      working_directory: app
+      node_version: "22"
+      enable_lint: true
+      enable_security_scan: true
+      enable_test: true
+      enable_secrets_scan: true
+      blocking_gitleaks: true
+      block_severities: "high"
+      blocking_audit: true
+      block_only_direct: true
+    secrets:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+  terraform-ci:
+    permissions:
+      pull-requests: write
+      contents: write
+      security-events: write
+      id-token: write
+    uses: hous3-digital/shared-workflows/.github/workflows/shared-terraform-ci.yml@v1.18.0
+    with:
+      working_directory: infra/terraform
+      tf_var_file: envs/staging/variables.tfvars
+      environment: staging
+      terraform_version: "1.14.7"
+      backend_bucket: hous3-terraform
+      backend_key: "aws-ecs-app-backend.tfstate"
+      workspace_key_prefix: env
+      aws_auth_method: role
+      enable_security_scan: true
+      enable_terraform_tests: true
+      terraform_tests_directory: "tests"
+      trivy_minimum_severity: "MEDIUM"
+      checkov_skip_checks: ""
+      enable_plan: false
+    secrets:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME_STAGING }}
+
+  deploy-ecs-app:
+    uses: hous3-digital/shared-workflows/.github/workflows/shared-backend-deploy-ecs.yml@v1.18.0
+    needs: [call-shared-ci, terraform-ci]
+    with:
+      enable_deploy: true
+      working_directory: infra/terraform
+      tf_var_file: envs/staging/variables.tfvars
+      environment: staging
+      terraform_version: "1.14.7"
+      backend_config: ${{ needs.terraform-ci.outputs.backend_config }}
+      aws_auth_method: role
+      ecr_repository: seu-app-name
+      cluster_name: seu-ecs-name
+      service_name: seu-service-name
+      enable_incident_report: false
+    secrets:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME_STAGING }}
+
+  generate-release:
+    name: Generate Pre-Release
+    runs-on: ubuntu-latest
+    needs: [deploy-ecs-app, call-shared-ci, terraform-ci]
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.ref }}
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Fetch all tags
+        run: git fetch --tags --force
+
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
