@@ -71,6 +71,7 @@ jobs:
       cluster_name: hous3-trust-ecs-cluster
       service_name: vesta-app-backend
       enable_incident_report: true
+      wait_timeout_minutes: 10
     secrets:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME_PROD }}
