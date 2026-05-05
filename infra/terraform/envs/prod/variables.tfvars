@@ -1,19 +1,19 @@
-name    = ""
-service = ""
-image   = ""
+name    = "vesta-app-backend"
+service = "vesta-app-backend"
+image   = "694580672968.dkr.ecr.us-east-1.amazonaws.com/hous3-vesta:latest"
 env     = "prod"
 
-subnet_ids     = [""] # private ids
-lb_subnet_ids  = [""] # public ids
-service-vpc-id = ""
+subnet_ids     = ["subnet-0bd4dff1f355cd922", "subnet-0fbc51e8bc5bab39f"] # private ids
+lb_subnet_ids  = ["subnet-0bd4dff1f355cd922", "subnet-0fbc51e8bc5bab39f"] # public ids
+service-vpc-id = "vpc-012c476eb6d6bb5df"
 
-certificate-arn = ""
+certificate-arn = "arn:aws:acm:us-east-1:694580672968:certificate/2f716fe4-9ec4-4668-9a6b-e86784436b57"
 
-cluster_arn = ""
+cluster_arn = "arn:aws:ecs:us-east-1:694580672968:cluster/hous3-trust-ecs-cluster"
 
 cpu           = 2048
 memory        = 4096
-redirect_host = ""
+redirect_host = "vesta.hous3-trust.com"
 
 
 
@@ -27,7 +27,7 @@ environment = [
 secrets = [
   {
     name      = "DATABASE_URL",
-    valueFrom = ""
+    valueFrom = "arn:aws:secretsmanager:us-east-1:694580672968:secret:DATABASE_URL-gosGZq"
   }
 ]
 
