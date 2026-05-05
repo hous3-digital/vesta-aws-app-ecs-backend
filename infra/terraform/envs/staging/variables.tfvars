@@ -13,7 +13,7 @@ cluster_arn = "arn:aws:ecs:us-east-1:014468369894:cluster/hous3-trust-ecs-cluste
 
 cpu           = 1024
 memory        = 2048
-redirect_host = ""
+redirect_host = "vesta.trust-staging.com"
 
 environment = [
   {
