@@ -15,7 +15,7 @@ permissions:
 jobs:
   call-shared-ci:
     permissions: write-all
-    uses: hous3-digital/shared-workflows/.github/workflows/shared-backend-ci.yml@v1.18.0
+    uses: hous3-digital/shared-workflows/.github/workflows/shared-backend-ci.yml@v1.25.0
     with:
       working_directory: app
       node_version: "22"
@@ -37,13 +37,13 @@ jobs:
       contents: write
       security-events: write
       id-token: write
-    uses: hous3-digital/shared-workflows/.github/workflows/shared-terraform-ci.yml@v1.18.0
+    uses: hous3-digital/shared-workflows/.github/workflows/shared-terraform-ci.yml@v1.25.0
     with:
       working_directory: infra/terraform
       tf_var_file: envs/prod/variables.tfvars
       environment: prod
       terraform_version: "1.14.7"
-      backend_bucket: hous3-terraform
+      backend_bucket: trust-production-terraform-state
       backend_key: ecs-app-backend.tfstate
       workspace_key_prefix: env:/prod/envs
       aws_auth_method: role
@@ -57,7 +57,7 @@ jobs:
       AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME_PROD }}
 
   deploy-ecs-app:
-    uses: hous3-digital/shared-workflows/.github/workflows/shared-backend-deploy-ecs.yml@v1.18.0
+    uses: hous3-digital/shared-workflows/.github/workflows/shared-backend-deploy-ecs.yml@v1.25.0
     needs: [call-shared-ci, terraform-ci]
     with:
       enable_deploy: true
@@ -67,9 +67,9 @@ jobs:
       terraform_version: "1.14.7"
       backend_config: ${{ needs.terraform-ci.outputs.backend_config }}
       aws_auth_method: role
-      ecr_repository: seu-app-name
-      cluster_name: seu-ecs-name
-      service_name: seu-service-name
+      ecr_repository: hous3-vesta
+      cluster_name: hous3-trust-ecs-cluster
+      service_name: vesta-app-backend
       enable_incident_report: true
     secrets:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
