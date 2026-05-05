@@ -18,7 +18,7 @@ permissions:
 jobs:
   call-shared-ci:
     permissions: write-all
-    uses: hous3-digital/shared-workflows/.github/workflows/shared-backend-ci.yml@v1.18.0
+    uses: hous3-digital/shared-workflows/.github/workflows/shared-backend-ci.yml@v1.25.0
     with:
       working_directory: app
       node_version: "22"
@@ -40,13 +40,13 @@ jobs:
       contents: write
       security-events: write
       id-token: write
-    uses: hous3-digital/shared-workflows/.github/workflows/shared-terraform-ci.yml@v1.18.0
+    uses: hous3-digital/shared-workflows/.github/workflows/shared-terraform-ci.yml@v1.25.0
     with:
       working_directory: infra/terraform
       tf_var_file: envs/staging/variables.tfvars
       environment: staging
       terraform_version: "1.14.7"
-      backend_bucket: hous3-terraform
+      backend_bucket: trust-staging-terraform-state
       backend_key: aws-ecs-app-backend.tfstate
       workspace_key_prefix: env
       aws_auth_method: role
@@ -67,7 +67,7 @@ jobs:
       github.event_name == 'push' &&
       needs.terraform-ci.result == 'success' &&
       needs.call-shared-ci.result == 'success'
-    uses: hous3-digital/shared-workflows/.github/workflows/shared-pr-create-auto.yml@v1.18.0
+    uses: hous3-digital/shared-workflows/.github/workflows/shared-pr-create-auto.yml@v1.25.0
     permissions:
       pull-requests: write
       contents: write

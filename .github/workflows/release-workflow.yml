@@ -17,5 +17,5 @@ jobs:
       pull-requests: write
       contents: write
       repository-projects: write
-    uses: hous3-digital/shared-workflows/.github/workflows/shared-release.yml@v1.18.0
+    uses: hous3-digital/shared-workflows/.github/workflows/shared-release.yml@v1.25.0
     secrets: inherit
