@@ -13,7 +13,7 @@ cluster_arn = "arn:aws:ecs:us-east-1:694580672968:cluster/hous3-trust-ecs-cluste
 
 cpu           = 2048
 memory        = 4096
-redirect_host = ""
+redirect_host = "vesta.hous3-trust.com"
 
 
 
