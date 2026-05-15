@@ -8,10 +8,9 @@
  *
  * 🟢 You can import this file directly.
  */
-export type * from './models/User'
-export type * from './models/Role'
-export type * from './models/Membership'
-export type * from './models/File'
+export type * from './models/Credential'
+export type * from './models/Attestation'
+export type * from './models/Issuer'
 export type * from './models/Ingress'
 export type * from './models/Egress'
 export type * from './commonInputTypes'

@@ -1,0 +1,8 @@
+C:\Users\migue\OneDrive\Documentos\development\hous3\vesta\vesta-api-stellar\contracts\vesta-verifier\target\release\deps\serde_with_macros-b17a9955481e5143.d: C:\Users\migue\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_with_macros-3.19.0\src\lib.rs C:\Users\migue\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_with_macros-3.19.0\src\apply.rs C:\Users\migue\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_with_macros-3.19.0\src\lazy_bool.rs C:\Users\migue\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_with_macros-3.19.0\src\utils.rs
+
+C:\Users\migue\OneDrive\Documentos\development\hous3\vesta\vesta-api-stellar\contracts\vesta-verifier\target\release\deps\serde_with_macros-b17a9955481e5143.dll: C:\Users\migue\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_with_macros-3.19.0\src\lib.rs C:\Users\migue\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_with_macros-3.19.0\src\apply.rs C:\Users\migue\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_with_macros-3.19.0\src\lazy_bool.rs C:\Users\migue\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_with_macros-3.19.0\src\utils.rs
+
+C:\Users\migue\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_with_macros-3.19.0\src\lib.rs:
+C:\Users\migue\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_with_macros-3.19.0\src\apply.rs:
+C:\Users\migue\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_with_macros-3.19.0\src\lazy_bool.rs:
+C:\Users\migue\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_with_macros-3.19.0\src\utils.rs:
