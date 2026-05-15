@@ -49,7 +49,7 @@ jobs:
       - run: |
           cd app
           yarn
-          yarn prisma:generate
+          yarn prisma:gen
           yarn lint
 
   pull-request:
