@@ -1,103 +1,269 @@
-name: Staging Deployment
+name: main-workflow
 
 on:
   push:
     branches:
-      - staging
+      - main
 
-permissions:
-  contents: read
-  pull-requests: write
-  security-events: write
-  id-token: write
-  actions: read
+env:
+  TF_WORKSPACE: prod
+  TF_VERSION: "1.14.0"
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  TF_BACKEND_BUCKET: "trust-staging-terraform-state"
 
 jobs:
-  call-shared-ci:
-    permissions: write-all
-    uses: hous3-digital/shared-workflows/.github/workflows/shared-backend-ci.yml@v1.25.0
-    with:
-      working_directory: app
-      node_version: "22"
-      enable_lint: true
-      enable_security_scan: true
-      enable_test: true
-      enable_secrets_scan: true
-      blocking_gitleaks: true
-      block_severities: "high"
-      blocking_audit: true
-      block_only_direct: true
-    secrets:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
-
-  terraform-ci:
-    permissions:
-      pull-requests: write
-      contents: write
-      security-events: write
-      id-token: write
-    uses: hous3-digital/shared-workflows/.github/workflows/shared-terraform-ci.yml@v1.25.0
-    with:
-      working_directory: infra/terraform
-      tf_var_file: envs/staging/variables.tfvars
-      environment: staging
-      terraform_version: "1.14.7"
-      backend_bucket: trust-staging-terraform-state
-      backend_key: "aws-ecs-app-backend.tfstate"
-      workspace_key_prefix: env
-      aws_auth_method: role
-      enable_security_scan: true
-      enable_terraform_tests: true
-      terraform_tests_directory: "tests"
-      trivy_minimum_severity: "MEDIUM"
-      checkov_skip_checks: ""
-      enable_plan: false
-    secrets:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME_STAGING }}
-
-  deploy-ecs-app:
-    uses: hous3-digital/shared-workflows/.github/workflows/shared-backend-deploy-ecs.yml@v1.25.0
-    needs: [call-shared-ci, terraform-ci]
-    with:
-      enable_deploy: true
-      working_directory: infra/terraform
-      tf_var_file: envs/staging/variables.tfvars
-      environment: staging
-      terraform_version: "1.14.7"
-      backend_config: ${{ needs.terraform-ci.outputs.backend_config }}
-      aws_auth_method: role
-      ecr_repository: hous3-vesta
-      cluster_name: hous3-trust-ecs-cluster
-      service_name: vesta-app-backend
-      enable_incident_report: false
-      wait_timeout_minutes: 10
-
-    secrets:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME_STAGING }}
-
-  generate-release:
-    name: Generate Pre-Release
+  install:
+    name: Install
     runs-on: ubuntu-latest
-    needs: [deploy-ecs-app, call-shared-ci, terraform-ci]
-    permissions:
-      contents: write
-      issues: write
-      pull-requests: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          ref: ${{ github.ref }}
-          persist-credentials: true
-          fetch-depth: 0
 
-      - name: Fetch all tags
-        run: git fetch --tags --force
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
 
-      - name: Release
+      - run: cd app && yarn
+
+      - name: Upload node_modules
+        uses: actions/upload-artifact@v4
+        with:
+          name: node_modules
+          path: node_modules
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    needs: install
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - run: |
+          cd app
+          yarn
+          yarn lint
+
+  terraform-ci:
+    name: Terraform CI - prod
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_STAGING }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_STAGING }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Format Check
+        run: |
+          cd infra/terraform
+          terraform fmt -check -recursive
+
+      - name: Terraform Init
+        run: |
+          cd infra/terraform
+          terraform init -reconfigure \
+            -backend-config="bucket=${{ env.TF_BACKEND_BUCKET }}" \
+            -backend-config="key=aws-ecs-app-vesta-backend.tfstate" \
+            -backend-config="workspace_key_prefix=env" \
+            -backend-config="region=${{ env.AWS_REGION }}" \
+            -backend-config="encrypt=true"
+
+      - name: Terraform Plan
+        run: |
+          cd infra/terraform
+          terraform plan -var-file=envs/staging/variables.tfvars -detailed-exitcode
+
+  terraform-cd:
+    name: Deploy Terraform to Prod
+    needs: terraform-ci
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: hous3-digital/vesta-aws-app-ecs-backend
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_STAGING }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_STAGING }}
+          aws-region: ${{ secrets.AWS_REGION  }}
+
+      - name: Load Configs
+        uses: pietrobolcato/action-read-yaml@1.1.0
+        id: yml
+        with:
+          config: ${{ github.workspace }}/hous3-pipes.yml
+
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Format Check
+        run: |
+          cd infra/terraform
+          terraform fmt -check -recursive
+
+      - name: Terraform Init
+        run: |
+          cd infra/terraform
+          terraform init -reconfigure \
+            -backend-config="bucket=${{ env.TF_BACKEND_BUCKET }}" \
+            -backend-config="key=aws-ecs-app-vesta-backend.tfstate" \
+            -backend-config="workspace_key_prefix=env" \
+            -backend-config="region=${{ env.AWS_REGION }}" \
+            -backend-config="encrypt=true"
+
+      - name: Terraform Apply
+        if: ${{ steps.yml.outputs['destroy.enable'] != 'true' && steps.yml.outputs['destroy.confirmation_required'] != 'true' }}
+        run: |
+          cd infra/terraform
+          terraform apply -var-file=envs/staging/variables.tfvars -auto-approve
+
+      - name: Terraform Destroy
+        if: ${{ steps.yml.outputs['destroy.enable'] == 'true' && steps.yml.outputs['destroy.confirmation_required'] == 'true' }}
+        run: |
+          cd infra/terraform
+          terraform destroy -var-file=envs/staging/variables.tfvars -auto-approve
+
+  build-and-deploy-image:
+    name: Build & Deploy Image to ECR
+    needs: [lint]
+    runs-on: ubuntu-latest
+    outputs:
+      image-url: ${{ steps.login-ecr.outputs.registry }}/vesta-app-backend:${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_STAGING }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_STAGING }}
+          aws-region: ${{ secrets.AWS_REGION  }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image to ECR
+        uses: docker/build-push-action@v5
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: hous3-vesta
+          IMAGE_TAG: ${{ github.sha }}
+        with:
+          context: ./app
+          push: true
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/hous3-vesta:${{ github.sha }}
+            ${{ steps.login-ecr.outputs.registry }}/hous3-vesta:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  bluegreen-deploy:
+    name: Blue/Green Deploy via Listener Switch
+    needs: build-and-deploy-image
+    runs-on: ubuntu-latest
+    env:
+      IMAGE: ${{ needs.build-and-deploy-image.outputs.image-url }}
+      TF_VERSION: "1.14.0"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_STAGING }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_STAGING }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Init
+        run: |
+          cd infra/terraform
+          terraform init -reconfigure \
+            -backend-config="bucket=${{ env.TF_BACKEND_BUCKET }}" \
+            -backend-config="key=aws-ecs-app-vesta-backend.tfstate" \
+            -backend-config="workspace_key_prefix=env" \
+            -backend-config="region=${{ env.AWS_REGION }}" \
+            -backend-config="encrypt=true"
+
+      - name: Read current active color
+        id: tf-out
+        run: |
+          cd infra/terraform
+          ACTIVE=$(terraform output -json active_color | jq -r '.')
+          echo "active=${ACTIVE}" >> $GITHUB_OUTPUT
+
+      - name: Compute inactive color
+        id: colors
+        run: |
+          ACTIVE=${{ steps.tf-out.outputs.active }}
+          if [ "$ACTIVE" = "blue" ]; then INACTIVE=green; else INACTIVE=blue; fi
+          echo "inactive=${INACTIVE}" >> $GITHUB_OUTPUT
+
+      - name: Deploy new image to ECS service
+        run: |
+          # Update ECS service with new image
+          aws ecs update-service \
+            --cluster hous3-trust-ecs-cluster \
+            --service vesta-app-backend \
+            --task-definition $(aws ecs describe-services --cluster hous3-trust-ecs-cluster --services vesta-app-backend --query 'services[0].taskDefinition' --output text) \
+            --force-new-deployment
+
+      - name: Wait for service to be stable
+        timeout-minutes: 5
+        run: |
+          aws ecs wait services-stable \
+            --cluster hous3-trust-ecs-cluster \
+            --services vesta-app-backend
+
+      - name: Check ECS deployment status
+        id: ecs_status
+        run: |
+          STATUS=$(aws ecs describe-services --cluster hous3-trust-ecs-cluster --services vesta-app-backend --query 'services[0].deployments[?status==`FAILED`]' --output text)
+          echo "status=$STATUS" >> $GITHUB_ENV
+
+      - name: Fallback to previous color if deploy failed
+        if: env.status != ''
+        run: |
+          echo "Deploy falhou! Realizando fallback para cor anterior..."
+          cd infra/terraform
+          terraform apply -var-file=envs/staging/variables.tfvars \
+            -var "active_color=${{ steps.tf-out.outputs.active }}" \
+            -auto-approve
+          exit 1
+
+      - name: Switch listener to inactive color
+        run: |
+          cd infra/terraform
+          terraform apply -var-file=envs/staging/variables.tfvars \
+            -var "active_color=${{ steps.colors.outputs.inactive }}" \
+            -auto-approve
