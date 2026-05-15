@@ -1,12 +1,12 @@
-name: main-workflow
+name: staging-workflow
 
 on:
   push:
     branches:
-      - main
+      - staging
 
 env:
-  TF_WORKSPACE: prod
+  TF_WORKSPACE: staging
   TF_VERSION: "1.14.0"
   AWS_REGION: ${{ secrets.AWS_REGION }}
   TF_BACKEND_BUCKET: "trust-staging-terraform-state"
@@ -50,7 +50,7 @@ jobs:
           yarn lint
 
   terraform-ci:
-    name: Terraform CI - prod
+    name: Terraform CI - staging
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -89,7 +89,7 @@ jobs:
           terraform plan -var-file=envs/staging/variables.tfvars -detailed-exitcode
 
   terraform-cd:
-    name: Deploy Terraform to Prod
+    name: Deploy Terraform to staging
     needs: terraform-ci
     runs-on: ubuntu-latest
     steps:
