@@ -47,10 +47,10 @@ module "ecs_service" {
 
   security_group_ingress_rules = {
     ingress_from_alb = {
-      name                     = "ingress_from_alb"
-      ip_protocol              = "tcp"
-      from_port                = 3000
-      to_port                  = 3000
+      name                         = "ingress_from_alb"
+      ip_protocol                  = "tcp"
+      from_port                    = 3000
+      to_port                      = 3000
       referenced_security_group_id = module.alb.security_group_id
     }
   }
