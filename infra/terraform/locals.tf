@@ -58,7 +58,7 @@ locals {
         health_check = {
           enabled             = true
           interval            = 30
-          path                = "/v1/health"
+          path                = "/docs"
           port                = "traffic-port"
           healthy_threshold   = 3
           unhealthy_threshold = 3
@@ -77,7 +77,7 @@ locals {
         health_check = {
           enabled             = true
           interval            = 30
-          path                = "/v1/health"
+          path                = "/docs"
           port                = "traffic-port"
           healthy_threshold   = 3
           unhealthy_threshold = 3
