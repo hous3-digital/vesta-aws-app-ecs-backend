@@ -1,0 +1,1 @@
+-- Seeds para testes e2e. Adicionar fixtures quando existirem testes.

@@ -28,10 +28,9 @@ async function bootstrap() {
   const envService = app.get<EnvService>(EnvService);
 
   const config = new DocumentBuilder()
-    .setTitle("Backend Template")
-    .setDescription("Backend Template")
+    .setTitle("Vesta SDK API")
+    .setDescription("API para integração com os SDKs Vesta")
     .setVersion("1.0")
-    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
