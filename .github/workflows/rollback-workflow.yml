@@ -86,12 +86,12 @@ jobs:
         uses: docker/build-push-action@v5
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: seu-app-name
+          ECR_REPOSITORY: hous3-vesta
           IMAGE_TAG: ${{ github.sha }}
         with:
           context: ./app
           push: true
-          tags: ${{ steps.login-ecr.outputs.registry }}/seu-app-name:${{ github.sha }}
+          tags: ${{ steps.login-ecr.outputs.registry }}/hous3-vesta:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -125,7 +125,7 @@ jobs:
         id: get-task-definition
         if: steps.deployment-aws-credentials.outcome == 'success'
         run: |
-          TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition seu-app-name --query 'taskDefinition' --output json)
+          TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition vesta-app-backend --query 'taskDefinition' --output json)
           echo "$TASK_DEFINITION" > task-definition.json
 
       - name: Render Amazon ECS task definition
@@ -134,16 +134,16 @@ jobs:
         uses: aws-actions/amazon-ecs-render-task-definition@v1.6.1
         with:
           task-definition: task-definition.json
-          task-definition-family: seu-app-name
-          container-name: seu-app-name
-          image: ${{ steps.login-ecr.outputs.registry }}/seu-app-name:${{ github.sha }}
+          task-definition-family: vesta-app-backend
+          container-name: vesta-app-backend
+          image: ${{ steps.login-ecr.outputs.registry }}/hous3-vesta:${{ github.sha }}
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.task-definition.outputs.task-definition }}
-          service: seu-app-name
-          cluster: seu-ecs-name
+          service: vesta-app-backend
+          cluster: hous3-trust-ecs-cluster
           wait-for-service-stability: true
 
   close-github-issue:
