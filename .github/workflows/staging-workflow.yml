@@ -90,7 +90,7 @@ jobs:
 
   terraform-cd:
     name: Deploy Terraform to staging
-    needs: terraform-ci
+    needs: [terraform-ci, lint]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -144,7 +144,7 @@ jobs:
 
   build-and-deploy-image:
     name: Build & Deploy Image to ECR
-    needs: [lint]
+    needs: [terraform-cd]
     runs-on: ubuntu-latest
     outputs:
       image-url: ${{ steps.login-ecr.outputs.registry }}/vesta-app-backend:${{ github.sha }}
