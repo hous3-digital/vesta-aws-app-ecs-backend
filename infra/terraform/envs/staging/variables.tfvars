@@ -32,7 +32,6 @@ environment = [
     name  = "ZK_MOCK_MODE",
     value = "false"
   },
-  ,
   {
     name  = "STELLAR_NETWORK",
     value = "Test SDF Network ; September 2015"
