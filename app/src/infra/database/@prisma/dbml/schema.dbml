@@ -2,62 +2,44 @@
 //// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 //// ------------------------------------------------------
 
-Table user {
+Table credentials {
   id String [unique, not null]
-  isActive Boolean [not null]
-  status String [not null]
+  nullifier String [unique]
+  issuer String
+  kycProvider String
+  kycApproved Boolean
+  issuedAt DateTime
+  vcHash String [unique, not null]
+  issuerDid String [not null]
+  issuerId String [not null]
+  subjectDid String [not null]
+  kycLevel String [not null]
+  status CredentialStatus [not null, default: 'ACTIVE']
+  sorobanTxHash String
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+  expiresAt DateTime
+}
+
+Table attestation {
+  id String [unique, not null]
+  vcHash String [not null]
+  proofHash String [not null]
+  verifierId String [not null]
+  kycLevel String [not null]
+  sorobanTxHash String
+  sorobanLedger Int
+  onChainResult Boolean [not null]
+  createdAt DateTime [not null]
+}
+
+Table issuer {
+  id String [unique, not null]
+  issuerId String [unique, not null]
   name String [not null]
-  email String [not null]
-  password String [not null]
+  status String [not null, default: 'active']
+  publicKey String
   createdAt DateTime [not null]
-  updatedAt DateTime [not null]
-  activatedAt DateTime
-  deactivatedAt DateTime
-  memberships membership [not null]
-}
-
-Table role {
-  id String [unique, not null]
-  isActive Boolean [not null]
-  status String [not null]
-  type String [unique, not null]
-  description String [not null]
-  createdAt DateTime [not null]
-  updatedAt DateTime [not null]
-  activatedAt DateTime
-  deactivatedAt DateTime
-  memberships membership [not null]
-}
-
-Table membership {
-  id String [unique, not null]
-  isActive Boolean [not null]
-  status String [not null]
-  createdAt DateTime [not null]
-  updatedAt DateTime [not null]
-  deactivatedAt DateTime
-  userId String [not null]
-  roleId String [not null]
-  user user [not null]
-  role role [not null]
-}
-
-Table file {
-  id String [unique, not null]
-  isActive Boolean [not null]
-  status String [not null]
-  type String [not null]
-  path String [not null]
-  contentType String [not null]
-  bucket String [not null]
-  createdAt DateTime [not null]
-  updatedAt DateTime [not null]
-  deactivatedAt DateTime
-  processingAt DateTime
-  approvedAt DateTime
-  reprovedAt DateTime
-  reason String
-  parentId String [not null]
 }
 
 Table ingress {
@@ -74,6 +56,8 @@ Table egress {
   createdAt DateTime [not null]
 }
 
-Ref: membership.userId > user.id
-
-Ref: membership.roleId > role.id
+Enum CredentialStatus {
+  ACTIVE
+  REVOKED
+  EXPIRED
+}
