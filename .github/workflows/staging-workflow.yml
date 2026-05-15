@@ -82,6 +82,9 @@ jobs:
             -backend-config="workspace_key_prefix=env" \
             -backend-config="region=${{ env.AWS_REGION }}" \
             -backend-config="encrypt=true"
+          
+          # Garante que o workspace staging existe ou está selecionado
+          terraform workspace select staging 2>/dev/null || terraform workspace new staging
 
       - name: Terraform Plan
         run: |
@@ -129,6 +132,29 @@ jobs:
             -backend-config="workspace_key_prefix=env" \
             -backend-config="region=${{ env.AWS_REGION }}" \
             -backend-config="encrypt=true"
+
+      - name: Check if ECS service exists and import if needed
+        continue-on-error: true
+        run: |
+          cd infra/terraform
+          
+          # Garante que o workspace staging existe ou está selecionado
+          terraform workspace select staging 2>/dev/null || terraform workspace new staging
+          
+          # Verifica se o serviço já existe na AWS
+          if aws ecs describe-services --cluster hous3-trust-ecs-cluster --services vesta-app-backend --region ${{ env.AWS_REGION }} --query 'services[?status!=`INACTIVE`]' --output text | grep -q vesta-app-backend; then
+            echo "ECS service exists, checking Terraform state..."
+            # Verifica se está no state do Terraform
+            if ! terraform state list | grep -q 'module.ecs_service.aws_ecs_service.this'; then
+              echo "Importing existing ECS service to Terraform state..."
+              CLUSTER_ARN=$(aws ecs describe-clusters --clusters hous3-trust-ecs-cluster --region ${{ env.AWS_REGION }} --query 'clusters[0].clusterArn' --output text)
+              terraform import 'module.ecs_service.aws_ecs_service.this[0]' "${CLUSTER_ARN}/vesta-app-backend"
+            else
+              echo "Service already in Terraform state"
+            fi
+          else
+            echo "No existing ECS service found"
+          fi
 
       - name: Terraform Apply
         if: ${{ steps.yml.outputs['destroy.enable'] != 'true' && steps.yml.outputs['destroy.confirmation_required'] != 'true' }}
@@ -209,17 +235,23 @@ jobs:
         run: |
           cd infra/terraform
           terraform init -reconfigure \
-            -backend-config="bucket=trust-staging-terraform-state" \
-            -backend-config="key=staging/aws-ecs-app-backend.tfstate" \
+            -backend-config="bucket=${{ env.TF_BACKEND_BUCKET }}" \
+            -backend-config="key=aws-ecs-app-vesta-backend.tfstate" \
+            -backend-config="workspace_key_prefix=env" \
             -backend-config="region=${{ env.AWS_REGION }}" \
             -backend-config="encrypt=true"
+          
+          # Garante que o workspace staging existe ou está selecionado
+          terraform workspace select staging 2>/dev/null || terraform workspace new staging
 
       - name: Read current active color
         id: tf-out
         run: |
           cd infra/terraform
-          ACTIVE=$(terraform output -json active_color | jq -r '.')
+          # Tenta ler o output, se falhar usa 'blue' como padrão
+          ACTIVE=$(terraform output -json active_color 2>/dev/null | jq -r '.' 2>/dev/null || echo "blue")
           echo "active=${ACTIVE}" >> $GITHUB_OUTPUT
+          echo "Active color: ${ACTIVE}"
 
       - name: Compute inactive color
         id: colors
@@ -248,10 +280,10 @@ jobs:
         id: ecs_status
         run: |
           STATUS=$(aws ecs describe-services --cluster hous3-trust-ecs-cluster --services vesta-app-backend --query 'services[0].deployments[?status==`FAILED`]' --output text)
-          echo "status=$STATUS" >> $GITHUB_ENV
+          echo "status=$STATUS" >> $GITHUB_OUTPUT
 
       - name: Fallback to previous color if deploy failed
-        if: env.status != ''
+        if: steps.ecs_status.outputs.status != ''
         run: |
           echo "Deploy falhou! Realizando fallback para cor anterior..."
           cd infra/terraform
