@@ -82,9 +82,6 @@ jobs:
             -backend-config="workspace_key_prefix=env" \
             -backend-config="region=${{ env.AWS_REGION }}" \
             -backend-config="encrypt=true"
-          
-          # Garante que o workspace staging existe ou está selecionado
-          terraform workspace select staging 2>/dev/null || terraform workspace new staging
 
       - name: Terraform Plan
         run: |
@@ -137,9 +134,6 @@ jobs:
         continue-on-error: true
         run: |
           cd infra/terraform
-          
-          # Garante que o workspace staging existe ou está selecionado
-          terraform workspace select staging 2>/dev/null || terraform workspace new staging
           
           # Verifica se o serviço já existe na AWS
           if aws ecs describe-services --cluster hous3-trust-ecs-cluster --services vesta-app-backend --region ${{ env.AWS_REGION }} --query 'services[?status!=`INACTIVE`]' --output text | grep -q vesta-app-backend; then
@@ -240,9 +234,6 @@ jobs:
             -backend-config="workspace_key_prefix=env" \
             -backend-config="region=${{ env.AWS_REGION }}" \
             -backend-config="encrypt=true"
-          
-          # Garante que o workspace staging existe ou está selecionado
-          terraform workspace select staging 2>/dev/null || terraform workspace new staging
 
       - name: Read current active color
         id: tf-out
