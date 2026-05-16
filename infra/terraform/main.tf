@@ -46,21 +46,19 @@ module "ecs_service" {
   subnet_ids = var.subnet_ids
 
   security_group_ingress_rules = {
-    ingress_all = {
-      name        = "ingress_all"
-      ip_protocol = "tcp"
-      from_port   = 3000
-      to_port     = 3000
-      cidr_ipv4   = "0.0.0.0/0"
+    ingress_from_alb = {
+      name                         = "ingress_from_alb"
+      ip_protocol                  = "tcp"
+      from_port                    = 3000
+      to_port                      = 3000
+      referenced_security_group_id = module.alb.security_group_id
     }
   }
 
   security_group_egress_rules = {
     egress_all = {
       name        = "egress_all"
-      ip_protocol = "tcp"
-      from_port   = 0
-      to_port     = 65535
+      ip_protocol = "-1"
       cidr_ipv4   = "0.0.0.0/0"
     }
   }
