@@ -19,7 +19,7 @@ const envSchema = z.object({
   ZK_ARTIFACTS_DIR: z.string().min(1).default("./zk-artifacts"),
   ZK_MOCK_MODE: z
     .string()
-    .transform((v) => v === "false")
+    .transform((v) => v === "true")
     .default(true),
 });
 
