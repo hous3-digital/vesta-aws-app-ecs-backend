@@ -32,16 +32,19 @@ export class ZkService implements OnModuleInit {
       return;
     }
 
-    if (!fs.existsSync(wasmPath) || !fs.existsSync(zkeyPath)) {
-      this.logger.warn(
-        "Artefatos ZK não encontrados. Ativando mock mode automático. " +
-          "Execute o build do circuito para compilar. " +
-          "ATENÇÃO: provas mock NÃO são válidas para verificação on-chain Soroban.",
+    const wasmExists = fs.existsSync(wasmPath);
+    const zkeyExists = fs.existsSync(zkeyPath);
+
+    if (!wasmExists || !zkeyExists) {
+      throw new Error(
+        `ZK_MOCK_MODE=false mas artefatos não encontrados:\n` +
+          `  wasm: ${wasmPath} — ${wasmExists ? "OK" : "NÃO ENCONTRADO"}\n` +
+          `  zkey: ${zkeyPath} — ${zkeyExists ? "OK" : "NÃO ENCONTRADO"}\n` +
+          `Forneça os artefatos compilados ou defina ZK_MOCK_MODE=true.`,
       );
-      this.mockMode = true;
-    } else {
-      this.logger.log("Artefatos ZK encontrados — modo real ativado");
     }
+
+    this.logger.log("Artefatos ZK encontrados — modo real ativado");
   }
 
   public isMockMode(): boolean {
