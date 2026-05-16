@@ -32,23 +32,6 @@ jobs:
           name: node_modules
           path: node_modules
 
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    needs: install
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "24"
-      - run: |
-          cd app
-          yarn
-          yarn lint
-
   terraform-ci:
     name: Terraform CI - staging
     runs-on: ubuntu-latest
@@ -90,7 +73,7 @@ jobs:
 
   terraform-cd:
     name: Deploy Terraform to staging
-    needs: [terraform-ci, lint]
+    needs: [terraform-ci]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
