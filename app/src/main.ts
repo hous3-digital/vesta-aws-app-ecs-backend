@@ -49,7 +49,7 @@ async function bootstrap() {
   app.setViewEngine("hbs");
   app.enableShutdownHooks();
 
-  await app.listen(envService.PORT);
+  await app.listen(envService.PORT, "0.0.0.0");
 }
 
 bootstrap();
