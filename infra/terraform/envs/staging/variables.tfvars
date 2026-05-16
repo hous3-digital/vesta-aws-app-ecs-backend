@@ -21,6 +21,10 @@ environment = [
     value = "production"
   },
   {
+    name  = "PORT",
+    value = "3000"
+  },
+  {
     name  = "STELLAR_RPC_URL",
     value = "https://soroban-testnet.stellar.org"
   },

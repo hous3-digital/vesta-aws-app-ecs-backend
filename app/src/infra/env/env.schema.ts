@@ -8,7 +8,7 @@ const envConfig = (config: Record<string, unknown>) => {
 const envSchema = z.object({
   NODE_ENV: z.enum(["local", "test", "development", "production"]),
 
-  PORT: z.string().transform((val) => parseInt(val, 10)),
+  PORT: z.string().default("3000").transform((val) => parseInt(val, 10)),
 
   DATABASE_URL: z.string().url(),
 
