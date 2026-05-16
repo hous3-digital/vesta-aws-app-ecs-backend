@@ -23,5 +23,4 @@ const envSchema = z.object({
     .default(true),
 });
 
-const isLocal = process.env.NODE_ENV === "local";
-export const validate = isLocal ? { validate: envConfig } : undefined;
+export const validate = { validate: envConfig };
