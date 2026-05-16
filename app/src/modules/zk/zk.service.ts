@@ -16,11 +16,16 @@ export class ZkService implements OnModuleInit {
   public constructor(private readonly envService: EnvService) {
     this.artifactsDir = path.resolve(envService.ZK_ARTIFACTS_DIR);
     this.mockMode = envService.ZK_MOCK_MODE;
+    this.logger.log(`Configurado — artifactsDir=${this.artifactsDir}, mockMode=${this.mockMode}`);
   }
 
   public onModuleInit(): void {
     const wasmPath = path.join(this.artifactsDir, "vesta_kyc_js", "vesta_kyc.wasm");
     const zkeyPath = path.join(this.artifactsDir, "vesta_kyc_final.zkey");
+
+    this.logger.log(`Verificando artefatos ZK em: ${this.artifactsDir}`);
+    this.logger.log(`  wasm: ${wasmPath} — existe=${fs.existsSync(wasmPath)}`);
+    this.logger.log(`  zkey: ${zkeyPath} — existe=${fs.existsSync(zkeyPath)}`);
 
     if (this.mockMode) {
       this.logger.warn("ZK_MOCK_MODE=true — usando prova fake (sem verificação real)");
