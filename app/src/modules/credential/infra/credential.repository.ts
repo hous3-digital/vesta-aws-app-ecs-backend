@@ -15,6 +15,12 @@ export class CredentialRepository implements ICredentialRepository {
     return CredentialMapper.toDomain(record);
   }
 
+  public async findByCpfDedupKey(cpfDedupKey: string): Promise<Credential | null> {
+    const record = await this.prismaService.credential.findUnique({ where: { cpfDedupKey } });
+    if (!record) return null;
+    return CredentialMapper.toDomain(record);
+  }
+
   public async findByIdOrThrow(id: Id): Promise<Credential> {
     const record = await this.prismaService.credential.findUnique({ where: { id: id.value } });
     if (!record) throw new NotFoundException("Credencial não encontrada");

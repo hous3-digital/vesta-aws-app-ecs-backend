@@ -21,6 +21,8 @@ const envSchema = z.object({
     .string()
     .transform((v) => v === "true")
     .default(true),
+
+  CPF_HMAC_SECRET: z.string().min(32, "CPF_HMAC_SECRET must be at least 32 characters"),
 });
 
 export const validate = { validate: envConfig };

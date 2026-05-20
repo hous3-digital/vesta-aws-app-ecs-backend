@@ -825,6 +825,7 @@ export const CredentialScalarFieldEnum = {
   kycApproved: 'kycApproved',
   issuedAt: 'issuedAt',
   vcHash: 'vcHash',
+  cpfDedupKey: 'cpfDedupKey',
   issuerDid: 'issuerDid',
   issuerId: 'issuerId',
   subjectDid: 'subjectDid',

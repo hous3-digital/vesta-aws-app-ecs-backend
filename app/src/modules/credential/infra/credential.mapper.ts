@@ -9,6 +9,7 @@ export class CredentialMapper {
     return Credential.restore({
       id: Id.restore(prisma.id),
       vcHash: prisma.vcHash,
+      cpfDedupKey: prisma.cpfDedupKey ?? null,
       issuerDid: prisma.issuerDid,
       issuerId: prisma.issuerId,
       subjectDid: prisma.subjectDid,
@@ -25,6 +26,7 @@ export class CredentialMapper {
     return {
       id: domain.id.value,
       vcHash: domain.vcHash,
+      cpfDedupKey: domain.cpfDedupKey,
       issuerDid: domain.issuerDid,
       issuerId: domain.issuerId,
       subjectDid: domain.subjectDid,
