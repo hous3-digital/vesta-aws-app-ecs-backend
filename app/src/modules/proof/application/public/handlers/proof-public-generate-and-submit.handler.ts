@@ -171,6 +171,7 @@ export class ProofPublicGenerateAndSubmitHandler implements ICommandHandler<Proo
       const issuerId = vc.issuer.id.split(":").pop() ?? vc.issuer.name;
       const credential = Credential.issue({
         vcHash,
+        cpfDedupKey: null,
         issuerDid: vc.issuer.id,
         issuerId,
         subjectDid: vc.credential_subject.id,

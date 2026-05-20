@@ -48,4 +48,8 @@ export class EnvService {
   public get ZK_MOCK_MODE() {
     return this.configService.get("ZK_MOCK_MODE") as boolean;
   }
+
+  public get CPF_HMAC_SECRET() {
+    return this.configService.get("CPF_HMAC_SECRET") as string;
+  }
 }
