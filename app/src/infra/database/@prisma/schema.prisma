@@ -27,6 +27,7 @@ model Credential {
   kycApproved   Boolean?         @map("kyc_approved")
   issuedAt      DateTime?        @map("issued_at")
   vcHash        String           @unique @map("vc_hash")
+  cpfDedupKey   String?          @unique @map("cpf_dedup_key")
   issuerDid     String           @map("issuer_did")
   issuerId      String           @map("issuer_id")
   subjectDid    String           @map("subject_did")

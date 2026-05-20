@@ -10,6 +10,7 @@ Table credentials {
   kycApproved Boolean
   issuedAt DateTime
   vcHash String [unique, not null]
+  cpfDedupKey String [unique]
   issuerDid String [not null]
   issuerId String [not null]
   subjectDid String [not null]

@@ -11,6 +11,7 @@ export enum CredentialStatus {
 export interface CredentialProps {
   id: Id;
   vcHash: string;
+  cpfDedupKey: string | null;
   issuerDid: string;
   issuerId: string;
   subjectDid: string;
@@ -25,6 +26,7 @@ export interface CredentialProps {
 export class Credential {
   private readonly _id: Id;
   private readonly _vcHash: string;
+  private readonly _cpfDedupKey: string | null;
   private readonly _issuerDid: string;
   private readonly _issuerId: string;
   private readonly _subjectDid: string;
@@ -38,6 +40,7 @@ export class Credential {
   private constructor(props: CredentialProps) {
     this._id = props.id;
     this._vcHash = props.vcHash;
+    this._cpfDedupKey = props.cpfDedupKey;
     this._issuerDid = props.issuerDid;
     this._issuerId = props.issuerId;
     this._subjectDid = props.subjectDid;
@@ -51,6 +54,7 @@ export class Credential {
 
   public get id(): Id { return this._id; }
   public get vcHash(): string { return this._vcHash; }
+  public get cpfDedupKey(): string | null { return this._cpfDedupKey; }
   public get issuerDid(): string { return this._issuerDid; }
   public get issuerId(): string { return this._issuerId; }
   public get subjectDid(): string { return this._subjectDid; }
@@ -63,6 +67,7 @@ export class Credential {
 
   public static issue(params: {
     vcHash: string;
+    cpfDedupKey: string | null;
     issuerDid: string;
     issuerId: string;
     subjectDid: string;
@@ -75,6 +80,7 @@ export class Credential {
     return new Credential({
       id,
       vcHash: params.vcHash,
+      cpfDedupKey: params.cpfDedupKey,
       issuerDid: params.issuerDid,
       issuerId: params.issuerId,
       subjectDid: params.subjectDid,

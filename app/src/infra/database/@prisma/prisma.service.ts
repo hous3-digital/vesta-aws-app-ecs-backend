@@ -12,7 +12,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
   public constructor(private readonly envService: EnvService) {
     const dbUrl = envService.DATABASE_URL;
-    let maskedUrl = "(não definida)";
+    let maskedUrl: string;
     try {
       const parsed = new URL(dbUrl);
       if (parsed.password) parsed.password = "****";
