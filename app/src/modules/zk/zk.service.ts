@@ -86,6 +86,8 @@ export class ZkService implements OnModuleInit {
       const fullNameHex = Buffer.from(normalized).toString("hex").slice(0, 60);
       const fullNameBigInt = String(BigInt("0x" + fullNameHex));
 
+      this.logger.log(`fullName normalizado: "${normalized}" → bigint: ${fullNameBigInt.slice(0, 20)}...`);
+
       const circuitInput = {
         cpf: input.cpf,
         birth_date: input.birthDate,

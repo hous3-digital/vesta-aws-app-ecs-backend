@@ -67,6 +67,8 @@ export class ProofPublicGenerateAndSubmitHandler implements ICommandHandler<Proo
       );
     }
 
+    await this.validatePrivateInputsMatchVC(vc, command.privateInputs);
+
     this.logger.log(`Gerando prova ZK — verifier: ${command.verifierId}`);
     const zkResult = await this.zkService.generateProof({
       cpfHash: vc.credential_subject.cpf_hash,
@@ -179,6 +181,40 @@ export class ProofPublicGenerateAndSubmitHandler implements ICommandHandler<Proo
         expiresAt: new Date(vc.expiration_date),
       });
       await this.credentialRepository.saveOrThrow(credential);
+    }
+  }
+
+  private async validatePrivateInputsMatchVC(
+    vc: VestaVC,
+    privateInputs: { cpf: string; birthDate: string; fullName: string },
+  ): Promise<void> {
+    const [cpfHash, birthDateHash, fullNameHash] = await Promise.all([
+      this.vcService.hashCpf(privateInputs.cpf),
+      this.vcService.hashBirthDate(privateInputs.birthDate),
+      this.vcService.hashFullName(privateInputs.fullName),
+    ]);
+
+    const errors: string[] = [];
+
+    if (cpfHash !== vc.credential_subject.cpf_hash) {
+      errors.push("cpf não corresponde ao hash registrado na VC");
+    }
+    if (birthDateHash !== vc.credential_subject.birth_date_hash) {
+      errors.push("birthDate não corresponde ao hash registrado na VC");
+    }
+    if (fullNameHash !== vc.credential_subject.full_name_hash) {
+      const normalized = this.vcService.normalizeFullName(privateInputs.fullName);
+      this.logger.error(
+        `fullName mismatch — normalizado: "${normalized}", ` +
+          `hash calculado: ${fullNameHash}, hash na VC: ${vc.credential_subject.full_name_hash}`,
+      );
+      errors.push("fullName não corresponde ao hash registrado na VC (verifique espaços extras, acentos ou codificação)");
+    }
+
+    if (errors.length > 0) {
+      throw new BadRequestException(
+        `Private inputs não correspondem à VC: ${errors.join("; ")}`,
+      );
     }
   }
 
