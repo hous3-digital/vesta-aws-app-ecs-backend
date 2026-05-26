@@ -15,7 +15,7 @@ permissions:
 jobs:
   call-shared-ci:
     permissions: write-all
-    uses: hous3-digital/shared-workflows/.github/workflows/shared-backend-ci.yml@v1.25.0
+    uses: hous3-digital/shared-workflows/.github/workflows/shared-backend-ci.yml@v1.30.0
     with:
       working_directory: app
       node_version: "22"
@@ -37,7 +37,7 @@ jobs:
       contents: write
       security-events: write
       id-token: write
-    uses: hous3-digital/shared-workflows/.github/workflows/shared-terraform-ci.yml@v1.25.0
+    uses: hous3-digital/shared-workflows/.github/workflows/shared-terraform-ci.yml@v1.30.0
     with:
       working_directory: infra/terraform
       tf_var_file: envs/staging/variables.tfvars
@@ -58,7 +58,7 @@ jobs:
       AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME_STAGING }}
 
   deploy-ecs-app:
-    uses: hous3-digital/shared-workflows/.github/workflows/shared-backend-deploy-ecs.yml@v1.25.0
+    uses: hous3-digital/shared-workflows/.github/workflows/shared-backend-deploy-ecs.yml@v1.30.0
     needs: [call-shared-ci, terraform-ci]
     with:
       enable_deploy: true
