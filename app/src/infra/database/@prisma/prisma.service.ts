@@ -1,4 +1,4 @@
-import { INestApplication, Injectable, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
+import { INestApplication, Injectable, Logger, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Prisma, PrismaClient } from "@src/infra/database/@prisma/generated/client";
 import { EnvService } from "@src/infra/env/env.service";
@@ -8,9 +8,23 @@ const RESET = "\x1b[0m";
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+  private readonly logger = new Logger(PrismaService.name);
+
   public constructor(private readonly envService: EnvService) {
+    const dbUrl = envService.DATABASE_URL;
+    let maskedUrl: string;
+    try {
+      const parsed = new URL(dbUrl);
+      if (parsed.password) parsed.password = "****";
+      maskedUrl = parsed.toString();
+    } catch {
+      maskedUrl = "(URL inválida)";
+    }
+
+    console.log(`[PrismaService] Inicializando com DATABASE_URL=${maskedUrl}`);
+
     super({
-      adapter: new PrismaPg({ connectionString: envService.DATABASE_URL }),
+      adapter: new PrismaPg({ connectionString: dbUrl }),
       log:
         envService.IS_PRODUCTION || envService.IS_TEST
           ? undefined
@@ -24,7 +38,15 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   }
 
   public async onModuleInit(): Promise<void> {
-    await this.$connect();
+    this.logger.log("Conectando ao banco de dados...");
+    try {
+      await this.$connect();
+      this.logger.log("Conexão com banco de dados estabelecida com sucesso.");
+    } catch (err) {
+      this.logger.error(`Falha ao conectar ao banco de dados: ${(err as Error).message}`);
+      this.logger.error((err as Error).stack ?? "");
+      throw err;
+    }
 
     (this as any).$on("query", (e: Prisma.QueryEvent) => {
       const params = JSON.parse(e.params);

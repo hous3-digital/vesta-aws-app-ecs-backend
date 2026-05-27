@@ -51,10 +51,9 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
-  User: 'User',
-  Role: 'Role',
-  Membership: 'Membership',
-  File: 'File',
+  Credential: 'Credential',
+  Attestation: 'Attestation',
+  Issuer: 'Issuer',
   Ingress: 'Ingress',
   Egress: 'Egress'
 } as const
@@ -75,70 +74,54 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
-export const UserScalarFieldEnum = {
+export const CredentialScalarFieldEnum = {
   id: 'id',
-  isActive: 'isActive',
+  nullifier: 'nullifier',
+  issuer: 'issuer',
+  kycProvider: 'kycProvider',
+  kycApproved: 'kycApproved',
+  issuedAt: 'issuedAt',
+  vcHash: 'vcHash',
+  cpfDedupKey: 'cpfDedupKey',
+  issuerDid: 'issuerDid',
+  issuerId: 'issuerId',
+  subjectDid: 'subjectDid',
+  kycLevel: 'kycLevel',
   status: 'status',
+  sorobanTxHash: 'sorobanTxHash',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  expiresAt: 'expiresAt'
+} as const
+
+export type CredentialScalarFieldEnum = (typeof CredentialScalarFieldEnum)[keyof typeof CredentialScalarFieldEnum]
+
+
+export const AttestationScalarFieldEnum = {
+  id: 'id',
+  vcHash: 'vcHash',
+  proofHash: 'proofHash',
+  verifierId: 'verifierId',
+  kycLevel: 'kycLevel',
+  sorobanTxHash: 'sorobanTxHash',
+  sorobanLedger: 'sorobanLedger',
+  onChainResult: 'onChainResult',
+  createdAt: 'createdAt'
+} as const
+
+export type AttestationScalarFieldEnum = (typeof AttestationScalarFieldEnum)[keyof typeof AttestationScalarFieldEnum]
+
+
+export const IssuerScalarFieldEnum = {
+  id: 'id',
+  issuerId: 'issuerId',
   name: 'name',
-  email: 'email',
-  password: 'password',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  activatedAt: 'activatedAt',
-  deactivatedAt: 'deactivatedAt'
-} as const
-
-export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
-
-
-export const RoleScalarFieldEnum = {
-  id: 'id',
-  isActive: 'isActive',
   status: 'status',
-  type: 'type',
-  description: 'description',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  activatedAt: 'activatedAt',
-  deactivatedAt: 'deactivatedAt'
+  publicKey: 'publicKey',
+  createdAt: 'createdAt'
 } as const
 
-export type RoleScalarFieldEnum = (typeof RoleScalarFieldEnum)[keyof typeof RoleScalarFieldEnum]
-
-
-export const MembershipScalarFieldEnum = {
-  id: 'id',
-  isActive: 'isActive',
-  status: 'status',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  deactivatedAt: 'deactivatedAt',
-  userId: 'userId',
-  roleId: 'roleId'
-} as const
-
-export type MembershipScalarFieldEnum = (typeof MembershipScalarFieldEnum)[keyof typeof MembershipScalarFieldEnum]
-
-
-export const FileScalarFieldEnum = {
-  id: 'id',
-  isActive: 'isActive',
-  status: 'status',
-  type: 'type',
-  path: 'path',
-  contentType: 'contentType',
-  bucket: 'bucket',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  deactivatedAt: 'deactivatedAt',
-  processingAt: 'processingAt',
-  approvedAt: 'approvedAt',
-  reprovedAt: 'reprovedAt',
-  reason: 'reason',
-  parentId: 'parentId'
-} as const
-
-export type FileScalarFieldEnum = (typeof FileScalarFieldEnum)[keyof typeof FileScalarFieldEnum]
+export type IssuerScalarFieldEnum = (typeof IssuerScalarFieldEnum)[keyof typeof IssuerScalarFieldEnum]
 
 
 export const IngressScalarFieldEnum = {
