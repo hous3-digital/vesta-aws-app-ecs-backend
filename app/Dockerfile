@@ -37,6 +37,7 @@ COPY --from=builder /app/package.json ./
 COPY --from=builder /app/yarn.lock ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/zk-artifacts ./zk-artifacts
 
 RUN yarn install --production --frozen-lockfile && yarn cache clean
 
@@ -48,6 +49,6 @@ USER appuser
 EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget -q --spider http://127.0.0.1:3000/ || exit 1
+  CMD wget -q --spider http://127.0.0.1:3000/health || exit 1
 
 CMD ["node", "dist/src/main"]

@@ -18,7 +18,27 @@ redirect_host = "vesta.trust-staging.com"
 environment = [
   {
     name  = "NODE_ENV",
-    value = "test"
+    value = "production"
+  },
+  {
+    name  = "PORT",
+    value = "3000"
+  },
+  {
+    name  = "STELLAR_RPC_URL",
+    value = "https://soroban-testnet.stellar.org"
+  },
+  {
+    name  = "ZK_ARTIFACTS_DIR",
+    value = "./zk-artifacts"
+  },
+  {
+    name  = "ZK_MOCK_MODE",
+    value = "false"
+  },
+  {
+    name  = "STELLAR_NETWORK",
+    value = "Test SDF Network ; September 2015"
   }
 ]
 
@@ -26,6 +46,18 @@ secrets = [
   {
     name      = "DATABASE_URL",
     valueFrom = "arn:aws:secretsmanager:us-east-1:014468369894:secret:DATABASE_URL-89PrmK"
+  },
+  {
+    name      = "VESTA_CONTRACT_ID",
+    valueFrom = "arn:aws:secretsmanager:us-east-1:014468369894:secret:VESTA_CONTRACT_ID-N8iRaA"
+  },
+  {
+    name      = "VESTA_DEPLOYER_SECRET",
+    valueFrom = "arn:aws:secretsmanager:us-east-1:014468369894:secret:VESTA_DEPLOYER_SECRET-NuPUJR"
+  },
+  {
+    name      = "CPF_HMAC_SECRET",
+    valueFrom = "arn:aws:secretsmanager:us-east-1:014468369894:secret:CPF_HMAC_SECRET-DGhmXY"
   }
 ]
 

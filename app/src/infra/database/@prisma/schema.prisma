@@ -13,77 +13,60 @@ generator dbml {
   output   = "./dbml"
 }
 
-model User {
-  id            String       @unique @map("user_id")
-  isActive      Boolean      @map("is_active")
-  status        String
-  name          String
-  email         String
-  password      String
-  createdAt     DateTime     @map("created_at")
-  updatedAt     DateTime     @map("updated_at")
-  activatedAt   DateTime?    @map("activated_at")
-  deactivatedAt DateTime?    @map("deactivated_at")
-  // computed fields
-  memberships   Membership[]
-
-  @@map("user")
+enum CredentialStatus {
+  ACTIVE
+  REVOKED
+  EXPIRED
 }
 
-model Role {
-  id            String       @unique @map("role_id")
-  isActive      Boolean      @map("is_active")
-  status        String
-  type          String       @unique
-  description   String
-  createdAt     DateTime     @map("created_at")
-  updatedAt     DateTime     @map("updated_at")
-  activatedAt   DateTime?    @map("activated_at")
-  deactivatedAt DateTime?    @map("deactivated_at")
-  // computed fields
-  memberships   Membership[]
+model Credential {
+  id            String           @unique @map("credential_id")
+  nullifier     String?          @unique
+  issuer        String?
+  kycProvider   String?          @map("kyc_provider")
+  kycApproved   Boolean?         @map("kyc_approved")
+  issuedAt      DateTime?        @map("issued_at")
+  vcHash        String           @unique @map("vc_hash")
+  cpfDedupKey   String?          @unique @map("cpf_dedup_key")
+  issuerDid     String           @map("issuer_did")
+  issuerId      String           @map("issuer_id")
+  subjectDid    String           @map("subject_did")
+  kycLevel      String           @map("kyc_level")
+  status        CredentialStatus @default(ACTIVE)
+  sorobanTxHash String?          @map("soroban_tx_hash")
+  createdAt     DateTime         @map("created_at")
+  updatedAt     DateTime         @map("updated_at")
+  expiresAt     DateTime?        @map("expires_at")
 
-  @@map("role")
+  @@index([status])
+  @@index([kycProvider])
+  @@map("credentials")
 }
 
-model Membership {
-  id            String    @unique @map("membership_id")
-  isActive      Boolean   @map("is_active")
-  status        String
-  createdAt     DateTime  @map("created_at")
-  updatedAt     DateTime  @map("updated_at")
-  deactivatedAt DateTime? @map("deactivated_at")
-  // fks
-  userId        String    @map("user_id")
-  roleId        String    @map("role_id")
-  // relations
-  user          User      @relation(fields: [userId], references: [id])
-  role          Role      @relation(fields: [roleId], references: [id])
+model Attestation {
+  id            String   @unique @map("attestation_id")
+  vcHash        String   @map("vc_hash")
+  proofHash     String   @map("proof_hash")
+  verifierId    String   @map("verifier_id")
+  kycLevel      String   @map("kyc_level")
+  sorobanTxHash String?  @map("soroban_tx_hash")
+  sorobanLedger Int?     @map("soroban_ledger")
+  onChainResult Boolean  @map("on_chain_result")
+  createdAt     DateTime @map("created_at")
 
-  @@index(userId)
-  @@index(roleId)
-  @@map("membership")
+  @@index([vcHash])
+  @@map("attestation")
 }
 
-model File {
-  id            String    @unique @map("file_id")
-  isActive      Boolean   @map("is_active")
-  status        String
-  type          String
-  path          String
-  contentType   String    @map("content_type")
-  bucket        String
-  createdAt     DateTime  @map("created_at")
-  updatedAt     DateTime  @map("updated_at")
-  deactivatedAt DateTime? @map("deactivated_at")
-  processingAt  DateTime? @map("processing_at")
-  approvedAt    DateTime? @map("approved_at")
-  reprovedAt    DateTime? @map("reproved_at")
-  reason        String?   @map("reason")
-  parentId      String    @map("parent_id")
+model Issuer {
+  id        String   @unique @map("issuer_id")
+  issuerId  String   @unique @map("issuer_external_id")
+  name      String
+  status    String   @default("active")
+  publicKey String?  @map("public_key")
+  createdAt DateTime @map("created_at")
 
-  @@index(parentId)
-  @@map("file")
+  @@map("issuer")
 }
 
 model Ingress {

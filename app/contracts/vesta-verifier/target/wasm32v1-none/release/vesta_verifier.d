@@ -1,0 +1,1 @@
+C:\Users\migue\OneDrive\Documentos\development\hous3\vesta\vesta-api-stellar\contracts\vesta-verifier\target\wasm32v1-none\release\vesta_verifier.wasm: C:\Users\migue\OneDrive\Documentos\development\hous3\vesta\vesta-api-stellar\contracts\vesta-verifier\src\lib.rs

@@ -25,39 +25,31 @@ export class EnvService {
     return this.configService.get("DATABASE_URL") as string;
   }
 
-  public get JWT_ACCESS_SECRET() {
-    return this.configService.get("JWT_ACCESS_SECRET") as string;
+  public get STELLAR_RPC_URL() {
+    return this.configService.get("STELLAR_RPC_URL") as string;
   }
 
-  public get VERIFF_BASE_URL() {
-    return this.configService.get("VERIFF_BASE_URL") as string;
+  public get STELLAR_NETWORK() {
+    return this.configService.get("STELLAR_NETWORK") as string;
   }
 
-  public get VERIFF_API_KEY() {
-    return this.configService.get("VERIFF_API_KEY") as string;
+  public get VESTA_CONTRACT_ID() {
+    return this.configService.get("VESTA_CONTRACT_ID") as string;
   }
 
-  public get VERIFF_SECRET_KEY() {
-    return this.configService.get("VERIFF_SECRET_KEY") as string;
+  public get VESTA_DEPLOYER_SECRET() {
+    return this.configService.get("VESTA_DEPLOYER_SECRET") as string;
   }
 
-  public get AWS_S3_PUBLIC_BUCKET() {
-    return this.configService.get("AWS_S3_PUBLIC_BUCKET") as string;
+  public get ZK_ARTIFACTS_DIR() {
+    return this.configService.get("ZK_ARTIFACTS_DIR") as string;
   }
 
-  public get AWS_S3_PRIVATE_BUCKET() {
-    return this.configService.get("AWS_S3_PRIVATE_BUCKET") as string;
+  public get ZK_MOCK_MODE() {
+    return this.configService.get("ZK_MOCK_MODE") as boolean;
   }
 
-  public get AWS_REGION() {
-    return this.configService.get("AWS_REGION") as string;
-  }
-
-  public get AWS_IAM_ACCESS_KEY_ID() {
-    return this.configService.get("AWS_IAM_ACCESS_KEY_ID") as string;
-  }
-
-  public get AWS_IAM_SECRET_ACCESS_KEY() {
-    return this.configService.get("AWS_IAM_SECRET_ACCESS_KEY") as string;
+  public get CPF_HMAC_SECRET() {
+    return this.configService.get("CPF_HMAC_SECRET") as string;
   }
 }

@@ -58,11 +58,11 @@ locals {
         health_check = {
           enabled             = true
           interval            = 30
-          path                = "/docs"
+          path                = "/health"
           port                = "traffic-port"
           healthy_threshold   = 3
-          unhealthy_threshold = 3
-          timeout             = 6
+          unhealthy_threshold = 6
+          timeout             = 10
           protocol            = "HTTP"
           matcher             = "200"
         }
@@ -77,11 +77,11 @@ locals {
         health_check = {
           enabled             = true
           interval            = 30
-          path                = "/docs"
+          path                = "/health"
           port                = "traffic-port"
           healthy_threshold   = 3
-          unhealthy_threshold = 3
-          timeout             = 6
+          unhealthy_threshold = 6
+          timeout             = 10
           protocol            = "HTTP"
           matcher             = "200"
         }
