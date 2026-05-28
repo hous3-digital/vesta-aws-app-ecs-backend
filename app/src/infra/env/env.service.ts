@@ -52,4 +52,12 @@ export class EnvService {
   public get CPF_HMAC_SECRET() {
     return this.configService.get("CPF_HMAC_SECRET") as string;
   }
+
+  public get CORS_ALLOWED_ORIGINS() {
+    return this.configService.get("CORS_ALLOWED_ORIGINS") as string;
+  }
+
+  public get REDIS_URL() {
+    return this.configService.get("REDIS_URL") as string | undefined;
+  }
 }
