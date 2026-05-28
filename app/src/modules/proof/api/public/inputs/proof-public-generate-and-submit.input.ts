@@ -1,18 +1,20 @@
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsInt, IsObject, IsOptional, IsString, Max, Min, ValidateNested } from "class-validator";
+import { IsInt, IsObject, IsString, Matches, Max, MaxLength, Min, ValidateNested } from "class-validator";
+import { IsValidCpf } from "@src/shared/validators/is-valid-cpf.validator";
 
 class PrivateInputsInput {
   @ApiProperty({ example: "12345678900" })
-  @IsString()
+  @IsValidCpf()
   public cpf!: string;
 
   @ApiProperty({ example: "19900520" })
-  @IsString()
+  @Matches(/^\d{8}$/, { message: "birthDate must be in YYYYMMDD format" })
   public birthDate!: string;
 
   @ApiProperty({ example: "Maria Silva" })
   @IsString()
+  @MaxLength(100)
   public fullName!: string;
 }
 
@@ -36,8 +38,7 @@ export class ProofPublicGenerateAndSubmitInput {
   @Max(3)
   public minKycLevel!: number;
 
-  @ApiPropertyOptional({ example: "abc123def..." })
-  @IsOptional()
+  @ApiProperty({ example: "abc123def..." })
   @IsString()
-  public challenge?: string;
+  public challenge!: string;
 }

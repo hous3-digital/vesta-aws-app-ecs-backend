@@ -6,6 +6,6 @@ export class ProofPublicGenerateAndSubmitCommand {
     public readonly privateInputs: { cpf: string; birthDate: string; fullName: string },
     public readonly verifierId: string,
     public readonly minKycLevel: number,
-    public readonly challenge?: string,
+    public readonly challenge: string,
   ) {}
 }

@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsIn, IsInt, IsOptional, IsString, Max, Min } from "class-validator";
+import { IsIn, IsInt, IsOptional, IsString, Matches, Max, MaxLength, Min } from "class-validator";
+import { IsValidCpf } from "@src/shared/validators/is-valid-cpf.validator";
 import type { KycLevel } from "@src/shared/types/vesta-vc.types";
 
 export class CredentialPublicIssueInput {
@@ -8,15 +9,16 @@ export class CredentialPublicIssueInput {
   public issuerId!: string;
 
   @ApiProperty({ example: "12345678900" })
-  @IsString()
+  @IsValidCpf()
   public cpf!: string;
 
   @ApiProperty({ example: "Maria Silva" })
   @IsString()
+  @MaxLength(100)
   public fullName!: string;
 
   @ApiProperty({ example: "1990-05-20" })
-  @IsString()
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: "birthDate must be in YYYY-MM-DD format" })
   public birthDate!: string;
 
   @ApiProperty({ enum: ["basic", "intermediate", "complete"] })
