@@ -10,7 +10,7 @@ export class ChallengePublicController {
   @ApiOperation({ summary: "Generate a one-time WebAuthn challenge (60s TTL)" })
   @ApiOkResponse({ description: "Challenge hex string and expiration timestamp" })
   @Get("/challenge")
-  public getChallenge(): { challenge: string; expiresAt: number } {
+  public async getChallenge(): Promise<{ challenge: string; expiresAt: number }> {
     return this.challengeService.generate();
   }
 }

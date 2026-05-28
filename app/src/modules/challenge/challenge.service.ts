@@ -1,57 +1,88 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
+import { EnvService } from "@src/infra/env/env.service";
 import { randomBytes } from "crypto";
+import Redis from "ioredis";
 
-interface ChallengeEntry {
-  expiresAt: number;
-}
+const CHALLENGE_TTL_SECONDS = 60;
+const CHALLENGE_PREFIX = "challenge:";
 
-// TODO: replace with Redis for multi-instance ECS deployments
 @Injectable()
-export class ChallengeService {
+export class ChallengeService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(ChallengeService.name);
-  private readonly store = new Map<string, ChallengeEntry>();
-  private readonly TTL_MS = 60_000;
+  private redis: Redis | null = null;
+  private readonly memoryStore = new Map<string, number>();
 
-  public generate(): { challenge: string; expiresAt: number } {
+  public constructor(private readonly envService: EnvService) {}
+
+  public async onModuleInit(): Promise<void> {
+    const redisUrl = this.envService.REDIS_URL;
+    if (!redisUrl) {
+      this.logger.warn("REDIS_URL não configurado — challenge store rodando em memória (não escala com múltiplas instâncias)");
+      return;
+    }
+
+    try {
+      this.redis = new Redis(redisUrl, { maxRetriesPerRequest: 3, lazyConnect: true });
+      await this.redis.connect();
+      this.logger.log("Challenge store conectado ao Redis");
+    } catch (err) {
+      this.logger.error(`Falha ao conectar ao Redis: ${(err as Error).message} — fallback para memória`);
+      this.redis?.disconnect();
+      this.redis = null;
+    }
+  }
+
+  public async onModuleDestroy(): Promise<void> {
+    if (this.redis) {
+      await this.redis.quit();
+    }
+  }
+
+  public async generate(): Promise<{ challenge: string; expiresAt: number }> {
     const challenge = randomBytes(32).toString("hex");
-    const expiresAt = Date.now() + this.TTL_MS;
+    const expiresAt = Date.now() + CHALLENGE_TTL_SECONDS * 1000;
 
-    this.store.set(challenge, { expiresAt });
-    this.cleanup();
+    if (this.redis) {
+      await this.redis.set(`${CHALLENGE_PREFIX}${challenge}`, "1", "EX", CHALLENGE_TTL_SECONDS);
+    } else {
+      this.memoryStore.set(challenge, expiresAt);
+      this.cleanup();
+    }
 
-    this.logger.debug(`Challenge gerado — total ativos: ${this.store.size}`);
+    this.logger.debug("Challenge gerado");
     return { challenge, expiresAt };
   }
 
-  public consume(challenge: string): boolean {
-    const entry = this.store.get(challenge);
+  public async consume(challenge: string): Promise<boolean> {
+    if (this.redis) {
+      const deleted = await this.redis.del(`${CHALLENGE_PREFIX}${challenge}`);
+      if (deleted === 0) {
+        this.logger.warn(`Challenge inválido ou já consumido: ${challenge.slice(0, 16)}...`);
+        return false;
+      }
+      return true;
+    }
 
-    if (!entry) {
+    const expiresAt = this.memoryStore.get(challenge);
+    if (expiresAt === undefined) {
       this.logger.warn(`Challenge inválido ou já consumido: ${challenge.slice(0, 16)}...`);
       return false;
     }
 
-    if (Date.now() > entry.expiresAt) {
-      this.store.delete(challenge);
+    this.memoryStore.delete(challenge);
+
+    if (Date.now() > expiresAt) {
       this.logger.warn(`Challenge expirado: ${challenge.slice(0, 16)}...`);
       return false;
     }
 
-    this.store.delete(challenge);
     return true;
   }
 
   private cleanup(): void {
     const now = Date.now();
-    let removed = 0;
-    for (const [key, entry] of this.store) {
-      if (now > entry.expiresAt) {
-        this.store.delete(key);
-        removed++;
-      }
-    }
-    if (removed > 0) {
-      this.logger.debug(`GC: removidos ${removed} challenge(s) expirado(s)`);
+    for (const [key, expiresAt] of this.memoryStore) {
+      if (now > expiresAt) this.memoryStore.delete(key);
     }
   }
 }
