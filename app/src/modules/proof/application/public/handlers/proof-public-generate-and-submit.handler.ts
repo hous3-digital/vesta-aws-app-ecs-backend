@@ -35,16 +35,11 @@ export class ProofPublicGenerateAndSubmitHandler implements ICommandHandler<Proo
   public async execute(command: ProofPublicGenerateAndSubmitCommand) {
     const vc = command.vc as VestaVC;
 
-    if (command.challenge) {
-      const valid = this.challengeService.consume(command.challenge);
-      if (!valid) {
-        throw new BadRequestException(
-          "Challenge WebAuthn inválido, expirado ou já utilizado. Solicite um novo via GET /public/auth/challenge.",
-        );
-      }
-      this.logger.log("Challenge WebAuthn verificado e consumido");
-    } else {
-      this.logger.warn("Requisição sem challenge WebAuthn — vulnerável a replay attack.");
+    const challengeValid = await this.challengeService.consume(command.challenge);
+    if (!challengeValid) {
+      throw new BadRequestException(
+        "Challenge inválido, expirado ou já utilizado. Solicite um novo via GET /public/auth/challenge.",
+      );
     }
 
     if (new Date(vc.expiration_date) < new Date()) {
@@ -203,10 +198,8 @@ export class ProofPublicGenerateAndSubmitHandler implements ICommandHandler<Proo
       errors.push("birthDate não corresponde ao hash registrado na VC");
     }
     if (fullNameHash !== vc.credential_subject.full_name_hash) {
-      const normalized = this.vcService.normalizeFullName(privateInputs.fullName);
       this.logger.error(
-        `fullName mismatch — normalizado: "${normalized}", ` +
-          `hash calculado: ${fullNameHash}, hash na VC: ${vc.credential_subject.full_name_hash}`,
+        `fullName mismatch — hash calculado: ${fullNameHash}, hash na VC: ${vc.credential_subject.full_name_hash}`,
       );
       errors.push("fullName não corresponde ao hash registrado na VC (verifique espaços extras, acentos ou codificação)");
     }

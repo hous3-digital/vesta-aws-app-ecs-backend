@@ -48,17 +48,12 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       throw err;
     }
 
-    (this as any).$on("query", (e: Prisma.QueryEvent) => {
-      const params = JSON.parse(e.params);
-      let query = e.query;
-
-      params.forEach((param: unknown, index: number) => {
-        query = query.replace(`$${index + 1}`, typeof param === "string" ? `'${param}'` : String(param));
+    if (!this.envService.IS_PRODUCTION) {
+      (this as any).$on("query", (e: Prisma.QueryEvent) => {
+        console.log(`${GREEN}prisma:query${RESET}: ${e.query}`);
+        console.log(`${GREEN}duration${RESET}: ${e.duration}ms\n`);
       });
-
-      console.log(`${GREEN}prisma:query${RESET}: ${query}`);
-      console.log(`${GREEN}duration${RESET}: ${e.duration}ms\n`);
-    });
+    }
   }
 
   public async onModuleDestroy(): Promise<void> {
