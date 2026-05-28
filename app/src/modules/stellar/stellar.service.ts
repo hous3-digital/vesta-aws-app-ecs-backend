@@ -75,7 +75,8 @@ export class StellarService implements OnModuleInit {
     try {
       account = await this.server.getAccount(keypair.publicKey());
     } catch (err) {
-      throw new ServiceUnavailableException(`Não foi possível carregar conta Stellar: ${(err as Error).message}`);
+      this.logger.error(`Não foi possível carregar conta Stellar: ${(err as Error).message}`);
+      throw new ServiceUnavailableException("Serviço blockchain temporariamente indisponível");
     }
 
     const toBuffer = (v: Buffer | { type: string; data: number[] }): Buffer =>
@@ -111,7 +112,8 @@ export class StellarService implements OnModuleInit {
     try {
       preparedTx = await this.server.prepareTransaction(tx);
     } catch (err) {
-      throw new ServiceUnavailableException(`Falha ao preparar transação Soroban: ${(err as Error).message}`);
+      this.logger.error(`Falha ao preparar transação Soroban: ${(err as Error).message}`);
+      throw new ServiceUnavailableException("Serviço blockchain temporariamente indisponível");
     }
 
     preparedTx.sign(keypair);
@@ -120,11 +122,13 @@ export class StellarService implements OnModuleInit {
     try {
       sendResult = await this.server.sendTransaction(preparedTx);
     } catch (err) {
-      throw new ServiceUnavailableException(`Falha ao enviar transação Soroban: ${(err as Error).message}`);
+      this.logger.error(`Falha ao enviar transação Soroban: ${(err as Error).message}`);
+      throw new ServiceUnavailableException("Serviço blockchain temporariamente indisponível");
     }
 
     if (sendResult.status === "ERROR") {
-      throw new ServiceUnavailableException(`Transação Soroban rejeitada: ${JSON.stringify(sendResult.errorResult)}`);
+      this.logger.error(`Transação Soroban rejeitada: ${JSON.stringify(sendResult.errorResult)}`);
+      throw new ServiceUnavailableException("Transação blockchain rejeitada");
     }
 
     const txHash = sendResult.hash;
