@@ -1,6 +1,7 @@
 import { Body, Controller, Post } from "@nestjs/common";
 import { CommandBus } from "@nestjs/cqrs";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
+import { Throttle } from "@nestjs/throttler";
 import { ProofPublicGenerateAndSubmitCommand } from "@src/modules/proof/application/public/commands/proof-public-generate-and-submit.command";
 import { ProofPublicSubmitCommand } from "@src/modules/proof/application/public/commands/proof-public-submit.command";
 import { ProofPublicGenerateAndSubmitInput } from "@src/modules/proof/api/public/inputs/proof-public-generate-and-submit.input";
@@ -13,6 +14,7 @@ export class ProofPublicController {
   public constructor(private readonly commandBus: CommandBus) {}
 
   @ApiOperation({ summary: "Generate ZK proof from VC and submit to Soroban for on-chain verification" })
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
   @Post("/generate-and-submit")
   public async generateAndSubmit(@Body() input: ProofPublicGenerateAndSubmitInput) {
     const command = new ProofPublicGenerateAndSubmitCommand(
@@ -26,6 +28,7 @@ export class ProofPublicController {
   }
 
   @ApiOperation({ summary: "Submit a pre-generated ZK proof to Soroban" })
+  @Throttle({ default: { ttl: 60000, limit: 10 } })
   @Post("/submit")
   public async submit(@Body() input: ProofPublicSubmitInput) {
     const proof = { ...input.proof, protocol: input.proof.protocol ?? "groth16", curve: input.proof.curve ?? "bn128" };

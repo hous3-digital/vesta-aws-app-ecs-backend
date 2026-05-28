@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
+import { APP_GUARD } from "@nestjs/core";
 import { CqrsModule } from "@nestjs/cqrs";
-import { ThrottlerModule } from "@nestjs/throttler";
+import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import { HealthController } from "@src/health.controller";
 import { DatabaseModule } from "@src/infra/database/database.module";
 import { EnvModule } from "@src/infra/env/env.module";
@@ -19,7 +20,7 @@ import { GlobalUnhandledException } from "@src/utils/subscribers/global-unhandle
     EnvModule,
     CqrsModule,
     DatabaseModule,
-    ThrottlerModule.forRoot([{ ttl: 60000, limit: 10 }]),
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 60 }]),
     EgressModule,
     IngressModule,
 
@@ -31,6 +32,6 @@ import { GlobalUnhandledException } from "@src/utils/subscribers/global-unhandle
     ZkModule,
   ],
   controllers: [HealthController],
-  providers: [GlobalUnhandledException],
+  providers: [GlobalUnhandledException, { provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}
