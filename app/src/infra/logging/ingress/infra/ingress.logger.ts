@@ -16,6 +16,18 @@ export interface IngressResponse {
   status?: number;
 }
 
+const PII_FIELDS = new Set(["cpf", "fullName", "birthDate", "privateInputs"]);
+
+function redactPii(value: unknown, depth = 0): unknown {
+  if (depth > 6 || value === null || typeof value !== "object") return value;
+  if (Array.isArray(value)) return value.map((item) => redactPii(item, depth + 1));
+  const result: Record<string, unknown> = {};
+  for (const [key, val] of Object.entries(value as Record<string, unknown>)) {
+    result[key] = PII_FIELDS.has(key) ? "[REDACTED]" : redactPii(val, depth + 1);
+  }
+  return result;
+}
+
 @Injectable()
 export class IngressLogger {
   public constructor(private readonly prisma: PrismaService) {}
@@ -24,10 +36,12 @@ export class IngressLogger {
     const id = Id.create("ingress").value;
     const now = new Date();
 
+    const sanitizedRequest = redactPii(structuredClone(request));
+
     await this.prisma.ingress.create({
       data: {
         id: id,
-        request: structuredClone(request) as unknown as Prisma.InputJsonValue,
+        request: sanitizedRequest as Prisma.InputJsonValue,
         response: structuredClone(response) as unknown as Prisma.InputJsonValue,
         createdAt: now,
       },

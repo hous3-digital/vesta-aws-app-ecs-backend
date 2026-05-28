@@ -70,18 +70,30 @@ async function bootstrap() {
   const envService = app.get<EnvService>(EnvService);
   console.log(`[STARTUP] EnvService carregado — PORT=${envService.PORT}, NODE_ENV=${envService.NODE_ENV}`);
 
-  const config = new DocumentBuilder()
-    .setTitle("Vesta SDK API")
-    .setDescription("API para integração com os SDKs Vesta")
-    .setVersion("1.0")
-    .build();
+  if (!envService.IS_PRODUCTION) {
+    const config = new DocumentBuilder()
+      .setTitle("Vesta SDK API")
+      .setDescription("API para integração com os SDKs Vesta")
+      .setVersion("1.0")
+      .build();
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup("docs", app, document);
+    console.log(`[STARTUP] Swagger disponível em http://0.0.0.0:${envService.PORT}/docs`);
+  }
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup("docs", app, document);
-
-  app.useGlobalPipes(new ValidationPipe({ transform: true }));
+  app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }));
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)), new ApiTransformInterceptor());
-  app.enableCors();
+
+  const corsOrigins = envService.CORS_ALLOWED_ORIGINS;
+  if (corsOrigins) {
+    app.enableCors({
+      origin: corsOrigins.split(",").map((o) => o.trim()),
+      methods: ["GET", "POST"],
+      allowedHeaders: ["Content-Type"],
+    });
+  } else if (!envService.IS_PRODUCTION) {
+    app.enableCors();
+  }
   app.useStaticAssets(join(process.cwd(), "dist", "public"), { prefix: "/public" });
   app.setBaseViewsDir(join(process.cwd(), "dist"));
   app.setViewEngine("hbs");
@@ -93,7 +105,6 @@ async function bootstrap() {
   try {
     await app.listen(port, "0.0.0.0");
     console.log(`[STARTUP] Servidor ouvindo em http://0.0.0.0:${port}`);
-    console.log(`[STARTUP] Swagger disponível em http://0.0.0.0:${port}/docs`);
   } catch (err) {
     console.error("[STARTUP] Falha ao iniciar servidor HTTP:", (err as Error).message);
     console.error((err as Error).stack);
