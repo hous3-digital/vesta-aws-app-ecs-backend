@@ -58,6 +58,10 @@ secrets = [
   {
     name      = "CPF_HMAC_SECRET",
     valueFrom = "arn:aws:secretsmanager:us-east-1:014468369894:secret:CPF_HMAC_SECRET-DGhmXY"
+  },
+  {
+    name      = "ADMIN_SECRET",
+    valueFrom = "arn:aws:secretsmanager:us-east-1:014468369894:secret:ADMIN_SECRET-OFuCSK"
   }
 ]
 
