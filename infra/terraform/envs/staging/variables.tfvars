@@ -39,6 +39,10 @@ environment = [
   {
     name  = "STELLAR_NETWORK",
     value = "Test SDF Network ; September 2015"
+  },
+  {
+    name  = "CORS_ALLOWED_ORIGINS",
+    value = "https://vesta-demo-stellar.vercel.app,http://localhost:5173"
   }
 ]
 
