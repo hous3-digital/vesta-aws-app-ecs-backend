@@ -26,7 +26,7 @@ environment = [
   },
   {
     name  = "STELLAR_RPC_URL",
-    value = "https://soroban-testnet.stellar.org"
+    value = "https://soroban-rpc.mainnet.stellar.gateway.fm"
   },
   {
     name  = "ZK_ARTIFACTS_DIR",
@@ -38,7 +38,7 @@ environment = [
   },
   {
     name  = "STELLAR_NETWORK",
-    value = "Test SDF Network ; September 2015"
+    value = "Public Global Stellar Network ; September 2015"
   },
   {
     name  = "CORS_ALLOWED_ORIGINS",
