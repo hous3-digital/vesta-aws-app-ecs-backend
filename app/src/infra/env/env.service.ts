@@ -60,4 +60,8 @@ export class EnvService {
   public get REDIS_URL() {
     return this.configService.get("REDIS_URL") as string | undefined;
   }
+
+  public get ADMIN_SECRET() {
+    return this.configService.get("ADMIN_SECRET") as string | undefined;
+  }
 }
