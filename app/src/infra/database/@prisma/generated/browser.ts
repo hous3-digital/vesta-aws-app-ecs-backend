@@ -42,3 +42,8 @@ export type Ingress = Prisma.IngressModel
  * 
  */
 export type Egress = Prisma.EgressModel
+/**
+ * Model ApiKey
+ * 
+ */
+export type ApiKey = Prisma.ApiKeyModel
