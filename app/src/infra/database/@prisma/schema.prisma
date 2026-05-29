@@ -86,3 +86,15 @@ model Egress {
 
   @@map("egress")
 }
+
+model ApiKey {
+  id        String    @unique @map("api_key_id")
+  key       String    @unique
+  name      String
+  active    Boolean   @default(true)
+  createdAt DateTime  @map("created_at")
+  revokedAt DateTime? @map("revoked_at")
+
+  @@index([key, active])
+  @@map("api_keys")
+}

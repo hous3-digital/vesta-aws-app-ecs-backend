@@ -55,7 +55,8 @@ export const ModelName = {
   Attestation: 'Attestation',
   Issuer: 'Issuer',
   Ingress: 'Ingress',
-  Egress: 'Egress'
+  Egress: 'Egress',
+  ApiKey: 'ApiKey'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -142,6 +143,18 @@ export const EgressScalarFieldEnum = {
 } as const
 
 export type EgressScalarFieldEnum = (typeof EgressScalarFieldEnum)[keyof typeof EgressScalarFieldEnum]
+
+
+export const ApiKeyScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  name: 'name',
+  active: 'active',
+  createdAt: 'createdAt',
+  revokedAt: 'revokedAt'
+} as const
+
+export type ApiKeyScalarFieldEnum = (typeof ApiKeyScalarFieldEnum)[keyof typeof ApiKeyScalarFieldEnum]
 
 
 export const SortOrder = {

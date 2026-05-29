@@ -27,6 +27,8 @@ const envSchema = z.object({
   CORS_ALLOWED_ORIGINS: z.string().optional().default(""),
 
   REDIS_URL: z.string().optional(),
+
+  ADMIN_SECRET: z.string().min(32, "ADMIN_SECRET must be at least 32 characters").optional(),
 });
 
 export const validate = { validate: envConfig };

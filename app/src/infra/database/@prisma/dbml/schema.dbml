@@ -57,6 +57,15 @@ Table egress {
   createdAt DateTime [not null]
 }
 
+Table api_keys {
+  id String [unique, not null]
+  key String [unique, not null]
+  name String [not null]
+  active Boolean [not null, default: true]
+  createdAt DateTime [not null]
+  revokedAt DateTime
+}
+
 Enum CredentialStatus {
   ACTIVE
   REVOKED
