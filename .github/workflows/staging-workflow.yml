@@ -5,6 +5,9 @@ on:
     branches:
       - staging
 
+permissions:
+  contents: read
+
 env:
   TF_WORKSPACE: staging
   TF_VERSION: "1.14.0"
@@ -19,18 +22,121 @@ jobs:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: false
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "24"
+          node-version: "22"
+          cache: "yarn"
+          cache-dependency-path: "app/yarn.lock"
 
-      - run: cd app && yarn
+      - name: Install dependencies
+        run: cd app && yarn install --frozen-lockfile
 
       - name: Upload node_modules
         uses: actions/upload-artifact@v4
         with:
           name: node_modules
-          path: node_modules
+          path: app/node_modules
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    needs: install
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: |
+          cd app
+          yarn
+          yarn lint
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: install
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: false
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "yarn"
+          cache-dependency-path: "app/yarn.lock"
+
+      - name: Install dependencies
+        run: cd app && yarn install --frozen-lockfile
+
+      - name: Security Scan
+        run: cd app && yarn audit:ci
+        continue-on-error: true
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: install
+    env:
+      COVERAGE_THRESHOLD: ${{ vars.COVERAGE_THRESHOLD || '10' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: false
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "yarn"
+          cache-dependency-path: "app/yarn.lock"
+
+      - name: Install dependencies
+        run: cd app && yarn install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: cd app && yarn prisma:gen
+
+      - name: Run tests with coverage
+        run: cd app && yarn test:cov
+        continue-on-error: true
+
+      - name: Check coverage thresholds
+        run: |
+          cd app
+          echo "Checking coverage thresholds (minimum ${COVERAGE_THRESHOLD}%)..."
+          COVERAGE=$(cat coverage/coverage-summary.json | jq '.total.lines.pct')
+          echo "Line coverage: ${COVERAGE}%"
+
+          if (( $(echo "$COVERAGE < $COVERAGE_THRESHOLD" | bc -l) )); then
+            echo "Coverage is below ${COVERAGE_THRESHOLD}% threshold (${COVERAGE}%)"
+            exit 1
+          else
+            echo "Coverage meets ${COVERAGE_THRESHOLD}% threshold (${COVERAGE}%)"
+          fi
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: app/coverage/
 
   terraform-ci:
     name: Terraform CI - staging
@@ -39,6 +145,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: false
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -80,6 +187,7 @@ jobs:
         with:
           repository: hous3-digital/vesta-aws-app-ecs-backend
           token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: false
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -117,7 +225,7 @@ jobs:
         continue-on-error: true
         run: |
           cd infra/terraform
-          
+
           # Verifica se o serviço já existe na AWS
           if aws ecs describe-services --cluster hous3-trust-ecs-cluster --services vesta-app-backend --region ${{ env.AWS_REGION }} --query 'services[?status!=`INACTIVE`]' --output text | grep -q vesta-app-backend; then
             echo "ECS service exists, checking Terraform state..."
@@ -147,7 +255,7 @@ jobs:
 
   build-and-deploy-image:
     name: Build & Deploy Image to ECR
-    needs: [terraform-cd]
+    needs: [terraform-cd, lint]
     runs-on: ubuntu-latest
     outputs:
       image-url: ${{ steps.login-ecr.outputs.registry }}/vesta-app-backend:${{ github.sha }}
@@ -155,6 +263,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: false
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -196,6 +305,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: false
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
