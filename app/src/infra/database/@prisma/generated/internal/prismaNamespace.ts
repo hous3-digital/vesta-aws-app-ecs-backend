@@ -388,7 +388,8 @@ export const ModelName = {
   Attestation: 'Attestation',
   Issuer: 'Issuer',
   Ingress: 'Ingress',
-  Egress: 'Egress'
+  Egress: 'Egress',
+  ApiKey: 'ApiKey'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -404,7 +405,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "credential" | "attestation" | "issuer" | "ingress" | "egress"
+    modelProps: "credential" | "attestation" | "issuer" | "ingress" | "egress" | "apiKey"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -778,6 +779,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ApiKey: {
+      payload: Prisma.$ApiKeyPayload<ExtArgs>
+      fields: Prisma.ApiKeyFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ApiKeyFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ApiKeyFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyPayload>
+        }
+        findFirst: {
+          args: Prisma.ApiKeyFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ApiKeyFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyPayload>
+        }
+        findMany: {
+          args: Prisma.ApiKeyFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyPayload>[]
+        }
+        create: {
+          args: Prisma.ApiKeyCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyPayload>
+        }
+        createMany: {
+          args: Prisma.ApiKeyCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ApiKeyCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyPayload>[]
+        }
+        delete: {
+          args: Prisma.ApiKeyDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyPayload>
+        }
+        update: {
+          args: Prisma.ApiKeyUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyPayload>
+        }
+        deleteMany: {
+          args: Prisma.ApiKeyDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ApiKeyUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ApiKeyUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyPayload>[]
+        }
+        upsert: {
+          args: Prisma.ApiKeyUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyPayload>
+        }
+        aggregate: {
+          args: Prisma.ApiKeyAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateApiKey>
+        }
+        groupBy: {
+          args: Prisma.ApiKeyGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ApiKeyGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ApiKeyCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ApiKeyCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -885,6 +960,18 @@ export const EgressScalarFieldEnum = {
 } as const
 
 export type EgressScalarFieldEnum = (typeof EgressScalarFieldEnum)[keyof typeof EgressScalarFieldEnum]
+
+
+export const ApiKeyScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  name: 'name',
+  active: 'active',
+  createdAt: 'createdAt',
+  revokedAt: 'revokedAt'
+} as const
+
+export type ApiKeyScalarFieldEnum = (typeof ApiKeyScalarFieldEnum)[keyof typeof ApiKeyScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1123,6 +1210,7 @@ export type GlobalOmitConfig = {
   issuer?: Prisma.IssuerOmit
   ingress?: Prisma.IngressOmit
   egress?: Prisma.EgressOmit
+  apiKey?: Prisma.ApiKeyOmit
 }
 
 /* Types for Logging */
