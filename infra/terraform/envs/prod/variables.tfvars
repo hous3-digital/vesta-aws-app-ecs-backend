@@ -7,7 +7,7 @@ subnet_ids     = ["subnet-0bd4dff1f355cd922", "subnet-0fbc51e8bc5bab39f"]
 lb_subnet_ids  = ["subnet-0bd4dff1f355cd922", "subnet-0fbc51e8bc5bab39f"]
 service-vpc-id = "vpc-012c476eb6d6bb5df"
 
-certificate-arn = "arn:aws:acm:us-east-1:694580672968:certificate/2f716fe4-9ec4-4668-9a6b-e86784436b57"
+certificate-arn = "arn:aws:acm:us-east-1:694580672968:certificate/4ba94e51-76ba-410c-bfdd-30208bb40dbc"
 
 cluster_arn = "arn:aws:ecs:us-east-1:694580672968:cluster/hous3-trust-ecs-cluster"
 
