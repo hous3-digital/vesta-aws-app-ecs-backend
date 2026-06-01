@@ -3,8 +3,8 @@ service = "vesta-app-backend"
 image   = "014468369894.dkr.ecr.us-east-1.amazonaws.com/hous3-vesta:latest"
 env     = "staging"
 
-subnet_ids     = ["subnet-0b406cbbc6ee3553d", "subnet-01f9808dec32cda2c"] 
-lb_subnet_ids  = ["subnet-0b406cbbc6ee3553d", "subnet-01f9808dec32cda2c"] 
+subnet_ids     = ["subnet-0b406cbbc6ee3553d", "subnet-01f9808dec32cda2c"]
+lb_subnet_ids  = ["subnet-0b406cbbc6ee3553d", "subnet-01f9808dec32cda2c"]
 service-vpc-id = "vpc-04fc6ff69b649dfa9"
 
 certificate-arn = "arn:aws:acm:us-east-1:014468369894:certificate/9a12f755-bd47-4676-97b1-1e3b59470c9b"
