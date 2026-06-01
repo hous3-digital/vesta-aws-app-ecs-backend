@@ -3,7 +3,7 @@ service = "vesta-app-backend"
 image   = "694580672968.dkr.ecr.us-east-1.amazonaws.com/hous3-vesta:latest"
 env     = "prod"
 
-subnet_ids     = ["subnet-0bd4dff1f355cd922", "subnet-0fbc51e8bc5bab39f"] 
+subnet_ids     = ["subnet-0bd4dff1f355cd922", "subnet-0fbc51e8bc5bab39f"]
 lb_subnet_ids  = ["subnet-0bd4dff1f355cd922", "subnet-0fbc51e8bc5bab39f"]
 service-vpc-id = "vpc-012c476eb6d6bb5df"
 
