@@ -26,7 +26,7 @@ environment = [
   },
   {
     name  = "STELLAR_RPC_URL",
-    value = "https://soroban-rpc.mainnet.stellar.gateway.fm"
+    value = "https://soroban-testnet.stellar.org"
   },
   {
     name  = "ZK_ARTIFACTS_DIR",
