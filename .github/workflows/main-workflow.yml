@@ -238,7 +238,7 @@ jobs:
             if ! terraform state list | grep -q 'module.ecs_service.aws_ecs_service.this'; then
               echo "Importing existing ECS service to Terraform state..."
               CLUSTER_ARN=$(aws ecs describe-clusters --clusters hous3-trust-ecs-cluster --region "${AWS_REGION_VAR}" --query 'clusters[0].clusterArn' --output text)
-              terraform import 'module.ecs_service.aws_ecs_service.this[0]' "${CLUSTER_ARN}/vesta-app-backend"
+              terraform import -var-file=envs/prod/variables.tfvars 'module.ecs_service.aws_ecs_service.this[0]' "${CLUSTER_ARN}/vesta-app-backend"
             else
               echo "Service already in Terraform state"
             fi
