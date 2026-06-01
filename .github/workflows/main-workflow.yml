@@ -180,7 +180,7 @@ jobs:
 
   terraform-cd:
     name: Deploy Terraform to prod
-    needs: [terraform-ci]
+    needs: [terraform-ci, lint]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -212,28 +212,33 @@ jobs:
           terraform fmt -check -recursive
 
       - name: Terraform Init
+        env:
+          AWS_REGION_VAR: ${{ env.AWS_REGION }}
+          TF_BACKEND_BUCKET_VAR: ${{ env.TF_BACKEND_BUCKET }}
         run: |
           cd infra/terraform
           terraform init -reconfigure \
-            -backend-config="bucket=${{ env.TF_BACKEND_BUCKET }}" \
+            -backend-config="bucket=${TF_BACKEND_BUCKET_VAR}" \
             -backend-config="key=aws-ecs-app-vesta-backend.tfstate" \
             -backend-config="workspace_key_prefix=env" \
-            -backend-config="region=${{ env.AWS_REGION }}" \
+            -backend-config="region=${AWS_REGION_VAR}" \
             -backend-config="encrypt=true"
 
       - name: Check if ECS service exists and import if needed
         continue-on-error: true
+        env:
+          AWS_REGION_VAR: ${{ env.AWS_REGION }}
         run: |
           cd infra/terraform
 
           # Verifica se o serviço já existe na AWS
-          if aws ecs describe-services --cluster hous3-trust-ecs-cluster --services vesta-app-backend --region ${{ env.AWS_REGION }} --query 'services[?status!=`INACTIVE`]' --output text | grep -q vesta-app-backend; then
+          if aws ecs describe-services --cluster hous3-trust-ecs-cluster --services vesta-app-backend --region "${AWS_REGION_VAR}" --query 'services[?status!=`INACTIVE`]' --output text | grep -q vesta-app-backend; then
             echo "ECS service exists, checking Terraform state..."
             # Verifica se está no state do Terraform
             if ! terraform state list | grep -q 'module.ecs_service.aws_ecs_service.this'; then
               echo "Importing existing ECS service to Terraform state..."
-              CLUSTER_ARN=$(aws ecs describe-clusters --clusters hous3-trust-ecs-cluster --region ${{ env.AWS_REGION }} --query 'clusters[0].clusterArn' --output text)
-              terraform import 'module.ecs_service.aws_ecs_service.this[0]' "${CLUSTER_ARN}/vesta-app-backend"
+              CLUSTER_ARN=$(aws ecs describe-clusters --clusters hous3-trust-ecs-cluster --region "${AWS_REGION_VAR}" --query 'clusters[0].clusterArn' --output text)
+              terraform import -var-file=envs/prod/variables.tfvars 'module.ecs_service.aws_ecs_service.this[0]' "${CLUSTER_ARN}/vesta-app-backend"
             else
               echo "Service already in Terraform state"
             fi
@@ -319,13 +324,16 @@ jobs:
           terraform_version: ${{ env.TF_VERSION }}
 
       - name: Terraform Init
+        env:
+          AWS_REGION_VAR: ${{ env.AWS_REGION }}
+          TF_BACKEND_BUCKET_VAR: ${{ env.TF_BACKEND_BUCKET }}
         run: |
           cd infra/terraform
           terraform init -reconfigure \
-            -backend-config="bucket=${{ env.TF_BACKEND_BUCKET }}" \
+            -backend-config="bucket=${TF_BACKEND_BUCKET_VAR}" \
             -backend-config="key=aws-ecs-app-vesta-backend.tfstate" \
             -backend-config="workspace_key_prefix=env" \
-            -backend-config="region=${{ env.AWS_REGION }}" \
+            -backend-config="region=${AWS_REGION_VAR}" \
             -backend-config="encrypt=true"
 
       - name: Read current active color
@@ -339,9 +347,10 @@ jobs:
 
       - name: Compute inactive color
         id: colors
+        env:
+          ACTIVE_COLOR: ${{ steps.tf-out.outputs.active }}
         run: |
-          ACTIVE=${{ steps.tf-out.outputs.active }}
-          if [ "$ACTIVE" = "blue" ]; then INACTIVE=green; else INACTIVE=blue; fi
+          if [ "${ACTIVE_COLOR}" = "blue" ]; then INACTIVE=green; else INACTIVE=blue; fi
           echo "inactive=${INACTIVE}" >> $GITHUB_OUTPUT
 
       - name: Deploy new image to ECS service
@@ -368,17 +377,47 @@ jobs:
 
       - name: Fallback to previous color if deploy failed
         if: steps.ecs_status.outputs.status != ''
+        env:
+          ACTIVE_COLOR: ${{ steps.tf-out.outputs.active }}
         run: |
           echo "Deploy falhou! Realizando fallback para cor anterior..."
           cd infra/terraform
           terraform apply -var-file=envs/prod/variables.tfvars \
-            -var "active_color=${{ steps.tf-out.outputs.active }}" \
+            -var "active_color=${ACTIVE_COLOR}" \
             -auto-approve
           exit 1
 
       - name: Switch listener to inactive color
+        env:
+          INACTIVE_COLOR: ${{ steps.colors.outputs.inactive }}
         run: |
           cd infra/terraform
           terraform apply -var-file=envs/prod/variables.tfvars \
-            -var "active_color=${{ steps.colors.outputs.inactive }}" \
+            -var "active_color=${INACTIVE_COLOR}" \
             -auto-approve
+
+  confirm-release:
+    needs: bluegreen-deploy
+    name: Confirm Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fetch tags
+        run: |
+          git fetch --prune --unshallow || true
+          git fetch --tags --force
+
+      - name: Run semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release@24
