@@ -26,7 +26,7 @@ environment = [
   },
   {
     name  = "STELLAR_RPC_URL",
-    value = "https://soroban-testnet.stellar.org"
+    value = "https://soroban-rpc.mainnet.stellar.gateway.fm"
   },
   {
     name  = "ZK_ARTIFACTS_DIR",
@@ -42,7 +42,7 @@ environment = [
   },
   {
     name  = "CORS_ALLOWED_ORIGINS",
-    value = "https://vesta-demo-stellar.vercel.app,http://localhost:5173"
+    value = "*"
   }
 ]
 
