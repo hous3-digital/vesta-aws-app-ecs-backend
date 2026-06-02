@@ -21,10 +21,20 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       maskedUrl = "(URL inválida)";
     }
 
-    console.log(`[PrismaService] Inicializando com DATABASE_URL=${maskedUrl}`);
+    // SSL é exigido pelo RDS (parameter group com rds.force_ssl=1). O adapter
+    // @prisma/adapter-pg NÃO honra o `?sslmode=require` da connection string —
+    // é preciso passar `ssl:` explicitamente. `rejectUnauthorized: false`
+    // aceita o cert do RDS sem validar contra CA (suficiente pra trafego
+    // interno na VPC). Em local/dev (Postgres sem SSL) mantemos undefined.
+    const requiresSsl = envService.IS_PRODUCTION || envService.IS_TEST;
+
+    console.log(`[PrismaService] Inicializando com DATABASE_URL=${maskedUrl} (ssl=${requiresSsl})`);
 
     super({
-      adapter: new PrismaPg({ connectionString: dbUrl }),
+      adapter: new PrismaPg({
+        connectionString: dbUrl,
+        ssl: requiresSsl ? { rejectUnauthorized: false } : undefined,
+      }),
       log:
         envService.IS_PRODUCTION || envService.IS_TEST
           ? undefined
