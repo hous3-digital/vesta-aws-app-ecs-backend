@@ -42,7 +42,7 @@ environment = [
   },
   {
     name  = "CORS_ALLOWED_ORIGINS",
-    value = "*"
+    value = "https://vesta-demo-stellar.vercel.app,http://localhost:5173"
   }
 ]
 
