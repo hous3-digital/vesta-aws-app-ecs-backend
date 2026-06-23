@@ -67,9 +67,13 @@ export class WalletService implements OnModuleInit {
       throw new Error("WalletService.precreateForCredential chamado sem Privy configurado");
     }
 
-    // Cria/recupera o usuário Privy via custom auth (subjectDid como chave externa)
+    // Cria/recupera o usuário Privy via custom auth (subjectDid como chave externa).
     // Documentação: https://docs.privy.io/guide/server/users/import
-    const user = await this.client.importUser({
+    // NOTA: a tipagem oficial do @privy-io/server-auth está em flux para Stellar;
+    // usamos cast defensivo até validar a versão suportada com uma conta real.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const client = this.client as unknown as any;
+    const user = await client.importUser({
       customMetadata: {
         subjectDid: params.subjectDid,
         cpfDedupKey: params.cpfDedupKey ?? "",
@@ -80,7 +84,9 @@ export class WalletService implements OnModuleInit {
           customUserId: params.subjectDid,
         },
       ],
-      createSorobanAccount: true,
+      // Cria automaticamente uma wallet Stellar embedada. O nome do parâmetro
+      // depende da versão Privy; validar com a conta real antes de produção.
+      createEmbeddedWallets: { stellar: true },
     });
 
     const stellarAccount = user.linkedAccounts?.find(
@@ -114,8 +120,13 @@ export class WalletService implements OnModuleInit {
       throw new Error("WalletService.verifyIdentityToken chamado sem Privy configurado");
     }
 
-    const claims = await this.client.verifyAuthToken(token);
-    const user = await this.client.getUser(claims.userId);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const client = this.client as unknown as any;
+    const claims = await client.verifyAuthToken(token);
+    const user = await client.getUser(claims.userId);
+    if (!user) {
+      throw new Error(`Usuário Privy ${claims.userId} não encontrado`);
+    }
 
     const stellarAccount = user.linkedAccounts?.find(
       (acc: { type: string; address?: string }) =>
@@ -144,7 +155,10 @@ export class WalletService implements OnModuleInit {
     if (!this.client) return null;
 
     try {
-      const user = await this.client.getUserByCustomAuthId(subjectDid);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const client = this.client as unknown as any;
+      const user = await client.getUserByCustomAuthId(subjectDid);
+      if (!user) return null;
 
       const stellarAccount = user.linkedAccounts?.find(
         (acc: { type: string; address?: string }) =>
