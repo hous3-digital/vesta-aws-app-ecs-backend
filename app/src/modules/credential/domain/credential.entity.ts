@@ -18,6 +18,8 @@ export interface CredentialProps {
   kycLevel: string;
   status: CredentialStatus;
   sorobanTxHash: string | null;
+  userWalletAddress: string | null;
+  privyUserId: string | null;
   createdAt: Date;
   updatedAt: Date;
   expiresAt: Date;
@@ -33,6 +35,8 @@ export class Credential {
   private readonly _kycLevel: string;
   private _status: CredentialStatus;
   private _sorobanTxHash: string | null;
+  private _userWalletAddress: string | null;
+  private _privyUserId: string | null;
   private readonly _createdAt: Date;
   private _updatedAt: Date;
   private readonly _expiresAt: Date;
@@ -47,6 +51,8 @@ export class Credential {
     this._kycLevel = props.kycLevel;
     this._status = props.status;
     this._sorobanTxHash = props.sorobanTxHash;
+    this._userWalletAddress = props.userWalletAddress;
+    this._privyUserId = props.privyUserId;
     this._createdAt = props.createdAt;
     this._updatedAt = props.updatedAt;
     this._expiresAt = props.expiresAt;
@@ -61,6 +67,8 @@ export class Credential {
   public get kycLevel(): string { return this._kycLevel; }
   public get status(): CredentialStatus { return this._status; }
   public get sorobanTxHash(): string | null { return this._sorobanTxHash; }
+  public get userWalletAddress(): string | null { return this._userWalletAddress; }
+  public get privyUserId(): string | null { return this._privyUserId; }
   public get createdAt(): Date { return this._createdAt; }
   public get updatedAt(): Date { return this._updatedAt; }
   public get expiresAt(): Date { return this._expiresAt; }
@@ -87,6 +95,8 @@ export class Credential {
       kycLevel: params.kycLevel,
       status: CredentialStatus.Active,
       sorobanTxHash: null,
+      userWalletAddress: null,
+      privyUserId: null,
       createdAt: now,
       updatedAt: now,
       expiresAt: params.expiresAt,
@@ -102,6 +112,16 @@ export class Credential {
       throw new BadRequestException("Credencial já está revogada");
     }
     this._status = CredentialStatus.Revoked;
+    this._updatedAt = new Date();
+  }
+
+  /**
+   * Associa a wallet Privy criada para o usuário a esta credencial.
+   * Chamado pelo handler de emissão (eager) ou pelo handler de prepare (lazy retroativo).
+   */
+  public attachWallet(params: { userWalletAddress: string; privyUserId: string }): void {
+    this._userWalletAddress = params.userWalletAddress;
+    this._privyUserId = params.privyUserId;
     this._updatedAt = new Date();
   }
 

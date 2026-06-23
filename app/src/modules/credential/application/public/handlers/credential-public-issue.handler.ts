@@ -1,11 +1,12 @@
 import { createHmac } from "crypto";
-import { ConflictException, Injectable } from "@nestjs/common";
+import { ConflictException, Injectable, Logger } from "@nestjs/common";
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 import { CredentialPublicIssueCommand } from "@src/modules/credential/application/public/commands/credential-public-issue.command";
 import { Credential } from "@src/modules/credential/domain/credential.entity";
 import { ICredentialRepository } from "@src/modules/credential/domain/credential.repository";
 import { EnvService } from "@src/infra/env/env.service";
 import { VcService } from "@src/modules/vc/vc.service";
+import { WalletService } from "@src/modules/wallet/wallet.service";
 import type { VestaVC } from "@src/shared/types/vesta-vc.types";
 
 export interface CredentialIssueResult {
@@ -15,15 +16,19 @@ export interface CredentialIssueResult {
   status: string;
   expiresAt: string;
   alreadyExisted: boolean;
+  userWalletAddress: string | null;
 }
 
 @Injectable()
 @CommandHandler(CredentialPublicIssueCommand)
 export class CredentialPublicIssueHandler implements ICommandHandler<CredentialPublicIssueCommand, CredentialIssueResult> {
+  private readonly logger = new Logger(CredentialPublicIssueHandler.name);
+
   public constructor(
     private readonly credentialRepository: ICredentialRepository,
     private readonly vcService: VcService,
     private readonly envService: EnvService,
+    private readonly walletService: WalletService,
   ) {}
 
   public async execute(command: CredentialPublicIssueCommand): Promise<CredentialIssueResult> {
@@ -69,6 +74,29 @@ export class CredentialPublicIssueHandler implements ICommandHandler<CredentialP
 
     await this.credentialRepository.saveOrThrow(credential);
 
+    // Eager Privy wallet pre-creation. Per design (Issuer.privyEnabled gate),
+    // only issuers flagged for Privy get wallets at issuance time. A failure
+    // here MUST NOT block the credential emission — the wallet can be created
+    // lazily on the first /public/proof/prepare call instead.
+    if (await this.walletService.isEnabledForIssuer(command.issuerId)) {
+      try {
+        const wallet = await this.walletService.precreateForCredential({
+          subjectDid: credential.subjectDid,
+          cpfDedupKey: credential.cpfDedupKey,
+        });
+        credential.attachWallet({
+          userWalletAddress: wallet.stellarAddress,
+          privyUserId: wallet.privyUserId,
+        });
+        await this.credentialRepository.updateOrThrow(credential);
+      } catch (err) {
+        this.logger.error(
+          `Falha ao pré-criar wallet Privy para credencial ${credential.id.value}: ${(err as Error).message}. ` +
+            "Wallet será criada lazy no primeiro /public/proof/prepare.",
+        );
+      }
+    }
+
     return {
       vc,
       vcHash,
@@ -76,6 +104,7 @@ export class CredentialPublicIssueHandler implements ICommandHandler<CredentialP
       status: credential.status,
       expiresAt: vc.expiration_date,
       alreadyExisted: false,
+      userWalletAddress: credential.userWalletAddress,
     };
   }
 }

@@ -16,6 +16,8 @@ export class CredentialMapper {
       kycLevel: prisma.kycLevel,
       status: prisma.status as unknown as CredentialStatus,
       sorobanTxHash: prisma.sorobanTxHash,
+      userWalletAddress: prisma.userWalletAddress ?? null,
+      privyUserId: prisma.privyUserId ?? null,
       createdAt: prisma.createdAt,
       updatedAt: prisma.updatedAt,
       expiresAt: prisma.expiresAt ?? new Date(0),
@@ -33,6 +35,8 @@ export class CredentialMapper {
       kycLevel: domain.kycLevel as KycLevel,
       status: domain.status as unknown as Prisma.CredentialCreateInput["status"],
       sorobanTxHash: domain.sorobanTxHash,
+      userWalletAddress: domain.userWalletAddress,
+      privyUserId: domain.privyUserId,
       createdAt: domain.createdAt,
       updatedAt: domain.updatedAt,
       expiresAt: domain.expiresAt,
@@ -43,6 +47,8 @@ export class CredentialMapper {
     return {
       status: domain.status as unknown as Prisma.CredentialUpdateInput["status"],
       sorobanTxHash: domain.sorobanTxHash,
+      userWalletAddress: domain.userWalletAddress,
+      privyUserId: domain.privyUserId,
       updatedAt: domain.updatedAt,
       expiresAt: domain.expiresAt,
     };
