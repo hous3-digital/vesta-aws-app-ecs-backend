@@ -9,9 +9,10 @@ import { ICredentialRepository } from "@src/modules/credential/domain/credential
 import { CredentialDataAccessObject } from "@src/modules/credential/infra/credential.data-access-object";
 import { CredentialRepository } from "@src/modules/credential/infra/credential.repository";
 import { VcModule } from "@src/modules/vc/vc.module";
+import { WalletModule } from "@src/modules/wallet/wallet.module";
 
 @Module({
-  imports: [DatabaseModule, CqrsModule, VcModule],
+  imports: [DatabaseModule, CqrsModule, VcModule, WalletModule],
   controllers: [CredentialPublicController],
   providers: [
     CredentialPublicIssueHandler,

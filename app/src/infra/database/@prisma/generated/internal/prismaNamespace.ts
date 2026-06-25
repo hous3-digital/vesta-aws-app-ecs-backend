@@ -907,6 +907,8 @@ export const CredentialScalarFieldEnum = {
   kycLevel: 'kycLevel',
   status: 'status',
   sorobanTxHash: 'sorobanTxHash',
+  userWalletAddress: 'userWalletAddress',
+  privyUserId: 'privyUserId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   expiresAt: 'expiresAt'
@@ -924,6 +926,7 @@ export const AttestationScalarFieldEnum = {
   sorobanTxHash: 'sorobanTxHash',
   sorobanLedger: 'sorobanLedger',
   onChainResult: 'onChainResult',
+  userWalletAddress: 'userWalletAddress',
   createdAt: 'createdAt'
 } as const
 
@@ -936,6 +939,7 @@ export const IssuerScalarFieldEnum = {
   name: 'name',
   status: 'status',
   publicKey: 'publicKey',
+  privyEnabled: 'privyEnabled',
   createdAt: 'createdAt'
 } as const
 

@@ -3,7 +3,14 @@ import { PrismaClient } from "@src/infra/database/@prisma/generated/client";
 import * as fs from "fs";
 import { join } from "path";
 
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
+// SSL é exigido pelo RDS staging/prod (rds.force_ssl=1). O @prisma/adapter-pg
+// ignora `?sslmode=require` da connection string, então passamos `ssl:` aqui.
+// Em local (Postgres sem SSL), mantemos undefined.
+const isLocal = process.env.NODE_ENV === "local" || process.env.NODE_ENV === "development";
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL!,
+  ssl: isLocal ? undefined : { rejectUnauthorized: false },
+});
 const prisma = new PrismaClient({ adapter: adapter });
 
 const GREEN = "\x1b[32m";

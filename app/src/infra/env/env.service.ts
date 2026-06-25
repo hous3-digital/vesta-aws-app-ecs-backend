@@ -64,4 +64,12 @@ export class EnvService {
   public get ADMIN_SECRET() {
     return this.configService.get("ADMIN_SECRET") as string | undefined;
   }
+
+  public get PRIVY_APP_ID() {
+    return this.configService.get("PRIVY_APP_ID") as string | undefined;
+  }
+
+  public get PRIVY_APP_SECRET() {
+    return this.configService.get("PRIVY_APP_SECRET") as string | undefined;
+  }
 }
