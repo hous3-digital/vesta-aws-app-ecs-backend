@@ -1,7 +1,17 @@
 import { Injectable, Logger, OnModuleInit, ServiceUnavailableException } from "@nestjs/common";
 import { EnvService } from "@src/infra/env/env.service";
 import type { EncodedProof, EncodedVerificationKey } from "@src/shared/types/vesta-vc.types";
-import { BASE_FEE, Contract, Keypair, rpc as SorobanRpc, TransactionBuilder, nativeToScVal, xdr } from "@stellar/stellar-sdk";
+import {
+  BASE_FEE,
+  Contract,
+  FeeBumpTransaction,
+  Keypair,
+  rpc as SorobanRpc,
+  Transaction,
+  TransactionBuilder,
+  nativeToScVal,
+  xdr,
+} from "@stellar/stellar-sdk";
 
 export interface ZkSubmitParams {
   encodedProof: EncodedProof;
@@ -9,6 +19,16 @@ export interface ZkSubmitParams {
   encodedPublicSignals: Buffer[];
   vcHash: string;
   verifierId: string;
+}
+
+export interface BuildUnsignedZkProofTxParams extends ZkSubmitParams {
+  source: string;
+}
+
+export interface BuildUnsignedZkProofTxResult {
+  unsignedXdr: string;
+  innerTxHash: string;
+  sourceAccountSignedByBackend: boolean;
 }
 
 export interface StellarSubmitResult {
@@ -54,6 +74,155 @@ export class StellarService implements OnModuleInit {
 
   public getContractId(): string {
     return this.contractId;
+  }
+
+  public getDeployerAddress(): string {
+    if (!this.deployerSecret) return "";
+    return Keypair.fromSecret(this.deployerSecret).publicKey();
+  }
+
+  /**
+   * Monta uma tx Soroban invoke_host_function preparada (simulada + ajustada),
+   * com source dinâmico — pode ser o endereço da wallet do usuário (modo
+   * Privy) OU o deployer da Vesta (modo legado interno).
+   *
+   * Retorna o XDR sem assinar. Quando o source é o deployer, o backend já
+   * assina antes de retornar (campo sourceAccountSignedByBackend=true) para
+   * o SDK apenas repassar; quando é o usuário, o SDK precisa assinar antes
+   * de chamar submitWithFeeBump.
+   */
+  public async buildUnsignedZkProofTx(
+    params: BuildUnsignedZkProofTxParams,
+  ): Promise<BuildUnsignedZkProofTxResult> {
+    if (this.mockMode) {
+      // Em mock mode, retorna XDR placeholder — submit-signed também mockado
+      return {
+        unsignedXdr: `MOCK_XDR_${Date.now()}`,
+        innerTxHash: `MOCK_TX_${Date.now()}`,
+        sourceAccountSignedByBackend: true,
+      };
+    }
+
+    const contract = new Contract(this.contractId);
+
+    let account;
+    try {
+      account = await this.server.getAccount(params.source);
+    } catch (err) {
+      this.logger.error(`Não foi possível carregar conta Stellar (${params.source}): ${(err as Error).message}`);
+      throw new ServiceUnavailableException("Serviço blockchain temporariamente indisponível");
+    }
+
+    const args = this.buildVerifyProofArgs(params);
+
+    const tx = new TransactionBuilder(account, {
+      fee: BASE_FEE,
+      networkPassphrase: this.networkPassphrase,
+    })
+      .addOperation(contract.call("verify_proof", ...args))
+      .setTimeout(60)
+      .build();
+
+    let preparedTx;
+    try {
+      preparedTx = await this.server.prepareTransaction(tx);
+    } catch (err) {
+      this.logger.error(`Falha ao preparar transação Soroban: ${(err as Error).message}`);
+      throw new ServiceUnavailableException("Serviço blockchain temporariamente indisponível");
+    }
+
+    const isDeployerSource = params.source === this.getDeployerAddress();
+    let sourceAccountSignedByBackend = false;
+
+    if (isDeployerSource) {
+      // Modo legado interno (Issuer sem privyEnabled). O backend assina como
+      // source porque o SDK não tem acesso à chave do deployer.
+      const keypair = Keypair.fromSecret(this.deployerSecret);
+      preparedTx.sign(keypair);
+      sourceAccountSignedByBackend = true;
+    }
+
+    return {
+      unsignedXdr: preparedTx.toXDR(),
+      innerTxHash: preparedTx.hash().toString("hex"),
+      sourceAccountSignedByBackend,
+    };
+  }
+
+  /**
+   * Recebe uma tx XDR já assinada (pelo usuário, ou pelo backend em modo
+   * legado), envolve em FeeBumpTransaction patrocinada pelo deployer Vesta,
+   * submete e aguarda confirmação.
+   */
+  public async submitWithFeeBump(signedTxXdr: string): Promise<StellarSubmitResult> {
+    if (this.mockMode) {
+      return this.buildMockResult();
+    }
+
+    const deployerKeypair = Keypair.fromSecret(this.deployerSecret);
+
+    let innerTx: Transaction;
+    try {
+      const parsed = TransactionBuilder.fromXDR(signedTxXdr, this.networkPassphrase);
+      if (parsed instanceof FeeBumpTransaction) {
+        throw new ServiceUnavailableException("XDR recebido já é uma fee-bump tx — abortando");
+      }
+      innerTx = parsed as Transaction;
+    } catch (err) {
+      this.logger.error(`XDR recebido inválido: ${(err as Error).message}`);
+      throw new ServiceUnavailableException("Transação assinada inválida");
+    }
+
+    // Fee suficiente pra cobrir gas Soroban; Stellar exige >= 2x BASE_FEE
+    const feeBumpTx = TransactionBuilder.buildFeeBumpTransaction(
+      deployerKeypair,
+      (parseInt(BASE_FEE, 10) * 10).toString(),
+      innerTx,
+      this.networkPassphrase,
+    );
+    feeBumpTx.sign(deployerKeypair);
+
+    let sendResult;
+    try {
+      sendResult = await this.server.sendTransaction(feeBumpTx);
+    } catch (err) {
+      this.logger.error(`Falha ao enviar fee-bump tx: ${(err as Error).message}`);
+      throw new ServiceUnavailableException("Serviço blockchain temporariamente indisponível");
+    }
+
+    if (sendResult.status === "ERROR") {
+      this.logger.error(`Fee-bump tx rejeitada: ${JSON.stringify(sendResult.errorResult)}`);
+      throw new ServiceUnavailableException("Transação blockchain rejeitada");
+    }
+
+    const txHash = sendResult.hash;
+    this.logger.log(`Fee-bump tx enviada — hash: ${txHash}`);
+
+    const { ledger, onChainResult } = await this.pollTransactionResult(txHash);
+    return { txHash, ledger, onChainResult, mock: false };
+  }
+
+  private buildVerifyProofArgs(params: ZkSubmitParams): xdr.ScVal[] {
+    const toBuffer = (v: Buffer | { type: string; data: number[] }): Buffer =>
+      Buffer.isBuffer(v) ? v : Buffer.from((v as { type: string; data: number[] }).data);
+    const bufToScVal = (buf: Buffer | { type: string; data: number[] }) =>
+      nativeToScVal(toBuffer(buf), { type: "bytes" });
+
+    const vkIcScVals = params.encodedVk.ic.map(bufToScVal);
+    const pubSignalScVals = params.encodedPublicSignals.map(bufToScVal);
+
+    return [
+      bufToScVal(params.encodedProof.negatedA),
+      bufToScVal(params.encodedProof.proofB),
+      bufToScVal(params.encodedProof.proofC),
+      bufToScVal(params.encodedVk.alpha),
+      bufToScVal(params.encodedVk.beta),
+      bufToScVal(params.encodedVk.gamma),
+      bufToScVal(params.encodedVk.delta),
+      xdr.ScVal.scvVec(vkIcScVals),
+      xdr.ScVal.scvVec(pubSignalScVals),
+      nativeToScVal(params.vcHash, { type: "string" }),
+    ];
   }
 
   public async submitZkProof(params: ZkSubmitParams): Promise<StellarSubmitResult> {

@@ -39,6 +39,8 @@ export type CredentialMinAggregateOutputType = {
   kycLevel: string | null
   status: $Enums.CredentialStatus | null
   sorobanTxHash: string | null
+  userWalletAddress: string | null
+  privyUserId: string | null
   createdAt: Date | null
   updatedAt: Date | null
   expiresAt: Date | null
@@ -59,6 +61,8 @@ export type CredentialMaxAggregateOutputType = {
   kycLevel: string | null
   status: $Enums.CredentialStatus | null
   sorobanTxHash: string | null
+  userWalletAddress: string | null
+  privyUserId: string | null
   createdAt: Date | null
   updatedAt: Date | null
   expiresAt: Date | null
@@ -79,6 +83,8 @@ export type CredentialCountAggregateOutputType = {
   kycLevel: number
   status: number
   sorobanTxHash: number
+  userWalletAddress: number
+  privyUserId: number
   createdAt: number
   updatedAt: number
   expiresAt: number
@@ -101,6 +107,8 @@ export type CredentialMinAggregateInputType = {
   kycLevel?: true
   status?: true
   sorobanTxHash?: true
+  userWalletAddress?: true
+  privyUserId?: true
   createdAt?: true
   updatedAt?: true
   expiresAt?: true
@@ -121,6 +129,8 @@ export type CredentialMaxAggregateInputType = {
   kycLevel?: true
   status?: true
   sorobanTxHash?: true
+  userWalletAddress?: true
+  privyUserId?: true
   createdAt?: true
   updatedAt?: true
   expiresAt?: true
@@ -141,6 +151,8 @@ export type CredentialCountAggregateInputType = {
   kycLevel?: true
   status?: true
   sorobanTxHash?: true
+  userWalletAddress?: true
+  privyUserId?: true
   createdAt?: true
   updatedAt?: true
   expiresAt?: true
@@ -234,6 +246,8 @@ export type CredentialGroupByOutputType = {
   kycLevel: string
   status: $Enums.CredentialStatus
   sorobanTxHash: string | null
+  userWalletAddress: string | null
+  privyUserId: string | null
   createdAt: Date
   updatedAt: Date
   expiresAt: Date | null
@@ -275,6 +289,8 @@ export type CredentialWhereInput = {
   kycLevel?: Prisma.StringFilter<"Credential"> | string
   status?: Prisma.EnumCredentialStatusFilter<"Credential"> | $Enums.CredentialStatus
   sorobanTxHash?: Prisma.StringNullableFilter<"Credential"> | string | null
+  userWalletAddress?: Prisma.StringNullableFilter<"Credential"> | string | null
+  privyUserId?: Prisma.StringNullableFilter<"Credential"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Credential"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Credential"> | Date | string
   expiresAt?: Prisma.DateTimeNullableFilter<"Credential"> | Date | string | null
@@ -295,6 +311,8 @@ export type CredentialOrderByWithRelationInput = {
   kycLevel?: Prisma.SortOrder
   status?: Prisma.SortOrder
   sorobanTxHash?: Prisma.SortOrderInput | Prisma.SortOrder
+  userWalletAddress?: Prisma.SortOrderInput | Prisma.SortOrder
+  privyUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -318,6 +336,8 @@ export type CredentialWhereUniqueInput = Prisma.AtLeast<{
   kycLevel?: Prisma.StringFilter<"Credential"> | string
   status?: Prisma.EnumCredentialStatusFilter<"Credential"> | $Enums.CredentialStatus
   sorobanTxHash?: Prisma.StringNullableFilter<"Credential"> | string | null
+  userWalletAddress?: Prisma.StringNullableFilter<"Credential"> | string | null
+  privyUserId?: Prisma.StringNullableFilter<"Credential"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Credential"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Credential"> | Date | string
   expiresAt?: Prisma.DateTimeNullableFilter<"Credential"> | Date | string | null
@@ -338,6 +358,8 @@ export type CredentialOrderByWithAggregationInput = {
   kycLevel?: Prisma.SortOrder
   status?: Prisma.SortOrder
   sorobanTxHash?: Prisma.SortOrderInput | Prisma.SortOrder
+  userWalletAddress?: Prisma.SortOrderInput | Prisma.SortOrder
+  privyUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -364,6 +386,8 @@ export type CredentialScalarWhereWithAggregatesInput = {
   kycLevel?: Prisma.StringWithAggregatesFilter<"Credential"> | string
   status?: Prisma.EnumCredentialStatusWithAggregatesFilter<"Credential"> | $Enums.CredentialStatus
   sorobanTxHash?: Prisma.StringNullableWithAggregatesFilter<"Credential"> | string | null
+  userWalletAddress?: Prisma.StringNullableWithAggregatesFilter<"Credential"> | string | null
+  privyUserId?: Prisma.StringNullableWithAggregatesFilter<"Credential"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Credential"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Credential"> | Date | string
   expiresAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Credential"> | Date | string | null
@@ -384,6 +408,8 @@ export type CredentialCreateInput = {
   kycLevel: string
   status?: $Enums.CredentialStatus
   sorobanTxHash?: string | null
+  userWalletAddress?: string | null
+  privyUserId?: string | null
   createdAt: Date | string
   updatedAt: Date | string
   expiresAt?: Date | string | null
@@ -404,6 +430,8 @@ export type CredentialUncheckedCreateInput = {
   kycLevel: string
   status?: $Enums.CredentialStatus
   sorobanTxHash?: string | null
+  userWalletAddress?: string | null
+  privyUserId?: string | null
   createdAt: Date | string
   updatedAt: Date | string
   expiresAt?: Date | string | null
@@ -424,6 +452,8 @@ export type CredentialUpdateInput = {
   kycLevel?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumCredentialStatusFieldUpdateOperationsInput | $Enums.CredentialStatus
   sorobanTxHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userWalletAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privyUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -444,6 +474,8 @@ export type CredentialUncheckedUpdateInput = {
   kycLevel?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumCredentialStatusFieldUpdateOperationsInput | $Enums.CredentialStatus
   sorobanTxHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userWalletAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privyUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -464,6 +496,8 @@ export type CredentialCreateManyInput = {
   kycLevel: string
   status?: $Enums.CredentialStatus
   sorobanTxHash?: string | null
+  userWalletAddress?: string | null
+  privyUserId?: string | null
   createdAt: Date | string
   updatedAt: Date | string
   expiresAt?: Date | string | null
@@ -484,6 +518,8 @@ export type CredentialUpdateManyMutationInput = {
   kycLevel?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumCredentialStatusFieldUpdateOperationsInput | $Enums.CredentialStatus
   sorobanTxHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userWalletAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privyUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -504,6 +540,8 @@ export type CredentialUncheckedUpdateManyInput = {
   kycLevel?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumCredentialStatusFieldUpdateOperationsInput | $Enums.CredentialStatus
   sorobanTxHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userWalletAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privyUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -524,6 +562,8 @@ export type CredentialCountOrderByAggregateInput = {
   kycLevel?: Prisma.SortOrder
   status?: Prisma.SortOrder
   sorobanTxHash?: Prisma.SortOrder
+  userWalletAddress?: Prisma.SortOrder
+  privyUserId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
@@ -544,6 +584,8 @@ export type CredentialMaxOrderByAggregateInput = {
   kycLevel?: Prisma.SortOrder
   status?: Prisma.SortOrder
   sorobanTxHash?: Prisma.SortOrder
+  userWalletAddress?: Prisma.SortOrder
+  privyUserId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
@@ -564,6 +606,8 @@ export type CredentialMinOrderByAggregateInput = {
   kycLevel?: Prisma.SortOrder
   status?: Prisma.SortOrder
   sorobanTxHash?: Prisma.SortOrder
+  userWalletAddress?: Prisma.SortOrder
+  privyUserId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
@@ -610,6 +654,8 @@ export type CredentialSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   kycLevel?: boolean
   status?: boolean
   sorobanTxHash?: boolean
+  userWalletAddress?: boolean
+  privyUserId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   expiresAt?: boolean
@@ -630,6 +676,8 @@ export type CredentialSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   kycLevel?: boolean
   status?: boolean
   sorobanTxHash?: boolean
+  userWalletAddress?: boolean
+  privyUserId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   expiresAt?: boolean
@@ -650,6 +698,8 @@ export type CredentialSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   kycLevel?: boolean
   status?: boolean
   sorobanTxHash?: boolean
+  userWalletAddress?: boolean
+  privyUserId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   expiresAt?: boolean
@@ -670,12 +720,14 @@ export type CredentialSelectScalar = {
   kycLevel?: boolean
   status?: boolean
   sorobanTxHash?: boolean
+  userWalletAddress?: boolean
+  privyUserId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   expiresAt?: boolean
 }
 
-export type CredentialOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nullifier" | "issuer" | "kycProvider" | "kycApproved" | "issuedAt" | "vcHash" | "cpfDedupKey" | "issuerDid" | "issuerId" | "subjectDid" | "kycLevel" | "status" | "sorobanTxHash" | "createdAt" | "updatedAt" | "expiresAt", ExtArgs["result"]["credential"]>
+export type CredentialOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nullifier" | "issuer" | "kycProvider" | "kycApproved" | "issuedAt" | "vcHash" | "cpfDedupKey" | "issuerDid" | "issuerId" | "subjectDid" | "kycLevel" | "status" | "sorobanTxHash" | "userWalletAddress" | "privyUserId" | "createdAt" | "updatedAt" | "expiresAt", ExtArgs["result"]["credential"]>
 
 export type $CredentialPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Credential"
@@ -695,6 +747,8 @@ export type $CredentialPayload<ExtArgs extends runtime.Types.Extensions.Internal
     kycLevel: string
     status: $Enums.CredentialStatus
     sorobanTxHash: string | null
+    userWalletAddress: string | null
+    privyUserId: string | null
     createdAt: Date
     updatedAt: Date
     expiresAt: Date | null
@@ -1135,6 +1189,8 @@ export interface CredentialFieldRefs {
   readonly kycLevel: Prisma.FieldRef<"Credential", 'String'>
   readonly status: Prisma.FieldRef<"Credential", 'CredentialStatus'>
   readonly sorobanTxHash: Prisma.FieldRef<"Credential", 'String'>
+  readonly userWalletAddress: Prisma.FieldRef<"Credential", 'String'>
+  readonly privyUserId: Prisma.FieldRef<"Credential", 'String'>
   readonly createdAt: Prisma.FieldRef<"Credential", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Credential", 'DateTime'>
   readonly expiresAt: Prisma.FieldRef<"Credential", 'DateTime'>

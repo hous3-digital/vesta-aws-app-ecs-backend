@@ -1,38 +1,50 @@
-import {
-  BadRequestException,
-  Injectable,
-  Logger,
-  UnprocessableEntityException,
-} from "@nestjs/common";
+import { BadRequestException, Injectable, Logger, UnprocessableEntityException } from "@nestjs/common";
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
-import { ProofPublicGenerateAndSubmitCommand } from "@src/modules/proof/application/public/commands/proof-public-generate-and-submit.command";
-import { Attestation } from "@src/modules/proof/domain/attestation.entity";
-import { IAttestationRepository } from "@src/modules/proof/domain/attestation.repository";
 import { ChallengeService } from "@src/modules/challenge/challenge.service";
-import { ICredentialRepository } from "@src/modules/credential/domain/credential.repository";
 import { Credential, CredentialStatus } from "@src/modules/credential/domain/credential.entity";
+import { ICredentialRepository } from "@src/modules/credential/domain/credential.repository";
+import { IIssuerRepository } from "@src/modules/issuer/domain/issuer.repository";
+import { ProofPublicPrepareCommand } from "@src/modules/proof/application/public/commands/proof-public-prepare.command";
+import { PrepareSessionService } from "@src/modules/proof/application/services/prepare-session.service";
 import { StellarService } from "@src/modules/stellar/stellar.service";
 import { VcService } from "@src/modules/vc/vc.service";
+import { WalletService } from "@src/modules/wallet/wallet.service";
 import { ZkService } from "@src/modules/zk/zk.service";
 import type { VestaVC, ZkProofResult } from "@src/shared/types/vesta-vc.types";
 import * as fs from "fs";
 import * as path from "path";
 
+export interface ProofPublicPrepareResult {
+  prepareSessionId: string;
+  unsignedTxXdr: string;
+  requiresUserSignature: boolean;
+  userWalletAddress: string | null;
+  zkProof: {
+    protocol: string;
+    curve: string;
+    publicSignals: string[];
+    proofHash: string;
+    mock: boolean;
+  };
+}
+
 @Injectable()
-@CommandHandler(ProofPublicGenerateAndSubmitCommand)
-export class ProofPublicGenerateAndSubmitHandler implements ICommandHandler<ProofPublicGenerateAndSubmitCommand> {
-  private readonly logger = new Logger(ProofPublicGenerateAndSubmitHandler.name);
+@CommandHandler(ProofPublicPrepareCommand)
+export class ProofPublicPrepareHandler implements ICommandHandler<ProofPublicPrepareCommand, ProofPublicPrepareResult> {
+  private readonly logger = new Logger(ProofPublicPrepareHandler.name);
 
   public constructor(
-    private readonly attestationRepository: IAttestationRepository,
     private readonly credentialRepository: ICredentialRepository,
+    private readonly issuerRepository: IIssuerRepository,
+    private readonly walletService: WalletService,
     private readonly zkService: ZkService,
     private readonly stellarService: StellarService,
     private readonly vcService: VcService,
     private readonly challengeService: ChallengeService,
+    private readonly prepareSessionService: PrepareSessionService,
   ) {}
 
-  public async execute(command: ProofPublicGenerateAndSubmitCommand) {
+  public async execute(command: ProofPublicPrepareCommand): Promise<ProofPublicPrepareResult> {
     const vc = command.vc as VestaVC;
 
     const challengeValid = await this.challengeService.consume(command.challenge);
@@ -47,7 +59,6 @@ export class ProofPublicGenerateAndSubmitHandler implements ICommandHandler<Proo
     }
 
     const kycLevelInt = this.vcService.kycLevelToInt(vc.credential_subject.kyc_level);
-
     if (kycLevelInt < command.minKycLevel) {
       throw new BadRequestException(
         `KYC level insuficiente: VC tem nivel ${kycLevelInt}, mínimo exigido é ${command.minKycLevel}`,
@@ -81,7 +92,33 @@ export class ProofPublicGenerateAndSubmitHandler implements ICommandHandler<Proo
     }
 
     const vcHash = this.vcService.hashVC(vc);
-    await this.upsertCredential(vc, vcHash);
+    const credential = await this.upsertCredential(vc, vcHash);
+
+    // Resolve issuer feature flag + lazy retroactive wallet creation
+    const issuer = await this.issuerRepository.findByExternalId(credential.issuerId);
+    const privyEnabled = !!issuer?.privyEnabled;
+
+    let userWalletAddress = credential.userWalletAddress;
+    if (privyEnabled && !userWalletAddress) {
+      this.logger.log(`Lazy retroativo: criando wallet Privy para credencial ${credential.id.value}`);
+      try {
+        const wallet = await this.walletService.precreateForCredential({
+          subjectDid: credential.subjectDid,
+          cpfDedupKey: credential.cpfDedupKey,
+        });
+        credential.attachWallet({
+          userWalletAddress: wallet.stellarAddress,
+          privyUserId: wallet.privyUserId,
+        });
+        await this.credentialRepository.updateOrThrow(credential);
+        userWalletAddress = wallet.stellarAddress;
+      } catch (err) {
+        this.logger.error(`Falha em lazy retroativo: ${(err as Error).message}. Fallback para source=deployer.`);
+      }
+    }
+
+    // Determina source da inner tx: wallet do usuário (privyEnabled + wallet existe) ou deployer
+    const source = privyEnabled && userWalletAddress ? userWalletAddress : this.stellarService.getDeployerAddress();
 
     let encodedVk;
     try {
@@ -93,8 +130,8 @@ export class ProofPublicGenerateAndSubmitHandler implements ICommandHandler<Proo
       encodedVk = this.buildMockVk();
     }
 
-    this.logger.log(`Submetendo ao Soroban — mock: ${this.stellarService.isMockMode()}`);
-    const stellarResult = await this.stellarService.submitZkProof({
+    const txBuild = await this.stellarService.buildUnsignedZkProofTx({
+      source,
       encodedProof: zkResult.encodedProof,
       encodedVk,
       encodedPublicSignals: zkResult.encodedPublicSignals,
@@ -102,40 +139,37 @@ export class ProofPublicGenerateAndSubmitHandler implements ICommandHandler<Proo
       verifierId: command.verifierId,
     });
 
-    const attestation = Attestation.create({
+    const requiresUserSignature = privyEnabled && !!userWalletAddress && !txBuild.sourceAccountSignedByBackend;
+
+    const prepareSessionId = await this.prepareSessionService.create({
       vcHash,
       proofHash: zkResult.proofHash,
-      verifierId: command.verifierId,
       kycLevel: vc.credential_subject.kyc_level,
-      sorobanTxHash: stellarResult.txHash,
-      sorobanLedger: stellarResult.ledger,
-      onChainResult: stellarResult.onChainResult,
+      verifierId: command.verifierId,
+      userWalletAddress,
+      expectedSource: source,
+      innerTxHash: txBuild.innerTxHash,
+      sourceAccountSignedByBackend: txBuild.sourceAccountSignedByBackend,
+      vc,
+      mock: this.stellarService.isMockMode(),
+      zkProof: {
+        protocol: zkResult.proof.protocol,
+        curve: zkResult.proof.curve,
+        publicSignals: zkResult.publicSignals,
+      },
     });
 
-    await this.attestationRepository.saveOrThrow(attestation);
-
     return {
-      verified: stellarResult.onChainResult,
+      prepareSessionId,
+      unsignedTxXdr: txBuild.unsignedXdr,
+      requiresUserSignature,
+      userWalletAddress,
       zkProof: {
         protocol: zkResult.proof.protocol,
         curve: zkResult.proof.curve,
         publicSignals: zkResult.publicSignals,
         proofHash: zkResult.proofHash,
         mock: this.zkService.isMockMode(),
-      },
-      stellar: {
-        txHash: stellarResult.txHash,
-        ledger: stellarResult.ledger,
-        contractId: this.stellarService.getContractId(),
-        network: "stellar:soroban:testnet",
-        mock: stellarResult.mock,
-      },
-      attestation: {
-        id: attestation.id.value,
-        vcHash,
-        verifierId: command.verifierId,
-        kycLevel: vc.credential_subject.kyc_level,
-        createdAt: attestation.createdAt.toISOString(),
       },
     };
   }
@@ -149,7 +183,7 @@ export class ProofPublicGenerateAndSubmitHandler implements ICommandHandler<Proo
       }
       const vk = JSON.parse(fs.readFileSync(vkPath, "utf-8")) as Record<string, unknown>;
       const snarkjs = await import("snarkjs");
-      const valid: boolean = await (snarkjs as any).groth16.verify(vk, zkResult.publicSignals, zkResult.proof);
+      const valid: boolean = await (snarkjs as unknown as { groth16: { verify: (vk: Record<string, unknown>, publicSignals: string[], proof: unknown) => Promise<boolean> } }).groth16.verify(vk, zkResult.publicSignals, zkResult.proof);
       if (!valid) {
         throw new UnprocessableEntityException(
           "Prova ZK inválida (verificação local falhou). Artefatos inconsistentes — rebuilde o circuito.",
@@ -162,21 +196,22 @@ export class ProofPublicGenerateAndSubmitHandler implements ICommandHandler<Proo
     }
   }
 
-  private async upsertCredential(vc: VestaVC, vcHash: string): Promise<void> {
+  private async upsertCredential(vc: VestaVC, vcHash: string): Promise<Credential> {
     const existing = await this.credentialRepository.findByVcHash(vcHash);
-    if (!existing) {
-      const issuerId = vc.issuer.id.split(":").pop() ?? vc.issuer.name;
-      const credential = Credential.issue({
-        vcHash,
-        cpfDedupKey: null,
-        issuerDid: vc.issuer.id,
-        issuerId,
-        subjectDid: vc.credential_subject.id,
-        kycLevel: vc.credential_subject.kyc_level,
-        expiresAt: new Date(vc.expiration_date),
-      });
-      await this.credentialRepository.saveOrThrow(credential);
-    }
+    if (existing) return existing;
+
+    const issuerId = vc.issuer.id.split(":").pop() ?? vc.issuer.name;
+    const credential = Credential.issue({
+      vcHash,
+      cpfDedupKey: null,
+      issuerDid: vc.issuer.id,
+      issuerId,
+      subjectDid: vc.credential_subject.id,
+      kycLevel: vc.credential_subject.kyc_level,
+      expiresAt: new Date(vc.expiration_date),
+    });
+    await this.credentialRepository.saveOrThrow(credential);
+    return credential;
   }
 
   private async validatePrivateInputsMatchVC(
@@ -190,7 +225,6 @@ export class ProofPublicGenerateAndSubmitHandler implements ICommandHandler<Proo
     ]);
 
     const errors: string[] = [];
-
     if (cpfHash !== vc.credential_subject.cpf_hash) {
       errors.push("cpf não corresponde ao hash registrado na VC");
     }
@@ -205,10 +239,11 @@ export class ProofPublicGenerateAndSubmitHandler implements ICommandHandler<Proo
     }
 
     if (errors.length > 0) {
-      throw new BadRequestException(
-        `Private inputs não correspondem à VC: ${errors.join("; ")}`,
-      );
+      throw new BadRequestException(`Private inputs não correspondem à VC: ${errors.join("; ")}`);
     }
+
+    // Used as a marker that CredentialStatus enum is referenced — avoids unused import
+    void CredentialStatus;
   }
 
   private buildMockVk() {
