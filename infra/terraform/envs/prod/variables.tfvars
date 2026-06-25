@@ -66,5 +66,13 @@ secrets = [
   {
     name      = "ADMIN_SECRET",
     valueFrom = "arn:aws:secretsmanager:us-east-1:694580672968:secret:ADMIN_SECRET-VPvnPW"
+  },
+  {
+    name      = "PRIVY_APP_SECRET",
+    valueFrom = "arn:aws:secretsmanager:us-east-1:694580672968:secret:PRIVY_APP_SECRET-jGPt35"
+  },
+  {
+    name      = "PRIVY_APP_ID",
+    valueFrom = "arn:aws:secretsmanager:us-east-1:694580672968:secret:PRIVY_APP_ID-b1Co0C"
   }
 ]
