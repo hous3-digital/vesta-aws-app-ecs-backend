@@ -54,6 +54,7 @@ export const ModelName = {
   Credential: 'Credential',
   Attestation: 'Attestation',
   Issuer: 'Issuer',
+  Verifier: 'Verifier',
   Ingress: 'Ingress',
   Egress: 'Egress',
   ApiKey: 'ApiKey'
@@ -127,6 +128,17 @@ export const IssuerScalarFieldEnum = {
 } as const
 
 export type IssuerScalarFieldEnum = (typeof IssuerScalarFieldEnum)[keyof typeof IssuerScalarFieldEnum]
+
+
+export const VerifierScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type VerifierScalarFieldEnum = (typeof VerifierScalarFieldEnum)[keyof typeof VerifierScalarFieldEnum]
 
 
 export const IngressScalarFieldEnum = {
