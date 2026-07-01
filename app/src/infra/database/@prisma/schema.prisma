@@ -73,6 +73,16 @@ model Issuer {
   @@map("issuer")
 }
 
+model Verifier {
+  id        String   @unique @map("verifier_id")
+  name      String
+  status    String   @default("active")
+  createdAt DateTime @map("created_at")
+  updatedAt DateTime @map("updated_at")
+
+  @@map("verifier")
+}
+
 model Ingress {
   id        String   @unique @map("ingress_id")
   request   Json

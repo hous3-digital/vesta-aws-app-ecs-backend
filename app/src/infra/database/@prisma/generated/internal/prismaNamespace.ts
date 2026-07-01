@@ -387,6 +387,7 @@ export const ModelName = {
   Credential: 'Credential',
   Attestation: 'Attestation',
   Issuer: 'Issuer',
+  Verifier: 'Verifier',
   Ingress: 'Ingress',
   Egress: 'Egress',
   ApiKey: 'ApiKey'
@@ -405,7 +406,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "credential" | "attestation" | "issuer" | "ingress" | "egress" | "apiKey"
+    modelProps: "credential" | "attestation" | "issuer" | "verifier" | "ingress" | "egress" | "apiKey"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -628,6 +629,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.IssuerCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.IssuerCountAggregateOutputType> | number
+        }
+      }
+    }
+    Verifier: {
+      payload: Prisma.$VerifierPayload<ExtArgs>
+      fields: Prisma.VerifierFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.VerifierFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerifierPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.VerifierFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerifierPayload>
+        }
+        findFirst: {
+          args: Prisma.VerifierFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerifierPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.VerifierFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerifierPayload>
+        }
+        findMany: {
+          args: Prisma.VerifierFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerifierPayload>[]
+        }
+        create: {
+          args: Prisma.VerifierCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerifierPayload>
+        }
+        createMany: {
+          args: Prisma.VerifierCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.VerifierCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerifierPayload>[]
+        }
+        delete: {
+          args: Prisma.VerifierDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerifierPayload>
+        }
+        update: {
+          args: Prisma.VerifierUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerifierPayload>
+        }
+        deleteMany: {
+          args: Prisma.VerifierDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.VerifierUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.VerifierUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerifierPayload>[]
+        }
+        upsert: {
+          args: Prisma.VerifierUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerifierPayload>
+        }
+        aggregate: {
+          args: Prisma.VerifierAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateVerifier>
+        }
+        groupBy: {
+          args: Prisma.VerifierGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VerifierGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.VerifierCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VerifierCountAggregateOutputType> | number
         }
       }
     }
@@ -946,6 +1021,17 @@ export const IssuerScalarFieldEnum = {
 export type IssuerScalarFieldEnum = (typeof IssuerScalarFieldEnum)[keyof typeof IssuerScalarFieldEnum]
 
 
+export const VerifierScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type VerifierScalarFieldEnum = (typeof VerifierScalarFieldEnum)[keyof typeof VerifierScalarFieldEnum]
+
+
 export const IngressScalarFieldEnum = {
   id: 'id',
   request: 'request',
@@ -1212,6 +1298,7 @@ export type GlobalOmitConfig = {
   credential?: Prisma.CredentialOmit
   attestation?: Prisma.AttestationOmit
   issuer?: Prisma.IssuerOmit
+  verifier?: Prisma.VerifierOmit
   ingress?: Prisma.IngressOmit
   egress?: Prisma.EgressOmit
   apiKey?: Prisma.ApiKeyOmit
