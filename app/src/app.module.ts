@@ -9,6 +9,7 @@ import { DatabaseModule } from "@src/infra/database/database.module";
 import { EnvModule } from "@src/infra/env/env.module";
 import { EgressModule } from "@src/infra/logging/egress/egress.module";
 import { IngressModule } from "@src/infra/logging/ingress/ingress.module";
+import { BackofficeModule } from "@src/modules/backoffice/backoffice.module";
 import { ChallengeModule } from "@src/modules/challenge/challenge.module";
 import { CredentialModule } from "@src/modules/credential/credential.module";
 import { IssuerModule } from "@src/modules/issuer/issuer.module";
@@ -29,6 +30,7 @@ import { GlobalUnhandledException } from "@src/utils/subscribers/global-unhandle
     EgressModule,
     IngressModule,
 
+    BackofficeModule,
     ChallengeModule,
     CredentialModule,
     IssuerModule,
