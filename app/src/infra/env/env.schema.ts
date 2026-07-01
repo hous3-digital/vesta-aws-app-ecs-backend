@@ -32,6 +32,11 @@ const envSchema = z.object({
 
   PRIVY_APP_ID: z.string().min(1).optional(),
   PRIVY_APP_SECRET: z.string().min(32, "PRIVY_APP_SECRET must be at least 32 characters").optional(),
+
+  COMMISSION_PER_VERIFICATION_BRL: z
+    .string()
+    .default("1.3475")
+    .transform((v) => parseFloat(v)),
 });
 
 export const validate = { validate: envConfig };
