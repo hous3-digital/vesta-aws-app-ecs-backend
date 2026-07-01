@@ -55,6 +55,11 @@ export type Attestation = Prisma.AttestationModel
  */
 export type Issuer = Prisma.IssuerModel
 /**
+ * Model Verifier
+ * 
+ */
+export type Verifier = Prisma.VerifierModel
+/**
  * Model Ingress
  * 
  */
