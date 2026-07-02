@@ -11,6 +11,7 @@ import { VerificationListQuery } from "@src/modules/backoffice/verifications/app
 import { VerificationExportInput } from "@src/modules/backoffice/verifications/api/inputs/verification-export.input";
 import { VerificationListInput } from "@src/modules/backoffice/verifications/api/inputs/verification-list.input";
 import { type VerificationExportResult } from "@src/modules/backoffice/verifications/application/handlers/verification-export.handler";
+import { CurrentIssuer } from "@src/modules/backoffice/shared/current-issuer.decorator";
 
 @ApiTags("backoffice/verifications")
 @PublicEndpoint()
@@ -20,8 +21,12 @@ export class VerificationsBackofficeController {
 
   @ApiOperation({ summary: "Lista verificacoes (attestations) do issuer" })
   @Get("/")
-  public async list(@Query() input: VerificationListInput): Promise<VerificationListResult> {
+  public async list(
+    @CurrentIssuer() issuerId: string,
+    @Query() input: VerificationListInput,
+  ): Promise<VerificationListResult> {
     const query = new VerificationListQuery(
+      issuerId,
       input.verifierId,
       input.status,
       input.from,
@@ -34,9 +39,13 @@ export class VerificationsBackofficeController {
 
   @ApiOperation({ summary: "Export CSV das verificacoes no periodo" })
   @Get("/export")
-  public async export(@Query() input: VerificationExportInput, @Res() res: Response): Promise<void> {
+  public async export(
+    @CurrentIssuer() issuerId: string,
+    @Query() input: VerificationExportInput,
+    @Res() res: Response,
+  ): Promise<void> {
     const result = await this.queryBus.execute<VerificationExportQuery, VerificationExportResult>(
-      new VerificationExportQuery(input.period, input.from, input.to),
+      new VerificationExportQuery(issuerId, input.period, input.from, input.to),
     );
     res.setHeader("Content-Type", "text/csv; charset=utf-8");
     res.setHeader("Content-Disposition", `attachment; filename="${result.filename}"`);
@@ -45,7 +54,12 @@ export class VerificationsBackofficeController {
 
   @ApiOperation({ summary: "Detalhe de uma verificacao" })
   @Get("/:id")
-  public async detail(@Param("id") id: string): Promise<VerificationDetailResult> {
-    return this.queryBus.execute<VerificationDetailQuery, VerificationDetailResult>(new VerificationDetailQuery(id));
+  public async detail(
+    @CurrentIssuer() issuerId: string,
+    @Param("id") id: string,
+  ): Promise<VerificationDetailResult> {
+    return this.queryBus.execute<VerificationDetailQuery, VerificationDetailResult>(
+      new VerificationDetailQuery(issuerId, id),
+    );
   }
 }
