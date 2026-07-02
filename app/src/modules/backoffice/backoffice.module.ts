@@ -14,8 +14,6 @@ import { CredentialDetailHandler } from "@src/modules/backoffice/credentials/app
 import { CredentialListHandler } from "@src/modules/backoffice/credentials/application/handlers/credential-list.handler";
 import { CredentialsBackofficeDao } from "@src/modules/backoffice/credentials/infra/credentials-backoffice.dao";
 
-import { BackofficeContextService } from "@src/modules/backoffice/shared/backoffice-context.service";
-
 import { VerificationsBackofficeController } from "@src/modules/backoffice/verifications/api/verifications-backoffice.controller";
 import { VerificationDetailHandler } from "@src/modules/backoffice/verifications/application/handlers/verification-detail.handler";
 import { VerificationExportHandler } from "@src/modules/backoffice/verifications/application/handlers/verification-export.handler";
@@ -38,8 +36,6 @@ import { VerifierRepository } from "@src/modules/backoffice/verifiers/infra/veri
     VerifiersBackofficeController,
   ],
   providers: [
-    BackofficeContextService,
-
     CommissionKpisHandler,
     CommissionPendingHandler,
     CommissionSummaryHandler,

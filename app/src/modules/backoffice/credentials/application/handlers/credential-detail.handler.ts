@@ -2,7 +2,6 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { IQueryHandler, QueryHandler } from "@nestjs/cqrs";
 import { CredentialDetailQuery } from "@src/modules/backoffice/credentials/application/queries/credential-detail.query";
 import { CredentialsBackofficeDao } from "@src/modules/backoffice/credentials/infra/credentials-backoffice.dao";
-import { BackofficeContextService } from "@src/modules/backoffice/shared/backoffice-context.service";
 
 export interface CredentialDetailResult {
   id: string;
@@ -20,14 +19,10 @@ export interface CredentialDetailResult {
 @Injectable()
 @QueryHandler(CredentialDetailQuery)
 export class CredentialDetailHandler implements IQueryHandler<CredentialDetailQuery, CredentialDetailResult> {
-  public constructor(
-    private readonly dao: CredentialsBackofficeDao,
-    private readonly context: BackofficeContextService,
-  ) {}
+  public constructor(private readonly dao: CredentialsBackofficeDao) {}
 
   public async execute(query: CredentialDetailQuery): Promise<CredentialDetailResult> {
-    const issuerId = this.context.getCurrentIssuerId();
-    const record = await this.dao.findById(issuerId, query.id);
+    const record = await this.dao.findById(query.issuerId, query.id);
     if (!record) throw new NotFoundException(`Credencial nao encontrada: ${query.id}`);
     return {
       id: record.id,
