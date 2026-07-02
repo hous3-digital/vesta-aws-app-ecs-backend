@@ -14,6 +14,7 @@ import {
   CommissionPeriodInput,
   CommissionTimeseriesInput,
 } from "@src/modules/backoffice/commissions/api/inputs/commission-period.input";
+import { CurrentIssuer } from "@src/modules/backoffice/shared/current-issuer.decorator";
 
 @ApiTags("backoffice/commissions")
 @PublicEndpoint()
@@ -23,31 +24,42 @@ export class CommissionsBackofficeController {
 
   @ApiOperation({ summary: "Total da comissao no periodo + delta vs anterior" })
   @Get("/summary")
-  public async summary(@Query() input: CommissionPeriodInput): Promise<CommissionSummaryResult> {
+  public async summary(
+    @CurrentIssuer() issuerId: string,
+    @Query() input: CommissionPeriodInput,
+  ): Promise<CommissionSummaryResult> {
     return this.queryBus.execute<CommissionSummaryQuery, CommissionSummaryResult>(
-      new CommissionSummaryQuery(input.period, input.from, input.to),
+      new CommissionSummaryQuery(issuerId, input.period, input.from, input.to),
     );
   }
 
   @ApiOperation({ summary: "Serie temporal (dia) de reutilizacoes e comissao" })
   @Get("/timeseries")
-  public async timeseries(@Query() input: CommissionTimeseriesInput): Promise<CommissionTimeseriesResult> {
+  public async timeseries(
+    @CurrentIssuer() issuerId: string,
+    @Query() input: CommissionTimeseriesInput,
+  ): Promise<CommissionTimeseriesResult> {
     return this.queryBus.execute<CommissionTimeseriesQuery, CommissionTimeseriesResult>(
-      new CommissionTimeseriesQuery(input.period, input.from, input.to, input.granularity ?? "day"),
+      new CommissionTimeseriesQuery(issuerId, input.period, input.from, input.to, input.granularity ?? "day"),
     );
   }
 
   @ApiOperation({ summary: "KPIs: reutilizacoes, credenciais ativas, por reutilizacao" })
   @Get("/kpis")
-  public async kpis(@Query() input: CommissionPeriodInput): Promise<CommissionKpisResult> {
+  public async kpis(
+    @CurrentIssuer() issuerId: string,
+    @Query() input: CommissionPeriodInput,
+  ): Promise<CommissionKpisResult> {
     return this.queryBus.execute<CommissionKpisQuery, CommissionKpisResult>(
-      new CommissionKpisQuery(input.period, input.from, input.to),
+      new CommissionKpisQuery(issuerId, input.period, input.from, input.to),
     );
   }
 
   @ApiOperation({ summary: "Repasse pendente (calculado em tempo real, sem persistencia)" })
   @Get("/pending")
-  public async pending(): Promise<CommissionPendingResult> {
-    return this.queryBus.execute<CommissionPendingQuery, CommissionPendingResult>(new CommissionPendingQuery());
+  public async pending(@CurrentIssuer() issuerId: string): Promise<CommissionPendingResult> {
+    return this.queryBus.execute<CommissionPendingQuery, CommissionPendingResult>(
+      new CommissionPendingQuery(issuerId),
+    );
   }
 }

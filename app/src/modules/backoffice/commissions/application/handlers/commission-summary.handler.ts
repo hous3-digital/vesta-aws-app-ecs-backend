@@ -2,7 +2,6 @@ import { Injectable } from "@nestjs/common";
 import { IQueryHandler, QueryHandler } from "@nestjs/cqrs";
 import { EnvService } from "@src/infra/env/env.service";
 import { resolvePeriod } from "@src/modules/backoffice/shared/period.util";
-import { BackofficeContextService } from "@src/modules/backoffice/shared/backoffice-context.service";
 import { CommissionSummaryQuery } from "@src/modules/backoffice/commissions/application/queries/commission-summary.query";
 import { VerificationsBackofficeDao } from "@src/modules/backoffice/verifications/infra/verifications-backoffice.dao";
 
@@ -19,18 +18,16 @@ export interface CommissionSummaryResult {
 export class CommissionSummaryHandler implements IQueryHandler<CommissionSummaryQuery, CommissionSummaryResult> {
   public constructor(
     private readonly dao: VerificationsBackofficeDao,
-    private readonly context: BackofficeContextService,
     private readonly envService: EnvService,
   ) {}
 
   public async execute(query: CommissionSummaryQuery): Promise<CommissionSummaryResult> {
-    const issuerId = this.context.getCurrentIssuerId();
     const period = resolvePeriod({ period: query.period, from: query.from, to: query.to });
     const rate = this.envService.COMMISSION_PER_VERIFICATION_BRL;
 
     const [current, previous] = await Promise.all([
-      this.dao.countByIssuer(issuerId, period.from, period.to),
-      this.dao.countByIssuer(issuerId, period.previousFrom, period.previousTo),
+      this.dao.countByIssuer(query.issuerId, period.from, period.to),
+      this.dao.countByIssuer(query.issuerId, period.previousFrom, period.previousTo),
     ]);
 
     const total = current * rate;

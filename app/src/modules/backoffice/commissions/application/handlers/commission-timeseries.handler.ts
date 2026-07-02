@@ -2,7 +2,6 @@ import { Injectable } from "@nestjs/common";
 import { IQueryHandler, QueryHandler } from "@nestjs/cqrs";
 import { EnvService } from "@src/infra/env/env.service";
 import { resolvePeriod } from "@src/modules/backoffice/shared/period.util";
-import { BackofficeContextService } from "@src/modules/backoffice/shared/backoffice-context.service";
 import { CommissionTimeseriesQuery } from "@src/modules/backoffice/commissions/application/queries/commission-timeseries.query";
 import { VerificationsBackofficeDao } from "@src/modules/backoffice/verifications/infra/verifications-backoffice.dao";
 
@@ -24,16 +23,14 @@ export class CommissionTimeseriesHandler
 {
   public constructor(
     private readonly dao: VerificationsBackofficeDao,
-    private readonly context: BackofficeContextService,
     private readonly envService: EnvService,
   ) {}
 
   public async execute(query: CommissionTimeseriesQuery): Promise<CommissionTimeseriesResult> {
-    const issuerId = this.context.getCurrentIssuerId();
     const period = resolvePeriod({ period: query.period, from: query.from, to: query.to });
     const rate = this.envService.COMMISSION_PER_VERIFICATION_BRL;
 
-    const daily = await this.dao.dailyCount(issuerId, period.from, period.to);
+    const daily = await this.dao.dailyCount(query.issuerId, period.from, period.to);
     const series = fillMissingDays(daily, period.from, period.to).map((point) => ({
       date: point.date,
       reutilizacoes: point.count,
