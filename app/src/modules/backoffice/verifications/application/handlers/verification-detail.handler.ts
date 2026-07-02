@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { IQueryHandler, QueryHandler } from "@nestjs/cqrs";
 import { EnvService } from "@src/infra/env/env.service";
-import { BackofficeContextService } from "@src/modules/backoffice/shared/backoffice-context.service";
 import { VerificationDetailQuery } from "@src/modules/backoffice/verifications/application/queries/verification-detail.query";
 import { VerificationsBackofficeDao } from "@src/modules/backoffice/verifications/infra/verifications-backoffice.dao";
 import { IVerifierRepository } from "@src/modules/backoffice/verifiers/domain/verifier.repository";
@@ -28,13 +27,11 @@ export class VerificationDetailHandler
   public constructor(
     private readonly dao: VerificationsBackofficeDao,
     private readonly verifierRepository: IVerifierRepository,
-    private readonly context: BackofficeContextService,
     private readonly envService: EnvService,
   ) {}
 
   public async execute(query: VerificationDetailQuery): Promise<VerificationDetailResult> {
-    const issuerId = this.context.getCurrentIssuerId();
-    const record = await this.dao.findById(issuerId, query.id);
+    const record = await this.dao.findById(query.issuerId, query.id);
     if (!record) throw new NotFoundException(`Verificacao nao encontrada: ${query.id}`);
 
     const verifier = await this.verifierRepository.findById(record.verifierId);

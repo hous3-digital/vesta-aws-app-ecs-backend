@@ -1,1 +1,3 @@
-export class CommissionPendingQuery {}
+export class CommissionPendingQuery {
+  public constructor(public readonly issuerId: string) {}
+}

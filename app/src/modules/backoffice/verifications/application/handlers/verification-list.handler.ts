@@ -7,7 +7,6 @@ import {
   VerificationsBackofficeDao,
 } from "@src/modules/backoffice/verifications/infra/verifications-backoffice.dao";
 import { IVerifierRepository } from "@src/modules/backoffice/verifiers/domain/verifier.repository";
-import { BackofficeContextService } from "@src/modules/backoffice/shared/backoffice-context.service";
 import {
   clampLimit,
   decodeCursor,
@@ -37,17 +36,15 @@ export class VerificationListHandler implements IQueryHandler<VerificationListQu
   public constructor(
     private readonly dao: VerificationsBackofficeDao,
     private readonly verifierRepository: IVerifierRepository,
-    private readonly context: BackofficeContextService,
     private readonly envService: EnvService,
   ) {}
 
   public async execute(query: VerificationListQuery): Promise<VerificationListResult> {
-    const issuerId = this.context.getCurrentIssuerId();
     const limit = clampLimit(query.limit);
     const cursor = decodeCursor(query.cursor);
 
     const records = await this.dao.list({
-      issuerId,
+      issuerId: query.issuerId,
       verifierId: query.verifierId,
       status: query.status,
       from: query.from ? new Date(query.from) : undefined,

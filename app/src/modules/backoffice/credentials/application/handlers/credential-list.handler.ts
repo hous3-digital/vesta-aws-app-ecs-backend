@@ -2,7 +2,6 @@ import { Injectable } from "@nestjs/common";
 import { IQueryHandler, QueryHandler } from "@nestjs/cqrs";
 import { CredentialListQuery } from "@src/modules/backoffice/credentials/application/queries/credential-list.query";
 import { CredentialsBackofficeDao } from "@src/modules/backoffice/credentials/infra/credentials-backoffice.dao";
-import { BackofficeContextService } from "@src/modules/backoffice/shared/backoffice-context.service";
 import {
   clampLimit,
   decodeCursor,
@@ -27,18 +26,14 @@ export interface CredentialListResult {
 @Injectable()
 @QueryHandler(CredentialListQuery)
 export class CredentialListHandler implements IQueryHandler<CredentialListQuery, CredentialListResult> {
-  public constructor(
-    private readonly dao: CredentialsBackofficeDao,
-    private readonly context: BackofficeContextService,
-  ) {}
+  public constructor(private readonly dao: CredentialsBackofficeDao) {}
 
   public async execute(query: CredentialListQuery): Promise<CredentialListResult> {
-    const issuerId = this.context.getCurrentIssuerId();
     const limit = clampLimit(query.limit);
     const cursor = decodeCursor(query.cursor);
 
     const records = await this.dao.list({
-      issuerId,
+      issuerId: query.issuerId,
       status: query.status,
       limit,
       cursorTs: cursor?.ts,

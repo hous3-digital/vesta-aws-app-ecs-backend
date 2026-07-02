@@ -4,6 +4,7 @@ export type Granularity = "day";
 
 export class CommissionTimeseriesQuery {
   public constructor(
+    public readonly issuerId: string,
     public readonly period: PeriodKey | undefined,
     public readonly from: string | undefined,
     public readonly to: string | undefined,
