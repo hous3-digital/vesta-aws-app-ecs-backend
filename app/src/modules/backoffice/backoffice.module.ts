@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { CqrsModule } from "@nestjs/cqrs";
 import { DatabaseModule } from "@src/infra/database/database.module";
 import { EnvModule } from "@src/infra/env/env.module";
+import { IssuerModule } from "@src/modules/issuer/issuer.module";
 
 import { CommissionsBackofficeController } from "@src/modules/backoffice/commissions/api/commissions-backoffice.controller";
 import { CommissionBalanceHandler } from "@src/modules/backoffice/commissions/application/handlers/commission-balance.handler";
@@ -27,16 +28,20 @@ import { VerifierListHandler } from "@src/modules/backoffice/verifiers/applicati
 import { VerifierUpdateStatusHandler } from "@src/modules/backoffice/verifiers/application/handlers/verifier-update-status.handler";
 import { IVerifierRepository } from "@src/modules/backoffice/verifiers/domain/verifier.repository";
 import { VerifierRepository } from "@src/modules/backoffice/verifiers/infra/verifier.repository";
+import { BackofficeProfileController } from "@src/modules/backoffice/profile/api/backoffice-profile.controller";
+import { BackofficeProfileHandler } from "@src/modules/backoffice/profile/application/handlers/backoffice-profile.handler";
 
 @Module({
-  imports: [DatabaseModule, EnvModule, CqrsModule],
+  imports: [DatabaseModule, EnvModule, IssuerModule, CqrsModule],
   controllers: [
+    BackofficeProfileController,
     CommissionsBackofficeController,
     CredentialsBackofficeController,
     VerificationsBackofficeController,
     VerifiersBackofficeController,
   ],
   providers: [
+    BackofficeProfileHandler,
     CommissionBalanceHandler,
     CommissionKpisHandler,
     CommissionPendingHandler,
