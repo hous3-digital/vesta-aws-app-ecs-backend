@@ -115,6 +115,17 @@ export class VerificationsBackofficeDao {
     });
   }
 
+  public async countCompletedByIssuer(issuerId: string): Promise<number> {
+    const vcHashes = await this.collectVcHashesForIssuer(issuerId);
+    if (vcHashes.size === 0) return 0;
+    return this.prismaService.attestation.count({
+      where: {
+        vcHash: { in: Array.from(vcHashes) },
+        onChainResult: true,
+      },
+    });
+  }
+
   /**
    * Conta attestations por dia (UTC) no periodo. Usa $queryRaw porque Prisma
    * nao tem groupBy por funcao de data sem helpers.
