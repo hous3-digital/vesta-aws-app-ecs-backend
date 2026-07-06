@@ -2,10 +2,12 @@ import { Controller, Get, Query } from "@nestjs/common";
 import { QueryBus } from "@nestjs/cqrs";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import { PublicEndpoint } from "@src/infra/auth/public.decorator";
+import { type CommissionBalanceResult } from "@src/modules/backoffice/commissions/application/handlers/commission-balance.handler";
 import { type CommissionKpisResult } from "@src/modules/backoffice/commissions/application/handlers/commission-kpis.handler";
 import { type CommissionPendingResult } from "@src/modules/backoffice/commissions/application/handlers/commission-pending.handler";
 import { type CommissionSummaryResult } from "@src/modules/backoffice/commissions/application/handlers/commission-summary.handler";
 import { type CommissionTimeseriesResult } from "@src/modules/backoffice/commissions/application/handlers/commission-timeseries.handler";
+import { CommissionBalanceQuery } from "@src/modules/backoffice/commissions/application/queries/commission-balance.query";
 import { CommissionKpisQuery } from "@src/modules/backoffice/commissions/application/queries/commission-kpis.query";
 import { CommissionPendingQuery } from "@src/modules/backoffice/commissions/application/queries/commission-pending.query";
 import { CommissionSummaryQuery } from "@src/modules/backoffice/commissions/application/queries/commission-summary.query";
@@ -21,6 +23,14 @@ import { CurrentIssuer } from "@src/modules/backoffice/shared/current-issuer.dec
 @Controller("/backoffice/commissions")
 export class CommissionsBackofficeController {
   public constructor(private readonly queryBus: QueryBus) {}
+
+  @ApiOperation({ summary: "Saldo total acumulado do issuer, independente de periodo" })
+  @Get("/balance")
+  public async balance(@CurrentIssuer() issuerId: string): Promise<CommissionBalanceResult> {
+    return this.queryBus.execute<CommissionBalanceQuery, CommissionBalanceResult>(
+      new CommissionBalanceQuery(issuerId),
+    );
+  }
 
   @ApiOperation({ summary: "Total da comissao no periodo + delta vs anterior" })
   @Get("/summary")
