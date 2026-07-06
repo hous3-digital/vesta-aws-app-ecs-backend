@@ -4,6 +4,7 @@ import { DatabaseModule } from "@src/infra/database/database.module";
 import { EnvModule } from "@src/infra/env/env.module";
 
 import { CommissionsBackofficeController } from "@src/modules/backoffice/commissions/api/commissions-backoffice.controller";
+import { CommissionBalanceHandler } from "@src/modules/backoffice/commissions/application/handlers/commission-balance.handler";
 import { CommissionKpisHandler } from "@src/modules/backoffice/commissions/application/handlers/commission-kpis.handler";
 import { CommissionPendingHandler } from "@src/modules/backoffice/commissions/application/handlers/commission-pending.handler";
 import { CommissionSummaryHandler } from "@src/modules/backoffice/commissions/application/handlers/commission-summary.handler";
@@ -36,6 +37,7 @@ import { VerifierRepository } from "@src/modules/backoffice/verifiers/infra/veri
     VerifiersBackofficeController,
   ],
   providers: [
+    CommissionBalanceHandler,
     CommissionKpisHandler,
     CommissionPendingHandler,
     CommissionSummaryHandler,
