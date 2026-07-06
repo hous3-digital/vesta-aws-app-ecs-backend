@@ -1,5 +1,5 @@
 import { createHmac } from "crypto";
-import { ConflictException, Injectable, Logger } from "@nestjs/common";
+import { ConflictException, Injectable, Logger, UnprocessableEntityException } from "@nestjs/common";
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 import { CredentialPublicIssueCommand } from "@src/modules/credential/application/public/commands/credential-public-issue.command";
 import { Credential } from "@src/modules/credential/domain/credential.entity";
@@ -7,6 +7,7 @@ import { ICredentialRepository } from "@src/modules/credential/domain/credential
 import { EnvService } from "@src/infra/env/env.service";
 import { VcService } from "@src/modules/vc/vc.service";
 import { WalletService } from "@src/modules/wallet/wallet.service";
+import { IIssuerRepository } from "@src/modules/issuer/domain/issuer.repository";
 import type { VestaVC } from "@src/shared/types/vesta-vc.types";
 
 export interface CredentialIssueResult {
@@ -29,9 +30,24 @@ export class CredentialPublicIssueHandler implements ICommandHandler<CredentialP
     private readonly vcService: VcService,
     private readonly envService: EnvService,
     private readonly walletService: WalletService,
+    private readonly issuerRepository: IIssuerRepository,
   ) {}
 
   public async execute(command: CredentialPublicIssueCommand): Promise<CredentialIssueResult> {
+    const issuer = await this.issuerRepository.findByExternalId(command.issuerId);
+    if (!issuer) {
+      throw new UnprocessableEntityException({
+        error: "ISSUER_NOT_REGISTERED",
+        message: `Issuer '${command.issuerId}' nao esta cadastrado`,
+      });
+    }
+    if (!issuer.isActive()) {
+      throw new UnprocessableEntityException({
+        error: "ISSUER_INACTIVE",
+        message: `Issuer '${command.issuerId}' esta inativo`,
+      });
+    }
+
     const { vc, vcHash } = await this.vcService.generateVC({
       cpf: command.cpf,
       fullName: command.fullName,
@@ -39,7 +55,7 @@ export class CredentialPublicIssueHandler implements ICommandHandler<CredentialP
       kycLevel: command.kycLevel,
       kycMethod: command.kycMethod,
       issuerId: command.issuerId,
-      issuerName: `${command.issuerId} S.A.`,
+      issuerName: issuer.name,
       nationality: command.nationality,
       expirationDays: command.expirationDays,
     });
