@@ -1,6 +1,7 @@
 import { Controller, Get, Param, Query } from "@nestjs/common";
 import { QueryBus } from "@nestjs/cqrs";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
+import { BackofficeAuth } from "@src/infra/auth/backoffice-auth.guard";
 import { PublicEndpoint } from "@src/infra/auth/public.decorator";
 import { type CredentialDetailResult } from "@src/modules/backoffice/credentials/application/handlers/credential-detail.handler";
 import { type CredentialListResult } from "@src/modules/backoffice/credentials/application/handlers/credential-list.handler";
@@ -11,6 +12,7 @@ import { CurrentIssuer } from "@src/modules/backoffice/shared/current-issuer.dec
 
 @ApiTags("backoffice/credentials")
 @PublicEndpoint()
+@BackofficeAuth()
 @Controller("/backoffice/credentials")
 export class CredentialsBackofficeController {
   public constructor(private readonly queryBus: QueryBus) {}

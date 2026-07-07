@@ -1,6 +1,7 @@
 import { Controller, Get, Query } from "@nestjs/common";
 import { QueryBus } from "@nestjs/cqrs";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
+import { BackofficeAuth } from "@src/infra/auth/backoffice-auth.guard";
 import { PublicEndpoint } from "@src/infra/auth/public.decorator";
 import { type CommissionBalanceResult } from "@src/modules/backoffice/commissions/application/handlers/commission-balance.handler";
 import { type CommissionKpisResult } from "@src/modules/backoffice/commissions/application/handlers/commission-kpis.handler";
@@ -20,6 +21,7 @@ import { CurrentIssuer } from "@src/modules/backoffice/shared/current-issuer.dec
 
 @ApiTags("backoffice/commissions")
 @PublicEndpoint()
+@BackofficeAuth()
 @Controller("/backoffice/commissions")
 export class CommissionsBackofficeController {
   public constructor(private readonly queryBus: QueryBus) {}

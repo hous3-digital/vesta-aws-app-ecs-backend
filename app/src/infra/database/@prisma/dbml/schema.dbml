@@ -47,6 +47,17 @@ Table issuer {
   createdAt DateTime [not null]
 }
 
+Table backoffice_users {
+  id String [unique, not null]
+  issuerId String [not null]
+  email String [unique, not null]
+  passwordHash String [not null]
+  name String
+  active Boolean [not null, default: true]
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+}
+
 Table verifier {
   id String [unique, not null]
   name String [not null]
@@ -71,6 +82,7 @@ Table egress {
 
 Table api_keys {
   id String [unique, not null]
+  issuerId String
   key String [unique, not null]
   name String [not null]
   active Boolean [not null, default: true]

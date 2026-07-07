@@ -1,26 +1,22 @@
 import { ExecutionContext, UnauthorizedException, createParamDecorator } from "@nestjs/common";
-import type { Request } from "express";
+import type { AuthenticatedRequest } from "@src/infra/auth/auth.types";
 
 /**
- * Extrai o issuerId do backoffice a partir do header X-Vesta-Issuer-ID
- * (mesmo header que o SDK publico ja usa). Enquanto nao ha auth, este e o
- * ponto unico de resolucao — quando o OTP entrar, sera trocado por leitura
- * do JWT.
+ * Extrai o issuerId do backoffice a partir da sessao autenticada.
  *
  * Nao usa Scope.REQUEST porque o CqrsModule nao propaga scope corretamente
- * para command/query handlers, gerando 500 na instanciacao. A abordagem
- * idiomatica com CQRS eh passar issuerId como parte do command/query.
+ * para command/query handlers. A abordagem idiomatica com CQRS e passar
+ * issuerId como parte do command/query.
  */
 export const CurrentIssuer = createParamDecorator<undefined>(
   (_data, ctx: ExecutionContext): string => {
-    const request = ctx.switchToHttp().getRequest<Request>();
-    const raw = request.headers["x-vesta-issuer-id"];
-    const issuerId = Array.isArray(raw) ? raw[0] : raw;
+    const request = ctx.switchToHttp().getRequest<AuthenticatedRequest>();
+    const issuerId = request.backofficeUser?.issuerId;
 
-    if (!issuerId || !issuerId.trim()) {
-      throw new UnauthorizedException("Header X-Vesta-Issuer-ID obrigatorio no backoffice");
+    if (!issuerId) {
+      throw new UnauthorizedException("Sessao do backoffice obrigatoria");
     }
 
-    return issuerId.trim();
+    return issuerId;
   },
 );

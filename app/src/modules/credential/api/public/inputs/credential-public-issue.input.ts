@@ -4,10 +4,6 @@ import { IsValidCpf } from "@src/shared/validators/is-valid-cpf.validator";
 import type { KycLevel } from "@src/shared/types/vesta-vc.types";
 
 export class CredentialPublicIssueInput {
-  @ApiProperty({ example: "issuer_01jz..." })
-  @IsString()
-  public issuerId!: string;
-
   @ApiProperty({ example: "12345678900" })
   @IsValidCpf()
   public cpf!: string;
