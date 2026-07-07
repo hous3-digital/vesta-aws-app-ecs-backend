@@ -2,6 +2,7 @@ import { Controller, Get, Param, Query, Res } from "@nestjs/common";
 import { QueryBus } from "@nestjs/cqrs";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import { Response } from "express";
+import { BackofficeAuth } from "@src/infra/auth/backoffice-auth.guard";
 import { PublicEndpoint } from "@src/infra/auth/public.decorator";
 import { type VerificationDetailResult } from "@src/modules/backoffice/verifications/application/handlers/verification-detail.handler";
 import { type VerificationListResult } from "@src/modules/backoffice/verifications/application/handlers/verification-list.handler";
@@ -15,6 +16,7 @@ import { CurrentIssuer } from "@src/modules/backoffice/shared/current-issuer.dec
 
 @ApiTags("backoffice/verifications")
 @PublicEndpoint()
+@BackofficeAuth()
 @Controller("/backoffice/verifications")
 export class VerificationsBackofficeController {
   public constructor(private readonly queryBus: QueryBus) {}

@@ -89,7 +89,7 @@ async function bootstrap() {
     app.enableCors({
       origin: corsOrigins.split(",").map((o) => o.trim()),
       methods: ["GET", "POST", "OPTIONS"],
-      allowedHeaders: ["Content-Type", "X-Api-Key", "X-Vesta-Issuer-ID"],
+      allowedHeaders: ["Authorization", "Content-Type", "X-Api-Key"],
       credentials: true,
     });
   } else if (!envService.IS_PRODUCTION) {

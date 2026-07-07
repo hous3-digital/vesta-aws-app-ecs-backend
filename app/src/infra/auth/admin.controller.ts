@@ -13,11 +13,14 @@ export class AdminController {
 
   @ApiOperation({ summary: "Generate a new API key" })
   @Post()
-  public async create(@Body() body: { name: string }) {
+  public async create(@Body() body: { name: string; issuerId: string }) {
     if (!body.name || typeof body.name !== "string") {
       throw new UnauthorizedException("name is required");
     }
-    return this.apiKeyService.create(body.name.trim());
+    if (!body.issuerId || typeof body.issuerId !== "string") {
+      throw new UnauthorizedException("issuerId is required");
+    }
+    return this.apiKeyService.create(body.name.trim(), body.issuerId.trim());
   }
 
   @ApiOperation({ summary: "List all API keys (key values are hidden)" })
