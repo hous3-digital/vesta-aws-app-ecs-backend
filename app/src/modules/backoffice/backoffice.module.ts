@@ -30,10 +30,12 @@ import { IVerifierRepository } from "@src/modules/backoffice/verifiers/domain/ve
 import { VerifierRepository } from "@src/modules/backoffice/verifiers/infra/verifier.repository";
 import { BackofficeProfileController } from "@src/modules/backoffice/profile/api/backoffice-profile.controller";
 import { BackofficeProfileHandler } from "@src/modules/backoffice/profile/application/handlers/backoffice-profile.handler";
+import { ApiKeysBackofficeController } from "@src/modules/backoffice/api-keys/api/api-keys-backoffice.controller";
 
 @Module({
   imports: [DatabaseModule, EnvModule, IssuerModule, CqrsModule],
   controllers: [
+    ApiKeysBackofficeController,
     BackofficeProfileController,
     CommissionsBackofficeController,
     CredentialsBackofficeController,

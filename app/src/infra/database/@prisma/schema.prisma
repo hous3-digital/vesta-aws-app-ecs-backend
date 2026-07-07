@@ -73,6 +73,20 @@ model Issuer {
   @@map("issuer")
 }
 
+model BackofficeUser {
+  id           String   @unique @map("backoffice_user_id")
+  issuerId     String   @map("issuer_external_id")
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  name         String?
+  active       Boolean  @default(true)
+  createdAt    DateTime @map("created_at")
+  updatedAt    DateTime @map("updated_at")
+
+  @@index([issuerId])
+  @@map("backoffice_users")
+}
+
 model Verifier {
   id        String   @unique @map("verifier_id")
   name      String
@@ -103,12 +117,14 @@ model Egress {
 
 model ApiKey {
   id        String    @unique @map("api_key_id")
+  issuerId  String?   @map("issuer_external_id")
   key       String    @unique
   name      String
   active    Boolean   @default(true)
   createdAt DateTime  @map("created_at")
   revokedAt DateTime? @map("revoked_at")
 
+  @@index([issuerId])
   @@index([key, active])
   @@map("api_keys")
 }

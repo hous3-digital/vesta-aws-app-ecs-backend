@@ -65,6 +65,10 @@ export class EnvService {
     return this.configService.get("ADMIN_SECRET") as string | undefined;
   }
 
+  public get BACKOFFICE_JWT_SECRET() {
+    return (this.configService.get("BACKOFFICE_JWT_SECRET") ?? this.ADMIN_SECRET) as string | undefined;
+  }
+
   public get PRIVY_APP_ID() {
     return this.configService.get("PRIVY_APP_ID") as string | undefined;
   }

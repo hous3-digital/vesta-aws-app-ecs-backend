@@ -54,6 +54,7 @@ export const ModelName = {
   Credential: 'Credential',
   Attestation: 'Attestation',
   Issuer: 'Issuer',
+  BackofficeUser: 'BackofficeUser',
   Verifier: 'Verifier',
   Ingress: 'Ingress',
   Egress: 'Egress',
@@ -130,6 +131,20 @@ export const IssuerScalarFieldEnum = {
 export type IssuerScalarFieldEnum = (typeof IssuerScalarFieldEnum)[keyof typeof IssuerScalarFieldEnum]
 
 
+export const BackofficeUserScalarFieldEnum = {
+  id: 'id',
+  issuerId: 'issuerId',
+  email: 'email',
+  passwordHash: 'passwordHash',
+  name: 'name',
+  active: 'active',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BackofficeUserScalarFieldEnum = (typeof BackofficeUserScalarFieldEnum)[keyof typeof BackofficeUserScalarFieldEnum]
+
+
 export const VerifierScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -163,6 +178,7 @@ export type EgressScalarFieldEnum = (typeof EgressScalarFieldEnum)[keyof typeof 
 
 export const ApiKeyScalarFieldEnum = {
   id: 'id',
+  issuerId: 'issuerId',
   key: 'key',
   name: 'name',
   active: 'active',
