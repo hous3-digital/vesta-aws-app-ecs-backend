@@ -69,11 +69,11 @@ secrets = [
   },
   {
     name      = "BACKOFFICE_JWT_SECRET",
-    valueFrom = "BACKOFFICE_JWT_SECRET"
+    valueFrom = "arn:aws:secretsmanager:us-east-1:014468369894:secret:BACKOFFICE_JWT_SECRET-8qbacm"
   },
   {
     name      = "COMMISSION_PER_VERIFICATION_BRL",
-    valueFrom = "COMMISSION_PER_VERIFICATION_BRL"
+    valueFrom = "arn:aws:secretsmanager:us-east-1:014468369894:secret:COMMISSION_PER_VERIFICATION_BRL-7gevTW"
   },
   {
     name      = "PRIVY_APP_SECRET",
