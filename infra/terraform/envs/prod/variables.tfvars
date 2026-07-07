@@ -68,6 +68,14 @@ secrets = [
     valueFrom = "arn:aws:secretsmanager:us-east-1:694580672968:secret:ADMIN_SECRET-VPvnPW"
   },
   {
+    name      = "BACKOFFICE_JWT_SECRET",
+    valueFrom = "BACKOFFICE_JWT_SECRET"
+  },
+  {
+    name      = "COMMISSION_PER_VERIFICATION_BRL",
+    valueFrom = "COMMISSION_PER_VERIFICATION_BRL"
+  },
+  {
     name      = "PRIVY_APP_SECRET",
     valueFrom = "arn:aws:secretsmanager:us-east-1:694580672968:secret:PRIVY_APP_SECRET-jGPt35"
   },
