@@ -2,6 +2,7 @@ import { Body, Controller, Post } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import { Throttle } from "@nestjs/throttler";
+import { CurrentApiKeyIssuer } from "@src/infra/auth/current-api-key-issuer.decorator";
 import { CredentialPublicIssueCommand } from "@src/modules/credential/application/public/commands/credential-public-issue.command";
 import { CredentialPublicRevokeCommand } from "@src/modules/credential/application/public/commands/credential-public-revoke.command";
 import { type CredentialIssueResult } from "@src/modules/credential/application/public/handlers/credential-public-issue.handler";
@@ -23,9 +24,12 @@ export class CredentialPublicController {
   @ApiOperation({ summary: "Issue a Verifiable Credential (KYC)" })
   @Throttle({ default: { ttl: 60000, limit: 10 } })
   @Post("/")
-  public async issue(@Body() input: CredentialPublicIssueInput): Promise<CredentialIssueResult> {
+  public async issue(
+    @CurrentApiKeyIssuer() issuerId: string,
+    @Body() input: CredentialPublicIssueInput,
+  ): Promise<CredentialIssueResult> {
     const command = new CredentialPublicIssueCommand(
-      input.issuerId,
+      issuerId,
       input.cpf,
       input.fullName,
       input.birthDate,

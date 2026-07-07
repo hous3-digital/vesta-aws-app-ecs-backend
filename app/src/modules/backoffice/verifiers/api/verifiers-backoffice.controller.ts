@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, Patch, Post } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
+import { BackofficeAuth } from "@src/infra/auth/backoffice-auth.guard";
 import { PublicEndpoint } from "@src/infra/auth/public.decorator";
 import { VerifierCreateCommand } from "@src/modules/backoffice/verifiers/application/commands/verifier-create.command";
 import { VerifierUpdateStatusCommand } from "@src/modules/backoffice/verifiers/application/commands/verifier-update-status.command";
@@ -13,6 +14,7 @@ import { VerifierUpdateStatusInput } from "@src/modules/backoffice/verifiers/api
 
 @ApiTags("backoffice/verifiers")
 @PublicEndpoint()
+@BackofficeAuth()
 @Controller("/backoffice/admin/verifiers")
 export class VerifiersBackofficeController {
   public constructor(
