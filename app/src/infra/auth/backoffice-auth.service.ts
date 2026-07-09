@@ -1,4 +1,5 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common";
+import type { JwtSignOptions } from "@nestjs/jwt";
 import { JwtService } from "@nestjs/jwt";
 import { PrismaService } from "@src/infra/database/@prisma/prisma.service";
 import { EnvService } from "@src/infra/env/env.service";
@@ -45,14 +46,14 @@ export class BackofficeAuthService {
     return {
       accessToken: await this.sign(session),
       tokenType: "Bearer",
-      expiresIn: 8 * 60 * 60,
+      expiresIn: this.getExpiresInSeconds(),
       user: session,
     };
   }
 
   public async verifyBearer(token: string): Promise<BackofficeSession> {
     const secret = this.getSecret();
-    const payload = await this.jwtService.verifyAsync<BackofficeJwtPayload>(token, { secret });
+    const payload = await this.verifyToken(token, secret);
     const user = await this.prisma.backofficeUser.findFirst({
       where: { id: payload.sub, issuerId: payload.issuerId, active: true },
       select: { id: true, issuerId: true, email: true, name: true },
@@ -71,18 +72,35 @@ export class BackofficeAuthService {
   }
 
   private async sign(session: BackofficeSession): Promise<string> {
+    const expiresIn = this.envService.BACKOFFICE_JWT_EXPIRES_IN;
+    const options: JwtSignOptions = {
+      subject: session.userId,
+      secret: this.getSecret(),
+    };
+    if (expiresIn !== "never") {
+      options.expiresIn = expiresIn as JwtSignOptions["expiresIn"];
+    }
+
     return this.jwtService.signAsync(
       {
         issuerId: session.issuerId,
         email: session.email,
         name: session.name,
       },
-      {
-        subject: session.userId,
-        secret: this.getSecret(),
-        expiresIn: "8h",
-      },
+      options,
     );
+  }
+
+  private async verifyToken(token: string, secret: string): Promise<BackofficeJwtPayload> {
+    try {
+      return await this.jwtService.verifyAsync<BackofficeJwtPayload>(token, { secret });
+    } catch (cause) {
+      if (isJwtExpiredError(cause)) {
+        throw new UnauthorizedException("Backoffice session expired");
+      }
+
+      throw new UnauthorizedException("Invalid backoffice bearer token");
+    }
   }
 
   private getSecret(): string {
@@ -90,4 +108,23 @@ export class BackofficeAuthService {
     if (!secret) throw new UnauthorizedException("BACKOFFICE_JWT_SECRET is not configured");
     return secret;
   }
+
+  private getExpiresInSeconds(): number {
+    const expiresIn = this.envService.BACKOFFICE_JWT_EXPIRES_IN;
+    if (expiresIn === "never") return 0;
+    if (/^\d+$/.test(expiresIn)) return Number(expiresIn);
+    const match = expiresIn.match(/^(\d+)([smhd])$/);
+    if (!match) return 8 * 60 * 60;
+
+    const value = Number(match[1]);
+    const unit = match[2];
+    if (unit === "s") return value;
+    if (unit === "m") return value * 60;
+    if (unit === "h") return value * 60 * 60;
+    return value * 24 * 60 * 60;
+  }
+}
+
+function isJwtExpiredError(cause: unknown): cause is { name: "TokenExpiredError" } {
+  return typeof cause === "object" && cause !== null && "name" in cause && cause.name === "TokenExpiredError";
 }
