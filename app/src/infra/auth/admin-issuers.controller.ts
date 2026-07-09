@@ -1,4 +1,4 @@
-import { Body, ConflictException, Controller, Post, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, Body, ConflictException, Controller, NotFoundException, Post } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import { hash } from "bcrypt";
 import { randomBytes } from "crypto";
@@ -7,40 +7,46 @@ import { PublicEndpoint } from "@src/infra/auth/public.decorator";
 import { PrismaService } from "@src/infra/database/@prisma/prisma.service";
 
 interface CreateIssuerBody {
-  email: string;
   issuerId?: string;
   name: string;
-  userName?: string;
-  password?: string;
   publicKey?: string;
   privyEnabled?: boolean;
 }
 
-@ApiTags("admin/issuers")
-@Controller("/admin/issuers")
+interface CreateBackofficeUserBody {
+  email: string;
+  issuerId: string;
+  name?: string;
+  password?: string;
+}
+
+@ApiTags("admin")
+@Controller("/admin")
 @PublicEndpoint()
 @AdminSecret()
 export class AdminIssuersController {
   public constructor(private readonly prisma: PrismaService) {}
 
-  @ApiOperation({ summary: "Cria issuer e usuario inicial do backoffice" })
-  @Post()
-  public async create(@Body() body: CreateIssuerBody) {
-    const email = body.email?.trim().toLowerCase();
+  @ApiOperation({ summary: "Cria um issuer" })
+  @Post("/issuers")
+  public async createIssuer(@Body() body: CreateIssuerBody) {
     const name = body.name?.trim();
-    const issuerId = body.issuerId?.trim() || this.slugify(name);
-    const password = body.password?.trim() || this.generateTemporaryPassword();
+    const providedIssuerId = body.issuerId?.trim();
 
-    if (!email || !name || !issuerId) {
-      throw new UnauthorizedException("email, name and issuerId/name are required");
+    if (!name) {
+      throw new BadRequestException("name and issuerId/name are required");
     }
 
-    const [existingIssuer, existingUser] = await Promise.all([
-      this.prisma.issuer.findUnique({ where: { issuerId }, select: { id: true } }),
-      this.prisma.backofficeUser.findUnique({ where: { email }, select: { id: true } }),
-    ]);
+    const issuerId = providedIssuerId || this.slugify(name);
+    if (!issuerId) {
+      throw new BadRequestException("issuerId could not be generated from name");
+    }
+
+    const existingIssuer = await this.prisma.issuer.findUnique({
+      where: { issuerId },
+      select: { id: true },
+    });
     if (existingIssuer) throw new ConflictException("Issuer already exists");
-    if (existingUser) throw new ConflictException("Backoffice user already exists");
 
     const now = new Date();
     const issuer = await this.prisma.issuer.create({
@@ -55,13 +61,46 @@ export class AdminIssuersController {
       },
     });
 
+    return {
+      id: issuer.id,
+      issuerId: issuer.issuerId,
+      name: issuer.name,
+      status: issuer.status,
+      privyEnabled: issuer.privyEnabled,
+      createdAt: issuer.createdAt,
+    };
+  }
+
+  @ApiOperation({ summary: "Cria um acesso de backoffice para issuer existente" })
+  @Post("/backoffice-users")
+  public async createBackofficeUser(@Body() body: CreateBackofficeUserBody) {
+    const issuerId = body.issuerId?.trim();
+    const email = body.email?.trim().toLowerCase();
+    const password = body.password?.trim() || this.generateTemporaryPassword();
+
+    if (!issuerId || !email) {
+      throw new BadRequestException("issuerId and email are required");
+    }
+
+    const [issuer, existingUser] = await Promise.all([
+      this.prisma.issuer.findUnique({
+        where: { issuerId },
+        select: { issuerId: true, name: true },
+      }),
+      this.prisma.backofficeUser.findUnique({ where: { email }, select: { id: true } }),
+    ]);
+
+    if (!issuer) throw new NotFoundException("Issuer not found");
+    if (existingUser) throw new ConflictException("Backoffice user already exists");
+
+    const now = new Date();
     const user = await this.prisma.backofficeUser.create({
       data: {
         id: `bo_${randomBytes(12).toString("hex")}`,
         issuerId,
         email,
         passwordHash: await hash(password, 10),
-        name: body.userName?.trim() || name,
+        name: body.name?.trim() || issuer.name,
         active: true,
         createdAt: now,
         updatedAt: now,
@@ -70,14 +109,6 @@ export class AdminIssuersController {
     });
 
     return {
-      issuer: {
-        id: issuer.id,
-        issuerId: issuer.issuerId,
-        name: issuer.name,
-        status: issuer.status,
-        privyEnabled: issuer.privyEnabled,
-        createdAt: issuer.createdAt,
-      },
       backofficeUser: user,
       temporaryPassword: password,
     };
