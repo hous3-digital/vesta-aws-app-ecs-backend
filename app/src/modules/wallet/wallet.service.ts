@@ -14,6 +14,48 @@ export interface PrivyIdentityClaims {
   walletAddress: string;
 }
 
+/**
+ * Shape minimo de um wallet dentro de `user.linkedAccounts`.
+ * A tipagem exportada pelo Privy (`WalletWithMetadata`) muda entre versoes,
+ * mas o formato interno estabiliza estas propriedades. Filtramos aqui em vez de
+ * depender do tipo publico do SDK para ficar imune a bumps menores.
+ */
+interface PrivyLinkedWallet {
+  type: "wallet";
+  address: string;
+  chainType?: string;
+  walletClientType?: string;
+}
+
+/**
+ * Payload que o `importUser` do @privy-io/server-auth 1.x aceita para gerar
+ * um usuario ja com wallet Stellar pre-criada. A tipagem publica ainda esta em
+ * flux para Stellar (Tier 2), entao definimos localmente para nao cair em `any`.
+ */
+interface PrivyImportUserInput {
+  customMetadata?: Record<string, string>;
+  linkedAccounts: Array<{
+    type: "custom_auth";
+    customUserId: string;
+  }>;
+  wallets?: Array<{
+    chainType: "stellar" | "ethereum" | "solana";
+  }>;
+}
+
+interface PrivyUser {
+  id: string;
+  linkedAccounts?: Array<Record<string, unknown>>;
+}
+
+// Interface minima do PrivyClient que usamos. Isola pontos onde a tipagem
+// oficial diverge e mantem type-check honesto no consumidor.
+interface PrivyClientLike {
+  importUser: (input: PrivyImportUserInput) => Promise<PrivyUser>;
+  verifyAuthToken: (token: string) => Promise<{ userId: string }>;
+  getUser: (userId: string) => Promise<PrivyUser | null>;
+}
+
 @Injectable()
 export class WalletService implements OnModuleInit {
   private readonly logger = new Logger(WalletService.name);
@@ -32,7 +74,7 @@ export class WalletService implements OnModuleInit {
     if (!appId || !appSecret) {
       this.logger.warn(
         "WalletService desativado — PRIVY_APP_ID/PRIVY_APP_SECRET ausentes. " +
-          "Fluxo Privy só funcionará após configuração.",
+          "Fluxo Privy so funcionara apos configuracao.",
       );
       this.enabled = false;
       return;
@@ -40,24 +82,37 @@ export class WalletService implements OnModuleInit {
 
     this.client = new PrivyClient(appId, appSecret);
     this.enabled = true;
-    this.logger.log("Privy client inicializado");
+    this.logger.log(`Privy client inicializado — appId=${appId.slice(0, 8)}...`);
   }
 
   /**
-   * Indica se a integração Privy está habilitada para o issuer informado.
-   * Retorna false se o client Privy não está configurado OU se o issuer
-   * não tem o feature flag ativo no banco.
+   * Indica se a integracao Privy esta habilitada para o issuer informado.
+   * Retorna false se o client Privy nao esta configurado OU se o issuer
+   * nao tem o feature flag ativo no banco.
    */
   public async isEnabledForIssuer(externalIssuerId: string): Promise<boolean> {
-    if (!this.enabled) return false;
+    if (!this.enabled) {
+      this.logger.debug(`isEnabledForIssuer(${externalIssuerId}) — client Privy desativado`);
+      return false;
+    }
     const issuer = await this.issuerRepository.findByExternalId(externalIssuerId);
-    return !!issuer?.privyEnabled;
+    const flag = !!issuer?.privyEnabled;
+    this.logger.debug(
+      `isEnabledForIssuer(${externalIssuerId}) — privyEnabled=${flag} (issuer ${issuer ? "encontrado" : "nao encontrado"})`,
+    );
+    return flag;
   }
 
   /**
-   * Pré-cria uma wallet Stellar Privy vinculada ao subjectDid da credencial.
-   * Usa o subjectDid como identificador externo no Privy para idempotência —
-   * chamadas repetidas com o mesmo subjectDid retornam a mesma wallet.
+   * Pre-cria uma wallet Stellar Privy vinculada ao subjectDid da credencial.
+   *
+   * Chama `importUser` com `wallets: [{ chainType: 'stellar' }]` — este e o
+   * parametro correto para pregerar embedded wallets em qualquer chain
+   * suportado pelo Privy 1.x (a versao antiga do codigo usava
+   * `createEmbeddedWallets: { stellar: true }`, que nao existe na API real).
+   *
+   * O `custom_auth` como linked account usa o subjectDid como chave externa —
+   * chamadas repetidas com o mesmo subjectDid retornam o mesmo user (idempotencia).
    */
   public async precreateForCredential(params: {
     subjectDid: string;
@@ -67,12 +122,12 @@ export class WalletService implements OnModuleInit {
       throw new Error("WalletService.precreateForCredential chamado sem Privy configurado");
     }
 
-    // Cria/recupera o usuário Privy via custom auth (subjectDid como chave externa).
-    // Documentação: https://docs.privy.io/guide/server/users/import
-    // NOTA: a tipagem oficial do @privy-io/server-auth está em flux para Stellar;
-    // usamos cast defensivo até validar a versão suportada com uma conta real.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const client = this.client as unknown as any;
+    const client = this.client as unknown as PrivyClientLike;
+
+    this.logger.log(
+      `[Privy] importUser start — subjectDid=${params.subjectDid.slice(0, 24)}..., wallets=[stellar]`,
+    );
+
     const user = await client.importUser({
       customMetadata: {
         subjectDid: params.subjectDid,
@@ -84,96 +139,86 @@ export class WalletService implements OnModuleInit {
           customUserId: params.subjectDid,
         },
       ],
-      // Cria automaticamente uma wallet Stellar embedada. O nome do parâmetro
-      // depende da versão Privy; validar com a conta real antes de produção.
-      createEmbeddedWallets: { stellar: true },
+      wallets: [{ chainType: "stellar" }],
     });
 
-    const stellarAccount = user.linkedAccounts?.find(
-      (acc: { type: string; address?: string }) =>
-        acc.type === "wallet" && acc.address?.startsWith("G"),
-    ) as { address: string } | undefined;
+    this.logger.log(
+      `[Privy] importUser ok — userId=${user.id}, linkedAccounts.length=${user.linkedAccounts?.length ?? 0}`,
+    );
 
-    if (!stellarAccount?.address) {
+    const stellarWallet = this.findStellarWallet(user);
+
+    if (!stellarWallet) {
+      this.logger.error(
+        `[Privy] user criado sem wallet Stellar em linkedAccounts — subjectDid=${params.subjectDid.slice(0, 24)}..., ` +
+          `linkedAccounts=${JSON.stringify(user.linkedAccounts ?? [])}`,
+      );
       throw new Error(
-        `Privy não retornou endereço Stellar para subjectDid ${params.subjectDid}`,
+        `Privy nao retornou endereco Stellar para subjectDid ${params.subjectDid}`,
       );
     }
 
     this.logger.log(
-      `Wallet Privy criada — subjectDid=${params.subjectDid.slice(0, 24)}..., address=${stellarAccount.address.slice(0, 8)}...`,
+      `[Privy] wallet Stellar criada — subjectDid=${params.subjectDid.slice(0, 24)}..., ` +
+        `address=${stellarWallet.address.slice(0, 8)}...`,
     );
 
     return {
       privyUserId: user.id,
-      stellarAddress: stellarAccount.address,
+      stellarAddress: stellarWallet.address,
     };
   }
 
   /**
    * Verifica um identity token Privy recebido do SDK e extrai claims.
    * Usado pelo handler /public/proof/submit-signed para confirmar que a
-   * assinatura veio do usuário esperado.
+   * assinatura veio do usuario esperado.
    */
   public async verifyIdentityToken(token: string): Promise<PrivyIdentityClaims> {
     if (!this.client) {
       throw new Error("WalletService.verifyIdentityToken chamado sem Privy configurado");
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const client = this.client as unknown as any;
+    const client = this.client as unknown as PrivyClientLike;
     const claims = await client.verifyAuthToken(token);
     const user = await client.getUser(claims.userId);
     if (!user) {
-      throw new Error(`Usuário Privy ${claims.userId} não encontrado`);
+      throw new Error(`Usuario Privy ${claims.userId} nao encontrado`);
     }
 
-    const stellarAccount = user.linkedAccounts?.find(
-      (acc: { type: string; address?: string }) =>
-        acc.type === "wallet" && acc.address?.startsWith("G"),
-    ) as { address: string } | undefined;
-
-    if (!stellarAccount?.address) {
-      throw new Error(`Usuário Privy ${claims.userId} sem wallet Stellar associada`);
+    const stellarWallet = this.findStellarWallet(user);
+    if (!stellarWallet) {
+      throw new Error(`Usuario Privy ${claims.userId} sem wallet Stellar associada`);
     }
 
     return {
       userId: claims.userId,
-      walletAddress: stellarAccount.address,
+      walletAddress: stellarWallet.address,
     };
   }
 
-  /**
-   * Resolve a wallet Stellar associada a um subjectDid. Retorna null se
-   * não houver wallet (usuário Privy não foi pré-criado).
-   * Usado pelo handler /public/proof/prepare para montar a tx com source
-   * = userWalletAddress quando aplicável.
-   */
-  public async getWalletForSubject(
-    subjectDid: string,
-  ): Promise<{ address: string; privyUserId: string } | null> {
-    if (!this.client) return null;
+  private findStellarWallet(user: PrivyUser): PrivyLinkedWallet | null {
+    if (!user.linkedAccounts) return null;
 
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const client = this.client as unknown as any;
-      const user = await client.getUserByCustomAuthId(subjectDid);
-      if (!user) return null;
+    for (const account of user.linkedAccounts) {
+      if (account.type !== "wallet") continue;
+      const chainType = typeof account.chainType === "string" ? account.chainType : undefined;
+      const address = typeof account.address === "string" ? account.address : undefined;
+      if (!address) continue;
 
-      const stellarAccount = user.linkedAccounts?.find(
-        (acc: { type: string; address?: string }) =>
-          acc.type === "wallet" && acc.address?.startsWith("G"),
-      ) as { address: string } | undefined;
-
-      if (!stellarAccount?.address) return null;
-
-      return {
-        address: stellarAccount.address,
-        privyUserId: user.id,
-      };
-    } catch (err) {
-      this.logger.debug(`getWalletForSubject não encontrou wallet: ${(err as Error).message}`);
-      return null;
+      // Aceita explicito (chainType === 'stellar') ou heuristica pelo formato
+      // do address (Stellar publico comeca com 'G'), para tolerar variacoes de
+      // resposta entre versoes do SDK.
+      if (chainType === "stellar" || (chainType === undefined && address.startsWith("G"))) {
+        return {
+          type: "wallet",
+          address,
+          chainType,
+          walletClientType:
+            typeof account.walletClientType === "string" ? account.walletClientType : undefined,
+        };
+      }
     }
+    return null;
   }
 }
