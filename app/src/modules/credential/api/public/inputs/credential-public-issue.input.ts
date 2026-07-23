@@ -17,8 +17,8 @@ export class CredentialPublicIssueInput {
   @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: "birthDate must be in YYYY-MM-DD format" })
   public birthDate!: string;
 
-  @ApiProperty({ enum: ["basic", "intermediate", "complete"] })
-  @IsIn(["basic", "intermediate", "complete"])
+  @ApiProperty({ enum: ["basic", "intermediate", "complete", "pending"] })
+  @IsIn(["basic", "intermediate", "complete", "pending"])
   public kycLevel!: KycLevel;
 
   @ApiProperty({ example: "document_ocr" })
