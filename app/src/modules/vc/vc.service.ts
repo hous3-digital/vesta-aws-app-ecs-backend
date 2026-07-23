@@ -118,7 +118,7 @@ export class VcService implements OnModuleInit {
   }
 
   public kycLevelToInt(level: KycLevel): number {
-    const map: Record<KycLevel, number> = { basic: 1, intermediate: 2, complete: 3 };
+    const map: Record<KycLevel, number> = { pending: 0, basic: 1, intermediate: 2, complete: 3 };
     return map[level];
   }
 }

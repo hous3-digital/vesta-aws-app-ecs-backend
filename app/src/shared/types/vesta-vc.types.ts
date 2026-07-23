@@ -1,4 +1,4 @@
-export type KycLevel = "basic" | "intermediate" | "complete";
+export type KycLevel = "basic" | "intermediate" | "complete" | "pending";
 
 export interface VestaVCCredentialSubject {
   id: string;
