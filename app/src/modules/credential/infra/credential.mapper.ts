@@ -45,6 +45,7 @@ export class CredentialMapper {
 
   public static toUpdateInput(domain: Credential): Prisma.CredentialUpdateInput {
     return {
+      kycLevel: domain.kycLevel as KycLevel,
       status: domain.status as unknown as Prisma.CredentialUpdateInput["status"],
       sorobanTxHash: domain.sorobanTxHash,
       userWalletAddress: domain.userWalletAddress,
