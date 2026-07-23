@@ -3,6 +3,7 @@ import { CqrsModule } from "@nestjs/cqrs";
 import { DatabaseModule } from "@src/infra/database/database.module";
 import { CredentialPublicController } from "@src/modules/credential/api/public/credential-public.controller";
 import { CredentialPublicIssueHandler } from "@src/modules/credential/application/public/handlers/credential-public-issue.handler";
+import { CredentialPublicKycStatusHandler } from "@src/modules/credential/application/public/handlers/credential-public-kyc-status.handler";
 import { CredentialPublicRevokeHandler } from "@src/modules/credential/application/public/handlers/credential-public-revoke.handler";
 import { CredentialPublicVerifyHandler } from "@src/modules/credential/application/public/handlers/credential-public-verify.handler";
 import { ICredentialRepository } from "@src/modules/credential/domain/credential.repository";
@@ -17,6 +18,7 @@ import { IssuerModule } from "@src/modules/issuer/issuer.module";
   controllers: [CredentialPublicController],
   providers: [
     CredentialPublicIssueHandler,
+    CredentialPublicKycStatusHandler,
     CredentialPublicRevokeHandler,
     CredentialPublicVerifyHandler,
     CredentialDataAccessObject,

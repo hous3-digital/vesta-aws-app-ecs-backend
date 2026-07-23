@@ -48,4 +48,8 @@ export class CredentialRepository implements ICredentialRepository {
     });
     return credential;
   }
+
+  public async deleteById(id: Id): Promise<void> {
+    await this.prismaService.credential.delete({ where: { id: id.value } });
+  }
 }
