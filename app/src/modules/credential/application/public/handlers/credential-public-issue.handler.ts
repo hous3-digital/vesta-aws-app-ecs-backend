@@ -67,18 +67,23 @@ export class CredentialPublicIssueHandler implements ICommandHandler<CredentialP
       .update(command.cpf)
       .digest("hex");
 
-    // Block early: CPF already has an active credential on another device.
+    // Block early: CPF already has an active/pending credential on another device.
     // Return a semantic 409 so the client can show a clear message before
-    // registering any passkey or running KYC.
+    // registering any passkey or running KYC. Credenciais REJEITADAS são
+    // deletadas silenciosamente para permitir uma nova tentativa de KYC.
     const existingByCpf = await this.credentialRepository.findByCpfDedupKey(cpfDedupKey);
     if (existingByCpf) {
-      throw new ConflictException({
-        error: "CPF_ALREADY_REGISTERED",
-        message: "Este CPF já possui uma credencial ativa. Use o dispositivo onde ela foi criada para autenticar.",
-      });
+      if (existingByCpf.isRejected()) {
+        await this.credentialRepository.deleteById(existingByCpf.id);
+      } else {
+        throw new ConflictException({
+          error: "CPF_ALREADY_REGISTERED",
+          message: "Este CPF já possui uma credencial ativa ou em análise. Use o dispositivo onde ela foi criada para autenticar.",
+        });
+      }
     }
 
-    const credential = Credential.issue({
+    const credentialParams = {
       vcHash,
       cpfDedupKey,
       issuerDid: vc.issuer.id,
@@ -86,7 +91,11 @@ export class CredentialPublicIssueHandler implements ICommandHandler<CredentialP
       subjectDid: vc.credential_subject.id,
       kycLevel: command.kycLevel,
       expiresAt: new Date(vc.expiration_date),
-    });
+    };
+    const credential =
+      command.kycLevel === "pending"
+        ? Credential.issuePending(credentialParams)
+        : Credential.issue(credentialParams);
 
     await this.credentialRepository.saveOrThrow(credential);
 

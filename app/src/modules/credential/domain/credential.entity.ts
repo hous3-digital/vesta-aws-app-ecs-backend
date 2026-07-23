@@ -6,6 +6,8 @@ export enum CredentialStatus {
   Active = "ACTIVE",
   Revoked = "REVOKED",
   Expired = "EXPIRED",
+  Pending = "PENDING",
+  Rejected = "REJECTED",
 }
 
 export interface CredentialProps {
@@ -32,7 +34,7 @@ export class Credential {
   private readonly _issuerDid: string;
   private readonly _issuerId: string;
   private readonly _subjectDid: string;
-  private readonly _kycLevel: string;
+  private _kycLevel: string;
   private _status: CredentialStatus;
   private _sorobanTxHash: string | null;
   private _userWalletAddress: string | null;
@@ -103,6 +105,25 @@ export class Credential {
     });
   }
 
+  /**
+   * Emite uma credencial no estado PENDING — usada quando o KYC do issuer é
+   * assíncrono e ainda não temos o veredito. O status vira ACTIVE via `approve`
+   * ou REJECTED via `reject` quando o webhook do KYC provider chegar.
+   */
+  public static issuePending(params: {
+    vcHash: string;
+    cpfDedupKey: string | null;
+    issuerDid: string;
+    issuerId: string;
+    subjectDid: string;
+    kycLevel: KycLevel;
+    expiresAt: Date;
+  }): Credential {
+    const credential = Credential.issue(params);
+    credential._status = CredentialStatus.Pending;
+    return credential;
+  }
+
   public static restore(props: CredentialProps): Credential {
     return new Credential(props);
   }
@@ -112,6 +133,27 @@ export class Credential {
       throw new BadRequestException("Credencial já está revogada");
     }
     this._status = CredentialStatus.Revoked;
+    this._updatedAt = new Date();
+  }
+
+  public approve(kycLevel: KycLevel): void {
+    if (this._status !== CredentialStatus.Pending) {
+      throw new BadRequestException(
+        `Só é possível aprovar credencial pendente. Status atual: ${this._status}`,
+      );
+    }
+    this._status = CredentialStatus.Active;
+    this._kycLevel = kycLevel;
+    this._updatedAt = new Date();
+  }
+
+  public reject(): void {
+    if (this._status !== CredentialStatus.Pending) {
+      throw new BadRequestException(
+        `Só é possível reprovar credencial pendente. Status atual: ${this._status}`,
+      );
+    }
+    this._status = CredentialStatus.Rejected;
     this._updatedAt = new Date();
   }
 
@@ -135,5 +177,13 @@ export class Credential {
 
   public isApproved(): boolean {
     return this._status === CredentialStatus.Active;
+  }
+
+  public isPending(): boolean {
+    return this._status === CredentialStatus.Pending;
+  }
+
+  public isRejected(): boolean {
+    return this._status === CredentialStatus.Rejected;
   }
 }

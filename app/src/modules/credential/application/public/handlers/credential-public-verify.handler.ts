@@ -5,7 +5,12 @@ import { ICredentialRepository } from "@src/modules/credential/domain/credential
 import { v4 as uuidv4 } from "uuid";
 
 export type CredentialVerifyResult =
-  | { valid: false; reason: "revoked" | "expired" | "not_found"; vcHash: string; expiresAt?: Date }
+  | {
+      valid: false;
+      reason: "revoked" | "expired" | "not_found" | "pending" | "rejected";
+      vcHash: string;
+      expiresAt?: Date;
+    }
   | { valid: true; vcHash: string; kycLevel: string; issuerId: string; expiresAt: string; challengeNonce: string };
 
 @Injectable()
@@ -22,6 +27,14 @@ export class CredentialPublicVerifyHandler implements IQueryHandler<CredentialPu
 
     if (credential.isRevoked()) {
       return { valid: false, reason: "revoked", vcHash: query.vcHash };
+    }
+
+    if (credential.isRejected()) {
+      return { valid: false, reason: "rejected", vcHash: query.vcHash };
+    }
+
+    if (credential.isPending()) {
+      return { valid: false, reason: "pending", vcHash: query.vcHash };
     }
 
     if (credential.isExpired()) {

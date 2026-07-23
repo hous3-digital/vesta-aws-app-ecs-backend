@@ -17,6 +17,8 @@ enum CredentialStatus {
   ACTIVE
   REVOKED
   EXPIRED
+  PENDING
+  REJECTED
 }
 
 model Credential {
