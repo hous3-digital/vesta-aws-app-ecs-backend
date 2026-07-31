@@ -10,7 +10,7 @@ import { StellarService } from "@src/modules/stellar/stellar.service";
 import { VcService } from "@src/modules/vc/vc.service";
 import { WalletService } from "@src/modules/wallet/wallet.service";
 import { ZkService } from "@src/modules/zk/zk.service";
-import type { VestaVC, ZkProofResult } from "@src/shared/types/vesta-vc.types";
+import type { KycLevel, VestaVC, ZkProofResult } from "@src/shared/types/vesta-vc.types";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -58,7 +58,14 @@ export class ProofPublicPrepareHandler implements ICommandHandler<ProofPublicPre
       throw new UnprocessableEntityException("VC expirada — não é possível gerar prova");
     }
 
-    const kycLevelInt = this.vcService.kycLevelToInt(vc.credential_subject.kyc_level);
+    const vcHash = this.vcService.hashVC(vc);
+    const existingCredential = await this.credentialRepository.findByVcHash(vcHash);
+
+    // Fonte da verdade para kycLevel é o banco (webhook do issuer atualiza lá,
+    // mas a VC assinada no device fica cravada no nível de emissão). O `verify`
+    // já lê do banco; alinhar aqui garante que o fluxo KYC assíncrono feche.
+    const effectiveKycLevel: KycLevel = (existingCredential?.kycLevel ?? vc.credential_subject.kyc_level) as KycLevel;
+    const kycLevelInt = this.vcService.kycLevelToInt(effectiveKycLevel);
     if (kycLevelInt < command.minKycLevel) {
       throw new BadRequestException(
         `KYC level insuficiente: VC tem nivel ${kycLevelInt}, mínimo exigido é ${command.minKycLevel}`,
@@ -91,8 +98,7 @@ export class ProofPublicPrepareHandler implements ICommandHandler<ProofPublicPre
       await this.verifyProofLocally(zkResult);
     }
 
-    const vcHash = this.vcService.hashVC(vc);
-    const credential = await this.upsertCredential(vc, vcHash);
+    const credential = existingCredential ?? (await this.upsertCredential(vc, vcHash));
 
     // Resolve issuer feature flag + lazy retroactive wallet creation
     const issuer = await this.issuerRepository.findByExternalId(credential.issuerId);
@@ -144,7 +150,7 @@ export class ProofPublicPrepareHandler implements ICommandHandler<ProofPublicPre
     const prepareSessionId = await this.prepareSessionService.create({
       vcHash,
       proofHash: zkResult.proofHash,
-      kycLevel: vc.credential_subject.kyc_level,
+      kycLevel: effectiveKycLevel,
       verifierId: command.verifierId,
       userWalletAddress,
       expectedSource: source,
