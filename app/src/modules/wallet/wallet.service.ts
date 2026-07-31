@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
 import { EnvService } from "@src/infra/env/env.service";
 import { IIssuerRepository } from "@src/modules/issuer/domain/issuer.repository";
+import { StellarService } from "@src/modules/stellar/stellar.service";
 // Privy server SDK — instalado via @privy-io/server-auth
 import { PrivyClient } from "@privy-io/server-auth";
 
@@ -65,6 +66,7 @@ export class WalletService implements OnModuleInit {
   public constructor(
     private readonly envService: EnvService,
     private readonly issuerRepository: IIssuerRepository,
+    private readonly stellarService: StellarService,
   ) {}
 
   public onModuleInit(): void {
@@ -162,6 +164,11 @@ export class WalletService implements OnModuleInit {
       `[Privy] wallet Stellar criada — subjectDid=${params.subjectDid.slice(0, 24)}..., ` +
         `address=${stellarWallet.address.slice(0, 8)}...`,
     );
+
+    // Privy só devolve o keypair; a conta só existe on-chain depois de um
+    // createAccount financiado. Ativa agora pra que a primeira auth já
+    // encontre a conta pronta (sem o self-healing custar 5-10s de poll).
+    await this.stellarService.ensureAccountExists(stellarWallet.address);
 
     return {
       privyUserId: user.id,
