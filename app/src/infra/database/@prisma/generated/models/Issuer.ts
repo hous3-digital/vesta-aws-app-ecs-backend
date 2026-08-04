@@ -30,6 +30,7 @@ export type IssuerMinAggregateOutputType = {
   name: string | null
   status: string | null
   publicKey: string | null
+  privyEnabled: boolean | null
   createdAt: Date | null
 }
 
@@ -39,6 +40,7 @@ export type IssuerMaxAggregateOutputType = {
   name: string | null
   status: string | null
   publicKey: string | null
+  privyEnabled: boolean | null
   createdAt: Date | null
 }
 
@@ -48,6 +50,7 @@ export type IssuerCountAggregateOutputType = {
   name: number
   status: number
   publicKey: number
+  privyEnabled: number
   createdAt: number
   _all: number
 }
@@ -59,6 +62,7 @@ export type IssuerMinAggregateInputType = {
   name?: true
   status?: true
   publicKey?: true
+  privyEnabled?: true
   createdAt?: true
 }
 
@@ -68,6 +72,7 @@ export type IssuerMaxAggregateInputType = {
   name?: true
   status?: true
   publicKey?: true
+  privyEnabled?: true
   createdAt?: true
 }
 
@@ -77,6 +82,7 @@ export type IssuerCountAggregateInputType = {
   name?: true
   status?: true
   publicKey?: true
+  privyEnabled?: true
   createdAt?: true
   _all?: true
 }
@@ -159,6 +165,7 @@ export type IssuerGroupByOutputType = {
   name: string
   status: string
   publicKey: string | null
+  privyEnabled: boolean
   createdAt: Date
   _count: IssuerCountAggregateOutputType | null
   _min: IssuerMinAggregateOutputType | null
@@ -189,6 +196,7 @@ export type IssuerWhereInput = {
   name?: Prisma.StringFilter<"Issuer"> | string
   status?: Prisma.StringFilter<"Issuer"> | string
   publicKey?: Prisma.StringNullableFilter<"Issuer"> | string | null
+  privyEnabled?: Prisma.BoolFilter<"Issuer"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Issuer"> | Date | string
 }
 
@@ -198,6 +206,7 @@ export type IssuerOrderByWithRelationInput = {
   name?: Prisma.SortOrder
   status?: Prisma.SortOrder
   publicKey?: Prisma.SortOrderInput | Prisma.SortOrder
+  privyEnabled?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -210,6 +219,7 @@ export type IssuerWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringFilter<"Issuer"> | string
   status?: Prisma.StringFilter<"Issuer"> | string
   publicKey?: Prisma.StringNullableFilter<"Issuer"> | string | null
+  privyEnabled?: Prisma.BoolFilter<"Issuer"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Issuer"> | Date | string
 }, "id" | "issuerId">
 
@@ -219,6 +229,7 @@ export type IssuerOrderByWithAggregationInput = {
   name?: Prisma.SortOrder
   status?: Prisma.SortOrder
   publicKey?: Prisma.SortOrderInput | Prisma.SortOrder
+  privyEnabled?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.IssuerCountOrderByAggregateInput
   _max?: Prisma.IssuerMaxOrderByAggregateInput
@@ -234,6 +245,7 @@ export type IssuerScalarWhereWithAggregatesInput = {
   name?: Prisma.StringWithAggregatesFilter<"Issuer"> | string
   status?: Prisma.StringWithAggregatesFilter<"Issuer"> | string
   publicKey?: Prisma.StringNullableWithAggregatesFilter<"Issuer"> | string | null
+  privyEnabled?: Prisma.BoolWithAggregatesFilter<"Issuer"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Issuer"> | Date | string
 }
 
@@ -243,6 +255,7 @@ export type IssuerCreateInput = {
   name: string
   status?: string
   publicKey?: string | null
+  privyEnabled?: boolean
   createdAt: Date | string
 }
 
@@ -252,6 +265,7 @@ export type IssuerUncheckedCreateInput = {
   name: string
   status?: string
   publicKey?: string | null
+  privyEnabled?: boolean
   createdAt: Date | string
 }
 
@@ -261,6 +275,7 @@ export type IssuerUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   publicKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privyEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -270,6 +285,7 @@ export type IssuerUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   publicKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privyEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -279,6 +295,7 @@ export type IssuerCreateManyInput = {
   name: string
   status?: string
   publicKey?: string | null
+  privyEnabled?: boolean
   createdAt: Date | string
 }
 
@@ -288,6 +305,7 @@ export type IssuerUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   publicKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privyEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -297,6 +315,7 @@ export type IssuerUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   publicKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privyEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -306,6 +325,7 @@ export type IssuerCountOrderByAggregateInput = {
   name?: Prisma.SortOrder
   status?: Prisma.SortOrder
   publicKey?: Prisma.SortOrder
+  privyEnabled?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -315,6 +335,7 @@ export type IssuerMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder
   status?: Prisma.SortOrder
   publicKey?: Prisma.SortOrder
+  privyEnabled?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -324,6 +345,7 @@ export type IssuerMinOrderByAggregateInput = {
   name?: Prisma.SortOrder
   status?: Prisma.SortOrder
   publicKey?: Prisma.SortOrder
+  privyEnabled?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -335,6 +357,7 @@ export type IssuerSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   name?: boolean
   status?: boolean
   publicKey?: boolean
+  privyEnabled?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["issuer"]>
 
@@ -344,6 +367,7 @@ export type IssuerSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   name?: boolean
   status?: boolean
   publicKey?: boolean
+  privyEnabled?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["issuer"]>
 
@@ -353,6 +377,7 @@ export type IssuerSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   name?: boolean
   status?: boolean
   publicKey?: boolean
+  privyEnabled?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["issuer"]>
 
@@ -362,10 +387,11 @@ export type IssuerSelectScalar = {
   name?: boolean
   status?: boolean
   publicKey?: boolean
+  privyEnabled?: boolean
   createdAt?: boolean
 }
 
-export type IssuerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "issuerId" | "name" | "status" | "publicKey" | "createdAt", ExtArgs["result"]["issuer"]>
+export type IssuerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "issuerId" | "name" | "status" | "publicKey" | "privyEnabled" | "createdAt", ExtArgs["result"]["issuer"]>
 
 export type $IssuerPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Issuer"
@@ -376,6 +402,7 @@ export type $IssuerPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     name: string
     status: string
     publicKey: string | null
+    privyEnabled: boolean
     createdAt: Date
   }, ExtArgs["result"]["issuer"]>
   composites: {}
@@ -805,6 +832,7 @@ export interface IssuerFieldRefs {
   readonly name: Prisma.FieldRef<"Issuer", 'String'>
   readonly status: Prisma.FieldRef<"Issuer", 'String'>
   readonly publicKey: Prisma.FieldRef<"Issuer", 'String'>
+  readonly privyEnabled: Prisma.FieldRef<"Issuer", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"Issuer", 'DateTime'>
 }
     

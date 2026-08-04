@@ -18,7 +18,7 @@ class PrivateInputsInput {
   public fullName!: string;
 }
 
-export class ProofPublicGenerateAndSubmitInput {
+export class ProofPublicPrepareInput {
   @ApiProperty({ description: "VestaVC object as returned by POST /public/credential" })
   @IsObject()
   public vc!: Record<string, unknown>;

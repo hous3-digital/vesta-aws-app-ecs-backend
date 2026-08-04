@@ -6,6 +6,8 @@ export enum CredentialStatus {
   Active = "ACTIVE",
   Revoked = "REVOKED",
   Expired = "EXPIRED",
+  Pending = "PENDING",
+  Rejected = "REJECTED",
 }
 
 export interface CredentialProps {
@@ -18,6 +20,8 @@ export interface CredentialProps {
   kycLevel: string;
   status: CredentialStatus;
   sorobanTxHash: string | null;
+  userWalletAddress: string | null;
+  privyUserId: string | null;
   createdAt: Date;
   updatedAt: Date;
   expiresAt: Date;
@@ -30,9 +34,11 @@ export class Credential {
   private readonly _issuerDid: string;
   private readonly _issuerId: string;
   private readonly _subjectDid: string;
-  private readonly _kycLevel: string;
+  private _kycLevel: string;
   private _status: CredentialStatus;
   private _sorobanTxHash: string | null;
+  private _userWalletAddress: string | null;
+  private _privyUserId: string | null;
   private readonly _createdAt: Date;
   private _updatedAt: Date;
   private readonly _expiresAt: Date;
@@ -47,6 +53,8 @@ export class Credential {
     this._kycLevel = props.kycLevel;
     this._status = props.status;
     this._sorobanTxHash = props.sorobanTxHash;
+    this._userWalletAddress = props.userWalletAddress;
+    this._privyUserId = props.privyUserId;
     this._createdAt = props.createdAt;
     this._updatedAt = props.updatedAt;
     this._expiresAt = props.expiresAt;
@@ -61,6 +69,8 @@ export class Credential {
   public get kycLevel(): string { return this._kycLevel; }
   public get status(): CredentialStatus { return this._status; }
   public get sorobanTxHash(): string | null { return this._sorobanTxHash; }
+  public get userWalletAddress(): string | null { return this._userWalletAddress; }
+  public get privyUserId(): string | null { return this._privyUserId; }
   public get createdAt(): Date { return this._createdAt; }
   public get updatedAt(): Date { return this._updatedAt; }
   public get expiresAt(): Date { return this._expiresAt; }
@@ -87,10 +97,31 @@ export class Credential {
       kycLevel: params.kycLevel,
       status: CredentialStatus.Active,
       sorobanTxHash: null,
+      userWalletAddress: null,
+      privyUserId: null,
       createdAt: now,
       updatedAt: now,
       expiresAt: params.expiresAt,
     });
+  }
+
+  /**
+   * Emite uma credencial no estado PENDING — usada quando o KYC do issuer é
+   * assíncrono e ainda não temos o veredito. O status vira ACTIVE via `approve`
+   * ou REJECTED via `reject` quando o webhook do KYC provider chegar.
+   */
+  public static issuePending(params: {
+    vcHash: string;
+    cpfDedupKey: string | null;
+    issuerDid: string;
+    issuerId: string;
+    subjectDid: string;
+    kycLevel: KycLevel;
+    expiresAt: Date;
+  }): Credential {
+    const credential = Credential.issue(params);
+    credential._status = CredentialStatus.Pending;
+    return credential;
   }
 
   public static restore(props: CredentialProps): Credential {
@@ -105,6 +136,37 @@ export class Credential {
     this._updatedAt = new Date();
   }
 
+  public approve(kycLevel: KycLevel): void {
+    if (this._status !== CredentialStatus.Pending) {
+      throw new BadRequestException(
+        `Só é possível aprovar credencial pendente. Status atual: ${this._status}`,
+      );
+    }
+    this._status = CredentialStatus.Active;
+    this._kycLevel = kycLevel;
+    this._updatedAt = new Date();
+  }
+
+  public reject(): void {
+    if (this._status !== CredentialStatus.Pending) {
+      throw new BadRequestException(
+        `Só é possível reprovar credencial pendente. Status atual: ${this._status}`,
+      );
+    }
+    this._status = CredentialStatus.Rejected;
+    this._updatedAt = new Date();
+  }
+
+  /**
+   * Associa a wallet Privy criada para o usuário a esta credencial.
+   * Chamado pelo handler de emissão (eager) ou pelo handler de prepare (lazy retroativo).
+   */
+  public attachWallet(params: { userWalletAddress: string; privyUserId: string }): void {
+    this._userWalletAddress = params.userWalletAddress;
+    this._privyUserId = params.privyUserId;
+    this._updatedAt = new Date();
+  }
+
   public isExpired(): boolean {
     return new Date() > this._expiresAt;
   }
@@ -115,5 +177,13 @@ export class Credential {
 
   public isApproved(): boolean {
     return this._status === CredentialStatus.Active;
+  }
+
+  public isPending(): boolean {
+    return this._status === CredentialStatus.Pending;
+  }
+
+  public isRejected(): boolean {
+    return this._status === CredentialStatus.Rejected;
   }
 }

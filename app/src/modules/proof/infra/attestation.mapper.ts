@@ -13,6 +13,7 @@ export class AttestationMapper {
       sorobanTxHash: prisma.sorobanTxHash,
       sorobanLedger: prisma.sorobanLedger,
       onChainResult: prisma.onChainResult,
+      userWalletAddress: prisma.userWalletAddress ?? null,
       createdAt: prisma.createdAt,
     });
   }
@@ -27,6 +28,7 @@ export class AttestationMapper {
       sorobanTxHash: domain.sorobanTxHash,
       sorobanLedger: domain.sorobanLedger,
       onChainResult: domain.onChainResult,
+      userWalletAddress: domain.userWalletAddress,
       createdAt: domain.createdAt,
     };
   }

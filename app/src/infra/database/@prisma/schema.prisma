@@ -17,26 +17,30 @@ enum CredentialStatus {
   ACTIVE
   REVOKED
   EXPIRED
+  PENDING
+  REJECTED
 }
 
 model Credential {
-  id            String           @unique @map("credential_id")
-  nullifier     String?          @unique
-  issuer        String?
-  kycProvider   String?          @map("kyc_provider")
-  kycApproved   Boolean?         @map("kyc_approved")
-  issuedAt      DateTime?        @map("issued_at")
-  vcHash        String           @unique @map("vc_hash")
-  cpfDedupKey   String?          @unique @map("cpf_dedup_key")
-  issuerDid     String           @map("issuer_did")
-  issuerId      String           @map("issuer_id")
-  subjectDid    String           @map("subject_did")
-  kycLevel      String           @map("kyc_level")
-  status        CredentialStatus @default(ACTIVE)
-  sorobanTxHash String?          @map("soroban_tx_hash")
-  createdAt     DateTime         @map("created_at")
-  updatedAt     DateTime         @map("updated_at")
-  expiresAt     DateTime?        @map("expires_at")
+  id                String           @unique @map("credential_id")
+  nullifier         String?          @unique
+  issuer            String?
+  kycProvider       String?          @map("kyc_provider")
+  kycApproved       Boolean?         @map("kyc_approved")
+  issuedAt          DateTime?        @map("issued_at")
+  vcHash            String           @unique @map("vc_hash")
+  cpfDedupKey       String?          @unique @map("cpf_dedup_key")
+  issuerDid         String           @map("issuer_did")
+  issuerId          String           @map("issuer_id")
+  subjectDid        String           @map("subject_did")
+  kycLevel          String           @map("kyc_level")
+  status            CredentialStatus @default(ACTIVE)
+  sorobanTxHash     String?          @map("soroban_tx_hash")
+  userWalletAddress String?          @map("user_wallet_address")
+  privyUserId       String?          @map("privy_user_id")
+  createdAt         DateTime         @map("created_at")
+  updatedAt         DateTime         @map("updated_at")
+  expiresAt         DateTime?        @map("expires_at")
 
   @@index([status])
   @@index([kycProvider])
@@ -44,29 +48,55 @@ model Credential {
 }
 
 model Attestation {
-  id            String   @unique @map("attestation_id")
-  vcHash        String   @map("vc_hash")
-  proofHash     String   @map("proof_hash")
-  verifierId    String   @map("verifier_id")
-  kycLevel      String   @map("kyc_level")
-  sorobanTxHash String?  @map("soroban_tx_hash")
-  sorobanLedger Int?     @map("soroban_ledger")
-  onChainResult Boolean  @map("on_chain_result")
-  createdAt     DateTime @map("created_at")
+  id                String   @unique @map("attestation_id")
+  vcHash            String   @map("vc_hash")
+  proofHash         String   @map("proof_hash")
+  verifierId        String   @map("verifier_id")
+  kycLevel          String   @map("kyc_level")
+  sorobanTxHash     String?  @map("soroban_tx_hash")
+  sorobanLedger     Int?     @map("soroban_ledger")
+  onChainResult     Boolean  @map("on_chain_result")
+  userWalletAddress String?  @map("user_wallet_address")
+  createdAt         DateTime @map("created_at")
 
   @@index([vcHash])
   @@map("attestation")
 }
 
 model Issuer {
-  id        String   @unique @map("issuer_id")
-  issuerId  String   @unique @map("issuer_external_id")
-  name      String
-  status    String   @default("active")
-  publicKey String?  @map("public_key")
-  createdAt DateTime @map("created_at")
+  id           String   @unique @map("issuer_id")
+  issuerId     String   @unique @map("issuer_external_id")
+  name         String
+  status       String   @default("active")
+  publicKey    String?  @map("public_key")
+  privyEnabled Boolean  @default(false) @map("privy_enabled")
+  createdAt    DateTime @map("created_at")
 
   @@map("issuer")
+}
+
+model BackofficeUser {
+  id           String   @unique @map("backoffice_user_id")
+  issuerId     String   @map("issuer_external_id")
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  name         String?
+  active       Boolean  @default(true)
+  createdAt    DateTime @map("created_at")
+  updatedAt    DateTime @map("updated_at")
+
+  @@index([issuerId])
+  @@map("backoffice_users")
+}
+
+model Verifier {
+  id        String   @unique @map("verifier_id")
+  name      String
+  status    String   @default("active")
+  createdAt DateTime @map("created_at")
+  updatedAt DateTime @map("updated_at")
+
+  @@map("verifier")
 }
 
 model Ingress {
@@ -89,12 +119,14 @@ model Egress {
 
 model ApiKey {
   id        String    @unique @map("api_key_id")
+  issuerId  String?   @map("issuer_external_id")
   key       String    @unique
   name      String
   active    Boolean   @default(true)
   createdAt DateTime  @map("created_at")
   revokedAt DateTime? @map("revoked_at")
 
+  @@index([issuerId])
   @@index([key, active])
   @@map("api_keys")
 }

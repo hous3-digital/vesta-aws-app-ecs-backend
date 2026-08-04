@@ -64,4 +64,24 @@ export class EnvService {
   public get ADMIN_SECRET() {
     return this.configService.get("ADMIN_SECRET") as string | undefined;
   }
+
+  public get BACKOFFICE_JWT_SECRET() {
+    return (this.configService.get("BACKOFFICE_JWT_SECRET") ?? this.ADMIN_SECRET) as string | undefined;
+  }
+
+  public get BACKOFFICE_JWT_EXPIRES_IN() {
+    return this.configService.get("BACKOFFICE_JWT_EXPIRES_IN") as string;
+  }
+
+  public get PRIVY_APP_ID() {
+    return this.configService.get("PRIVY_APP_ID") as string | undefined;
+  }
+
+  public get PRIVY_APP_SECRET() {
+    return this.configService.get("PRIVY_APP_SECRET") as string | undefined;
+  }
+
+  public get COMMISSION_PER_VERIFICATION_BRL() {
+    return this.configService.get("COMMISSION_PER_VERIFICATION_BRL") as number;
+  }
 }

@@ -42,7 +42,11 @@ environment = [
   },
   {
     name  = "CORS_ALLOWED_ORIGINS",
-    value = "https://vesta-demo-stellar.vercel.app,http://localhost:5173"
+    value = "https://backoffice.hous3-trust.com,https://vesta-demo-stellar.vercel.app,http://localhost:5173"
+  },
+  {
+    name  = "BACKOFFICE_JWT_EXPIRES_IN",
+    value = "8h"
   }
 ]
 
@@ -66,5 +70,21 @@ secrets = [
   {
     name      = "ADMIN_SECRET",
     valueFrom = "arn:aws:secretsmanager:us-east-1:694580672968:secret:ADMIN_SECRET-VPvnPW"
+  },
+  {
+    name      = "BACKOFFICE_JWT_SECRET",
+    valueFrom = "arn:aws:secretsmanager:us-east-1:694580672968:secret:BACKOFFICE_JWT_SECRET-Jx25DJ"
+  },
+  {
+    name      = "COMMISSION_PER_VERIFICATION_BRL",
+    valueFrom = "arn:aws:secretsmanager:us-east-1:694580672968:secret:COMMISSION_PER_VERIFICATION_BRL-eGiaMo"
+  },
+  {
+    name      = "PRIVY_APP_SECRET",
+    valueFrom = "arn:aws:secretsmanager:us-east-1:694580672968:secret:PRIVY_APP_SECRET-jGPt35"
+  },
+  {
+    name      = "PRIVY_APP_ID",
+    valueFrom = "arn:aws:secretsmanager:us-east-1:694580672968:secret:PRIVY_APP_ID-b1Co0C"
   }
 ]

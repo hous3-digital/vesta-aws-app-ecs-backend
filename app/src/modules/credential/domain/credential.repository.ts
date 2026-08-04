@@ -8,4 +8,5 @@ export abstract class ICredentialRepository {
   abstract saveOrThrow(credential: Credential): Promise<Credential>;
   abstract updateOrThrow(credential: Credential): Promise<Credential>;
   abstract upsertByVcHash(credential: Credential): Promise<Credential>;
+  abstract deleteById(id: Id): Promise<void>;
 }

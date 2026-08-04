@@ -54,6 +54,8 @@ export const ModelName = {
   Credential: 'Credential',
   Attestation: 'Attestation',
   Issuer: 'Issuer',
+  BackofficeUser: 'BackofficeUser',
+  Verifier: 'Verifier',
   Ingress: 'Ingress',
   Egress: 'Egress',
   ApiKey: 'ApiKey'
@@ -90,6 +92,8 @@ export const CredentialScalarFieldEnum = {
   kycLevel: 'kycLevel',
   status: 'status',
   sorobanTxHash: 'sorobanTxHash',
+  userWalletAddress: 'userWalletAddress',
+  privyUserId: 'privyUserId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   expiresAt: 'expiresAt'
@@ -107,6 +111,7 @@ export const AttestationScalarFieldEnum = {
   sorobanTxHash: 'sorobanTxHash',
   sorobanLedger: 'sorobanLedger',
   onChainResult: 'onChainResult',
+  userWalletAddress: 'userWalletAddress',
   createdAt: 'createdAt'
 } as const
 
@@ -119,10 +124,36 @@ export const IssuerScalarFieldEnum = {
   name: 'name',
   status: 'status',
   publicKey: 'publicKey',
+  privyEnabled: 'privyEnabled',
   createdAt: 'createdAt'
 } as const
 
 export type IssuerScalarFieldEnum = (typeof IssuerScalarFieldEnum)[keyof typeof IssuerScalarFieldEnum]
+
+
+export const BackofficeUserScalarFieldEnum = {
+  id: 'id',
+  issuerId: 'issuerId',
+  email: 'email',
+  passwordHash: 'passwordHash',
+  name: 'name',
+  active: 'active',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BackofficeUserScalarFieldEnum = (typeof BackofficeUserScalarFieldEnum)[keyof typeof BackofficeUserScalarFieldEnum]
+
+
+export const VerifierScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type VerifierScalarFieldEnum = (typeof VerifierScalarFieldEnum)[keyof typeof VerifierScalarFieldEnum]
 
 
 export const IngressScalarFieldEnum = {
@@ -147,6 +178,7 @@ export type EgressScalarFieldEnum = (typeof EgressScalarFieldEnum)[keyof typeof 
 
 export const ApiKeyScalarFieldEnum = {
   id: 'id',
+  issuerId: 'issuerId',
   key: 'key',
   name: 'name',
   active: 'active',

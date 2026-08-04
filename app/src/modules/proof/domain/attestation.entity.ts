@@ -9,6 +9,7 @@ export interface AttestationProps {
   sorobanTxHash: string | null;
   sorobanLedger: number | null;
   onChainResult: boolean;
+  userWalletAddress: string | null;
   createdAt: Date;
 }
 
@@ -21,6 +22,7 @@ export class Attestation {
   private readonly _sorobanTxHash: string | null;
   private readonly _sorobanLedger: number | null;
   private readonly _onChainResult: boolean;
+  private readonly _userWalletAddress: string | null;
   private readonly _createdAt: Date;
 
   private constructor(props: AttestationProps) {
@@ -32,6 +34,7 @@ export class Attestation {
     this._sorobanTxHash = props.sorobanTxHash;
     this._sorobanLedger = props.sorobanLedger;
     this._onChainResult = props.onChainResult;
+    this._userWalletAddress = props.userWalletAddress;
     this._createdAt = props.createdAt;
   }
 
@@ -43,6 +46,7 @@ export class Attestation {
   public get sorobanTxHash(): string | null { return this._sorobanTxHash; }
   public get sorobanLedger(): number | null { return this._sorobanLedger; }
   public get onChainResult(): boolean { return this._onChainResult; }
+  public get userWalletAddress(): string | null { return this._userWalletAddress; }
   public get createdAt(): Date { return this._createdAt; }
 
   public static create(params: {
@@ -53,6 +57,7 @@ export class Attestation {
     sorobanTxHash: string | null;
     sorobanLedger: number | null;
     onChainResult: boolean;
+    userWalletAddress: string | null;
   }): Attestation {
     return new Attestation({
       id: Id.create("attestation"),
