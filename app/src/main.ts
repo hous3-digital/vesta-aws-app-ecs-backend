@@ -87,9 +87,14 @@ async function bootstrap() {
   const corsOrigins = envService.CORS_ALLOWED_ORIGINS;
   if (corsOrigins) {
     app.enableCors({
-      origin: corsOrigins.split(",").map((o) => o.trim()),
+      origin: corsOrigins.split(",").map((o) => {
+        const trimmed = o.trim();
+        if (!trimmed.includes("*")) return trimmed;
+        const escaped = trimmed.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*");
+        return new RegExp("^" + escaped + "$");
+      }),
       methods: ["GET", "POST", "OPTIONS"],
-      allowedHeaders: ["Content-Type", "X-Api-Key", "X-Vesta-Issuer-ID"],
+      allowedHeaders: ["Authorization", "Content-Type", "X-Api-Key"],
       credentials: true,
     });
   } else if (!envService.IS_PRODUCTION) {

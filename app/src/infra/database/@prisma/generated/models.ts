@@ -11,6 +11,8 @@
 export type * from './models/Credential'
 export type * from './models/Attestation'
 export type * from './models/Issuer'
+export type * from './models/BackofficeUser'
+export type * from './models/Verifier'
 export type * from './models/Ingress'
 export type * from './models/Egress'
 export type * from './models/ApiKey'

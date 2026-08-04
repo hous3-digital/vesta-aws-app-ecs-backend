@@ -1,6 +1,6 @@
 import type { VestaVC } from "@src/shared/types/vesta-vc.types";
 
-export class ProofPublicGenerateAndSubmitCommand {
+export class ProofPublicPrepareCommand {
   public constructor(
     public readonly vc: VestaVC,
     public readonly privateInputs: { cpf: string; birthDate: string; fullName: string },

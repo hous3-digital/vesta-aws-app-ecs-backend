@@ -29,6 +29,16 @@ const envSchema = z.object({
   REDIS_URL: z.string().optional(),
 
   ADMIN_SECRET: z.string().min(32, "ADMIN_SECRET must be at least 32 characters").optional(),
+  BACKOFFICE_JWT_SECRET: z.string().min(32, "BACKOFFICE_JWT_SECRET must be at least 32 characters").optional(),
+  BACKOFFICE_JWT_EXPIRES_IN: z.string().min(1).optional().default("8h"),
+
+  PRIVY_APP_ID: z.string().min(1).optional(),
+  PRIVY_APP_SECRET: z.string().min(32, "PRIVY_APP_SECRET must be at least 32 characters").optional(),
+
+  COMMISSION_PER_VERIFICATION_BRL: z
+    .string()
+    .default("1.3475")
+    .transform((v) => parseFloat(v)),
 });
 
 export const validate = { validate: envConfig };

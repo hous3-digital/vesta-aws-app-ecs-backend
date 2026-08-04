@@ -387,6 +387,8 @@ export const ModelName = {
   Credential: 'Credential',
   Attestation: 'Attestation',
   Issuer: 'Issuer',
+  BackofficeUser: 'BackofficeUser',
+  Verifier: 'Verifier',
   Ingress: 'Ingress',
   Egress: 'Egress',
   ApiKey: 'ApiKey'
@@ -405,7 +407,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "credential" | "attestation" | "issuer" | "ingress" | "egress" | "apiKey"
+    modelProps: "credential" | "attestation" | "issuer" | "backofficeUser" | "verifier" | "ingress" | "egress" | "apiKey"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -628,6 +630,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.IssuerCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.IssuerCountAggregateOutputType> | number
+        }
+      }
+    }
+    BackofficeUser: {
+      payload: Prisma.$BackofficeUserPayload<ExtArgs>
+      fields: Prisma.BackofficeUserFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BackofficeUserFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BackofficeUserPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BackofficeUserFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BackofficeUserPayload>
+        }
+        findFirst: {
+          args: Prisma.BackofficeUserFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BackofficeUserPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BackofficeUserFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BackofficeUserPayload>
+        }
+        findMany: {
+          args: Prisma.BackofficeUserFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BackofficeUserPayload>[]
+        }
+        create: {
+          args: Prisma.BackofficeUserCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BackofficeUserPayload>
+        }
+        createMany: {
+          args: Prisma.BackofficeUserCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BackofficeUserCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BackofficeUserPayload>[]
+        }
+        delete: {
+          args: Prisma.BackofficeUserDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BackofficeUserPayload>
+        }
+        update: {
+          args: Prisma.BackofficeUserUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BackofficeUserPayload>
+        }
+        deleteMany: {
+          args: Prisma.BackofficeUserDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BackofficeUserUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BackofficeUserUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BackofficeUserPayload>[]
+        }
+        upsert: {
+          args: Prisma.BackofficeUserUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BackofficeUserPayload>
+        }
+        aggregate: {
+          args: Prisma.BackofficeUserAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBackofficeUser>
+        }
+        groupBy: {
+          args: Prisma.BackofficeUserGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BackofficeUserGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BackofficeUserCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BackofficeUserCountAggregateOutputType> | number
+        }
+      }
+    }
+    Verifier: {
+      payload: Prisma.$VerifierPayload<ExtArgs>
+      fields: Prisma.VerifierFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.VerifierFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerifierPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.VerifierFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerifierPayload>
+        }
+        findFirst: {
+          args: Prisma.VerifierFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerifierPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.VerifierFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerifierPayload>
+        }
+        findMany: {
+          args: Prisma.VerifierFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerifierPayload>[]
+        }
+        create: {
+          args: Prisma.VerifierCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerifierPayload>
+        }
+        createMany: {
+          args: Prisma.VerifierCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.VerifierCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerifierPayload>[]
+        }
+        delete: {
+          args: Prisma.VerifierDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerifierPayload>
+        }
+        update: {
+          args: Prisma.VerifierUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerifierPayload>
+        }
+        deleteMany: {
+          args: Prisma.VerifierDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.VerifierUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.VerifierUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerifierPayload>[]
+        }
+        upsert: {
+          args: Prisma.VerifierUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerifierPayload>
+        }
+        aggregate: {
+          args: Prisma.VerifierAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateVerifier>
+        }
+        groupBy: {
+          args: Prisma.VerifierGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VerifierGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.VerifierCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VerifierCountAggregateOutputType> | number
         }
       }
     }
@@ -907,6 +1057,8 @@ export const CredentialScalarFieldEnum = {
   kycLevel: 'kycLevel',
   status: 'status',
   sorobanTxHash: 'sorobanTxHash',
+  userWalletAddress: 'userWalletAddress',
+  privyUserId: 'privyUserId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   expiresAt: 'expiresAt'
@@ -924,6 +1076,7 @@ export const AttestationScalarFieldEnum = {
   sorobanTxHash: 'sorobanTxHash',
   sorobanLedger: 'sorobanLedger',
   onChainResult: 'onChainResult',
+  userWalletAddress: 'userWalletAddress',
   createdAt: 'createdAt'
 } as const
 
@@ -936,10 +1089,36 @@ export const IssuerScalarFieldEnum = {
   name: 'name',
   status: 'status',
   publicKey: 'publicKey',
+  privyEnabled: 'privyEnabled',
   createdAt: 'createdAt'
 } as const
 
 export type IssuerScalarFieldEnum = (typeof IssuerScalarFieldEnum)[keyof typeof IssuerScalarFieldEnum]
+
+
+export const BackofficeUserScalarFieldEnum = {
+  id: 'id',
+  issuerId: 'issuerId',
+  email: 'email',
+  passwordHash: 'passwordHash',
+  name: 'name',
+  active: 'active',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BackofficeUserScalarFieldEnum = (typeof BackofficeUserScalarFieldEnum)[keyof typeof BackofficeUserScalarFieldEnum]
+
+
+export const VerifierScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type VerifierScalarFieldEnum = (typeof VerifierScalarFieldEnum)[keyof typeof VerifierScalarFieldEnum]
 
 
 export const IngressScalarFieldEnum = {
@@ -964,6 +1143,7 @@ export type EgressScalarFieldEnum = (typeof EgressScalarFieldEnum)[keyof typeof 
 
 export const ApiKeyScalarFieldEnum = {
   id: 'id',
+  issuerId: 'issuerId',
   key: 'key',
   name: 'name',
   active: 'active',
@@ -1208,6 +1388,8 @@ export type GlobalOmitConfig = {
   credential?: Prisma.CredentialOmit
   attestation?: Prisma.AttestationOmit
   issuer?: Prisma.IssuerOmit
+  backofficeUser?: Prisma.BackofficeUserOmit
+  verifier?: Prisma.VerifierOmit
   ingress?: Prisma.IngressOmit
   egress?: Prisma.EgressOmit
   apiKey?: Prisma.ApiKeyOmit

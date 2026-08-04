@@ -1,7 +1,18 @@
 import { Injectable, Logger, OnModuleInit, ServiceUnavailableException } from "@nestjs/common";
 import { EnvService } from "@src/infra/env/env.service";
 import type { EncodedProof, EncodedVerificationKey } from "@src/shared/types/vesta-vc.types";
-import { BASE_FEE, Contract, Keypair, rpc as SorobanRpc, TransactionBuilder, nativeToScVal, xdr } from "@stellar/stellar-sdk";
+import {
+  BASE_FEE,
+  Contract,
+  FeeBumpTransaction,
+  Keypair,
+  Operation,
+  rpc as SorobanRpc,
+  Transaction,
+  TransactionBuilder,
+  nativeToScVal,
+  xdr,
+} from "@stellar/stellar-sdk";
 
 export interface ZkSubmitParams {
   encodedProof: EncodedProof;
@@ -9,6 +20,16 @@ export interface ZkSubmitParams {
   encodedPublicSignals: Buffer[];
   vcHash: string;
   verifierId: string;
+}
+
+export interface BuildUnsignedZkProofTxParams extends ZkSubmitParams {
+  source: string;
+}
+
+export interface BuildUnsignedZkProofTxResult {
+  unsignedXdr: string;
+  innerTxHash: string;
+  sourceAccountSignedByBackend: boolean;
 }
 
 export interface StellarSubmitResult {
@@ -54,6 +75,248 @@ export class StellarService implements OnModuleInit {
 
   public getContractId(): string {
     return this.contractId;
+  }
+
+  public getDeployerAddress(): string {
+    if (!this.deployerSecret) return "";
+    return Keypair.fromSecret(this.deployerSecret).publicKey();
+  }
+
+  /**
+   * Ativa uma conta Stellar on-chain financiando-a a partir do deployer.
+   *
+   * Privy só gera o keypair; a conta só passa a existir no ledger depois de
+   * um createAccount. Idempotente: se `getAccount` responde ok, é no-op.
+   * Chamado tanto na criação da wallet (WalletService) quanto no fallback de
+   * usuários retroativos dentro de buildUnsignedZkProofTx.
+   */
+  public async ensureAccountExists(address: string): Promise<void> {
+    if (this.mockMode) return;
+
+    try {
+      await this.server.getAccount(address);
+      return;
+    } catch (err) {
+      const msg = (err as Error).message;
+      if (!/account not found/i.test(msg)) {
+        this.logger.error(`ensureAccountExists: falha inesperada em getAccount(${address}): ${msg}`);
+        throw new ServiceUnavailableException("Serviço blockchain temporariamente indisponível");
+      }
+    }
+
+    const deployer = Keypair.fromSecret(this.deployerSecret);
+    this.logger.log(`Ativando conta Stellar ${address} — financiando 1.5 XLM a partir do deployer`);
+
+    let deployerAccount;
+    try {
+      deployerAccount = await this.server.getAccount(deployer.publicKey());
+    } catch (err) {
+      this.logger.error(`ensureAccountExists: getAccount(deployer) falhou: ${(err as Error).message}`);
+      throw new ServiceUnavailableException("Serviço blockchain temporariamente indisponível");
+    }
+
+    const tx = new TransactionBuilder(deployerAccount, {
+      fee: BASE_FEE,
+      networkPassphrase: this.networkPassphrase,
+    })
+      .addOperation(Operation.createAccount({ destination: address, startingBalance: "1.5" }))
+      .setTimeout(30)
+      .build();
+    tx.sign(deployer);
+
+    let sendResult;
+    try {
+      sendResult = await this.server.sendTransaction(tx);
+    } catch (err) {
+      this.logger.error(`ensureAccountExists: sendTransaction falhou: ${(err as Error).message}`);
+      throw new ServiceUnavailableException("Serviço blockchain temporariamente indisponível");
+    }
+
+    if (sendResult.status === "ERROR") {
+      // op_already_exists = race: outra chamada concorrente já ativou — sucesso.
+      const errStr = JSON.stringify(sendResult.errorResult);
+      if (/already_exists/i.test(errStr)) {
+        this.logger.warn(`ensureAccountExists: conta ${address} ativada por outra chamada concorrente`);
+        return;
+      }
+      this.logger.error(`ensureAccountExists: createAccount rejeitada: ${errStr}`);
+      throw new ServiceUnavailableException("Falha ao ativar conta Stellar");
+    }
+
+    // pollTransactionResult interpreta returnValue como bool (protocolo Soroban);
+    // createAccount não tem returnValue, então checamos status direto aqui.
+    const txHash = sendResult.hash;
+    const maxAttempts = 15;
+    const delayMs = 2000;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      await new Promise<void>((r) => setTimeout(r, delayMs));
+      const result = await this.server.getTransaction(txHash);
+      if (result.status === SorobanRpc.Api.GetTransactionStatus.SUCCESS) {
+        this.logger.log(`Conta Stellar ${address} ativada (tentativa ${attempt}) — tx: ${txHash}`);
+        return;
+      }
+      if (result.status === SorobanRpc.Api.GetTransactionStatus.FAILED) {
+        this.logger.error(`Ativação de conta ${address} rejeitada on-chain — tx: ${txHash}`);
+        throw new ServiceUnavailableException("Falha ao ativar conta Stellar");
+      }
+    }
+    throw new ServiceUnavailableException("Ativação de conta Stellar não confirmada no ledger");
+  }
+
+  /**
+   * Monta uma tx Soroban invoke_host_function preparada (simulada + ajustada),
+   * com source dinâmico — pode ser o endereço da wallet do usuário (modo
+   * Privy) OU o deployer da Vesta (modo legado interno).
+   *
+   * Retorna o XDR sem assinar. Quando o source é o deployer, o backend já
+   * assina antes de retornar (campo sourceAccountSignedByBackend=true) para
+   * o SDK apenas repassar; quando é o usuário, o SDK precisa assinar antes
+   * de chamar submitWithFeeBump.
+   */
+  public async buildUnsignedZkProofTx(
+    params: BuildUnsignedZkProofTxParams,
+  ): Promise<BuildUnsignedZkProofTxResult> {
+    if (this.mockMode) {
+      // Em mock mode, retorna XDR placeholder — submit-signed também mockado
+      return {
+        unsignedXdr: `MOCK_XDR_${Date.now()}`,
+        innerTxHash: `MOCK_TX_${Date.now()}`,
+        sourceAccountSignedByBackend: true,
+      };
+    }
+
+    const contract = new Contract(this.contractId);
+
+    let account;
+    try {
+      account = await this.server.getAccount(params.source);
+    } catch (err) {
+      const msg = (err as Error).message;
+      const isNotFound = /account not found/i.test(msg);
+      const isUserWallet = params.source !== this.getDeployerAddress();
+
+      if (isNotFound && isUserWallet) {
+        // Wallet do usuário existe no Privy/DB mas nunca foi financiada on-chain
+        // (usuários criados antes do fix de ativação automática). Ativa e refaz.
+        this.logger.warn(`Wallet ${params.source} não ativa on-chain — tentando ativar via deployer`);
+        await this.ensureAccountExists(params.source);
+        account = await this.server.getAccount(params.source);
+      } else {
+        this.logger.error(`Não foi possível carregar conta Stellar (${params.source}): ${msg}`);
+        throw new ServiceUnavailableException("Serviço blockchain temporariamente indisponível");
+      }
+    }
+
+    const args = this.buildVerifyProofArgs(params);
+
+    const tx = new TransactionBuilder(account, {
+      fee: BASE_FEE,
+      networkPassphrase: this.networkPassphrase,
+    })
+      .addOperation(contract.call("verify_proof", ...args))
+      .setTimeout(60)
+      .build();
+
+    let preparedTx;
+    try {
+      preparedTx = await this.server.prepareTransaction(tx);
+    } catch (err) {
+      this.logger.error(`Falha ao preparar transação Soroban: ${(err as Error).message}`);
+      throw new ServiceUnavailableException("Serviço blockchain temporariamente indisponível");
+    }
+
+    const isDeployerSource = params.source === this.getDeployerAddress();
+    let sourceAccountSignedByBackend = false;
+
+    if (isDeployerSource) {
+      // Modo legado interno (Issuer sem privyEnabled). O backend assina como
+      // source porque o SDK não tem acesso à chave do deployer.
+      const keypair = Keypair.fromSecret(this.deployerSecret);
+      preparedTx.sign(keypair);
+      sourceAccountSignedByBackend = true;
+    }
+
+    return {
+      unsignedXdr: preparedTx.toXDR(),
+      innerTxHash: preparedTx.hash().toString("hex"),
+      sourceAccountSignedByBackend,
+    };
+  }
+
+  /**
+   * Recebe uma tx XDR já assinada (pelo usuário, ou pelo backend em modo
+   * legado), envolve em FeeBumpTransaction patrocinada pelo deployer Vesta,
+   * submete e aguarda confirmação.
+   */
+  public async submitWithFeeBump(signedTxXdr: string): Promise<StellarSubmitResult> {
+    if (this.mockMode) {
+      return this.buildMockResult();
+    }
+
+    const deployerKeypair = Keypair.fromSecret(this.deployerSecret);
+
+    let innerTx: Transaction;
+    try {
+      const parsed = TransactionBuilder.fromXDR(signedTxXdr, this.networkPassphrase);
+      if (parsed instanceof FeeBumpTransaction) {
+        throw new ServiceUnavailableException("XDR recebido já é uma fee-bump tx — abortando");
+      }
+      innerTx = parsed as Transaction;
+    } catch (err) {
+      this.logger.error(`XDR recebido inválido: ${(err as Error).message}`);
+      throw new ServiceUnavailableException("Transação assinada inválida");
+    }
+
+    // Fee suficiente pra cobrir gas Soroban; Stellar exige >= 2x BASE_FEE
+    const feeBumpTx = TransactionBuilder.buildFeeBumpTransaction(
+      deployerKeypair,
+      (parseInt(BASE_FEE, 10) * 10).toString(),
+      innerTx,
+      this.networkPassphrase,
+    );
+    feeBumpTx.sign(deployerKeypair);
+
+    let sendResult;
+    try {
+      sendResult = await this.server.sendTransaction(feeBumpTx);
+    } catch (err) {
+      this.logger.error(`Falha ao enviar fee-bump tx: ${(err as Error).message}`);
+      throw new ServiceUnavailableException("Serviço blockchain temporariamente indisponível");
+    }
+
+    if (sendResult.status === "ERROR") {
+      this.logger.error(`Fee-bump tx rejeitada: ${JSON.stringify(sendResult.errorResult)}`);
+      throw new ServiceUnavailableException("Transação blockchain rejeitada");
+    }
+
+    const txHash = sendResult.hash;
+    this.logger.log(`Fee-bump tx enviada — hash: ${txHash}`);
+
+    const { ledger, onChainResult } = await this.pollTransactionResult(txHash);
+    return { txHash, ledger, onChainResult, mock: false };
+  }
+
+  private buildVerifyProofArgs(params: ZkSubmitParams): xdr.ScVal[] {
+    const toBuffer = (v: Buffer | { type: string; data: number[] }): Buffer =>
+      Buffer.isBuffer(v) ? v : Buffer.from((v as { type: string; data: number[] }).data);
+    const bufToScVal = (buf: Buffer | { type: string; data: number[] }) =>
+      nativeToScVal(toBuffer(buf), { type: "bytes" });
+
+    const vkIcScVals = params.encodedVk.ic.map(bufToScVal);
+    const pubSignalScVals = params.encodedPublicSignals.map(bufToScVal);
+
+    return [
+      bufToScVal(params.encodedProof.negatedA),
+      bufToScVal(params.encodedProof.proofB),
+      bufToScVal(params.encodedProof.proofC),
+      bufToScVal(params.encodedVk.alpha),
+      bufToScVal(params.encodedVk.beta),
+      bufToScVal(params.encodedVk.gamma),
+      bufToScVal(params.encodedVk.delta),
+      xdr.ScVal.scvVec(vkIcScVals),
+      xdr.ScVal.scvVec(pubSignalScVals),
+      nativeToScVal(params.vcHash, { type: "string" }),
+    ];
   }
 
   public async submitZkProof(params: ZkSubmitParams): Promise<StellarSubmitResult> {

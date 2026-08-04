@@ -78,6 +78,7 @@ export class ProofPublicSubmitHandler implements ICommandHandler<ProofPublicSubm
       sorobanTxHash: stellarResult.txHash,
       sorobanLedger: stellarResult.ledger,
       onChainResult: stellarResult.onChainResult,
+      userWalletAddress: null,
     });
 
     await this.attestationRepository.saveOrThrow(attestation);

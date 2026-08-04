@@ -17,6 +17,8 @@ Table credentials {
   kycLevel String [not null]
   status CredentialStatus [not null, default: 'ACTIVE']
   sorobanTxHash String
+  userWalletAddress String
+  privyUserId String
   createdAt DateTime [not null]
   updatedAt DateTime [not null]
   expiresAt DateTime
@@ -31,6 +33,7 @@ Table attestation {
   sorobanTxHash String
   sorobanLedger Int
   onChainResult Boolean [not null]
+  userWalletAddress String
   createdAt DateTime [not null]
 }
 
@@ -40,7 +43,27 @@ Table issuer {
   name String [not null]
   status String [not null, default: 'active']
   publicKey String
+  privyEnabled Boolean [not null, default: false]
   createdAt DateTime [not null]
+}
+
+Table backoffice_users {
+  id String [unique, not null]
+  issuerId String [not null]
+  email String [unique, not null]
+  passwordHash String [not null]
+  name String
+  active Boolean [not null, default: true]
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+}
+
+Table verifier {
+  id String [unique, not null]
+  name String [not null]
+  status String [not null, default: 'active']
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
 }
 
 Table ingress {
@@ -59,6 +82,7 @@ Table egress {
 
 Table api_keys {
   id String [unique, not null]
+  issuerId String
   key String [unique, not null]
   name String [not null]
   active Boolean [not null, default: true]
