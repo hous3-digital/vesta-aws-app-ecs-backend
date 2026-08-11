@@ -42,7 +42,7 @@ environment = [
   },
   {
     name  = "CORS_ALLOWED_ORIGINS",
-    value = "https://backoffice.hous3-trust.com,https://vesta-demo-stellar.vercel.app,http://localhost:5173,https://*.idcerberus.com"
+    value = "https://backoffice.hous3-trust.com,https://backoffice.vestazk.com,https://vesta-demo-stellar.vercel.app,http://localhost:5173,https://*.idcerberus.com"
   },
   {
     name  = "BACKOFFICE_JWT_EXPIRES_IN",
