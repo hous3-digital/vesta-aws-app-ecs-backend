@@ -287,6 +287,31 @@ jobs:
       - name: Install dependencies
         run: cd app && yarn install --frozen-lockfile
 
+      - name: Validate Delivery 1 secrets
+        env:
+          COMMISSION_RATE_SECRET_ID: "arn:aws:secretsmanager:us-east-1:014468369894:secret:COMMISSION_PER_VERIFICATION_BRL-7gevTW"
+          PRIVY_APP_ID_SECRET_ID: "arn:aws:secretsmanager:us-east-1:014468369894:secret:PRIVY_APP_ID-Q3bsf0"
+          PRIVY_APP_SECRET_SECRET_ID: "arn:aws:secretsmanager:us-east-1:014468369894:secret:PRIVY_APP_SECRET-pqOmBK"
+        run: |
+          COMMISSION_RATE="$(aws secretsmanager get-secret-value \
+            --secret-id "${COMMISSION_RATE_SECRET_ID}" \
+            --query SecretString \
+            --output text)"
+          PRIVY_APP_ID="$(aws secretsmanager get-secret-value \
+            --secret-id "${PRIVY_APP_ID_SECRET_ID}" \
+            --query SecretString \
+            --output text)"
+          PRIVY_APP_SECRET="$(aws secretsmanager get-secret-value \
+            --secret-id "${PRIVY_APP_SECRET_SECRET_ID}" \
+            --query SecretString \
+            --output text)"
+          echo "::add-mask::${COMMISSION_RATE}"
+          echo "::add-mask::${PRIVY_APP_ID}"
+          echo "::add-mask::${PRIVY_APP_SECRET}"
+          test "${COMMISSION_RATE}" = "1.37"
+          test -n "${PRIVY_APP_ID}"
+          test -n "${PRIVY_APP_SECRET}"
+
       - name: Apply pending migrations
         env:
           DATABASE_SECRET_ID: "arn:aws:secretsmanager:us-east-1:014468369894:secret:DATABASE_URL-89PrmK"
