@@ -1,12 +1,15 @@
 import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
 import { EnvService } from "@src/infra/env/env.service";
+import { PrismaService } from "@src/infra/database/@prisma/prisma.service";
 import { IIssuerRepository } from "@src/modules/issuer/domain/issuer.repository";
 import { StellarService } from "@src/modules/stellar/stellar.service";
 // Privy server SDK — instalado via @privy-io/server-auth
 import { PrivyClient } from "@privy-io/server-auth";
+import { Id } from "@src/shared/value-objects/id.value-object";
 
 export interface PrecreateWalletResult {
   privyUserId: string;
+  privyWalletId: string | null;
   stellarAddress: string;
 }
 
@@ -22,6 +25,7 @@ export interface PrivyIdentityClaims {
  * depender do tipo publico do SDK para ficar imune a bumps menores.
  */
 interface PrivyLinkedWallet {
+  id?: string;
   type: "wallet";
   address: string;
   chainType?: string;
@@ -65,6 +69,7 @@ export class WalletService implements OnModuleInit {
 
   public constructor(
     private readonly envService: EnvService,
+    private readonly prisma: PrismaService,
     private readonly issuerRepository: IIssuerRepository,
     private readonly stellarService: StellarService,
   ) {}
@@ -172,8 +177,83 @@ export class WalletService implements OnModuleInit {
 
     return {
       privyUserId: user.id,
+      privyWalletId: stellarWallet.id ?? null,
       stellarAddress: stellarWallet.address,
     };
+  }
+
+  /**
+   * Cria a wallet financeira do issuer. Ela usa uma identidade Privy própria,
+   * sem subjectDid, CPF ou qualquer metadado do portador da credencial.
+   */
+  public async provisionForOrganization(issuerId: string) {
+    const issuer = await this.issuerRepository.findByExternalId(issuerId);
+    if (!issuer) throw new Error(`Issuer ${issuerId} não encontrado`);
+
+    const existing = await this.prisma.organizationWallet.findUnique({ where: { issuerId } });
+    if (existing?.status === "ACTIVE" && existing.stellarAddress) return this.toOrganizationWalletResult(existing);
+    if (existing?.status === "SUSPENDED") return this.toOrganizationWalletResult(existing);
+
+    const now = new Date();
+    await this.prisma.organizationWallet.upsert({
+      where: { issuerId },
+      create: {
+        id: Id.create("org_wallet").value,
+        issuerId,
+        network: this.stellarNetworkName(),
+        status: "PENDING",
+        assetCode: this.envService.STELLAR_PAYOUT_ASSET_CODE,
+        assetIssuer: this.envService.STELLAR_PAYOUT_ASSET_ISSUER ?? null,
+        createdAt: now,
+        updatedAt: now,
+      },
+      update: { status: "PENDING", lastError: null, updatedAt: now },
+    });
+
+    try {
+      if (!this.client) throw new Error("PRIVY_APP_ID/PRIVY_APP_SECRET não configurados");
+      const client = this.client as unknown as PrivyClientLike;
+      const user = await client.importUser({
+        customMetadata: { issuerId, walletPurpose: "organization_payout" },
+        linkedAccounts: [{ type: "custom_auth", customUserId: `vesta:issuer:${issuerId}` }],
+        wallets: [{ chainType: "stellar" }],
+      });
+      const stellarWallet = this.findStellarWallet(user);
+      if (!stellarWallet) throw new Error("Privy não retornou uma wallet Stellar organizacional");
+      await this.stellarService.ensureAccountExists(stellarWallet.address);
+
+      const nativeAsset = this.envService.STELLAR_PAYOUT_ASSET_CODE.toUpperCase() === "XLM";
+      const saved = await this.prisma.organizationWallet.update({
+        where: { issuerId },
+        data: {
+          privyUserId: user.id,
+          privyWalletId: stellarWallet.id ?? null,
+          stellarAddress: stellarWallet.address,
+          network: this.stellarNetworkName(),
+          status: "ACTIVE",
+          accountActivated: true,
+          trustlineReady: nativeAsset,
+          assetCode: this.envService.STELLAR_PAYOUT_ASSET_CODE,
+          assetIssuer: this.envService.STELLAR_PAYOUT_ASSET_ISSUER ?? null,
+          lastError: null,
+          updatedAt: new Date(),
+        },
+      });
+      return this.toOrganizationWalletResult(saved);
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message.slice(0, 500) : "Falha desconhecida ao provisionar wallet";
+      const failed = await this.prisma.organizationWallet.update({
+        where: { issuerId },
+        data: { status: "ERROR", lastError: message, updatedAt: new Date() },
+      });
+      this.logger.error(`[Privy] wallet organizacional ${issuerId}: ${message}`);
+      return this.toOrganizationWalletResult(failed);
+    }
+  }
+
+  public async getOrganizationWallet(issuerId: string) {
+    const wallet = await this.prisma.organizationWallet.findUnique({ where: { issuerId } });
+    return wallet ? this.toOrganizationWalletResult(wallet) : null;
   }
 
   /**
@@ -218,6 +298,7 @@ export class WalletService implements OnModuleInit {
       // resposta entre versoes do SDK.
       if (chainType === "stellar" || (chainType === undefined && address.startsWith("G"))) {
         return {
+          id: typeof account.id === "string" ? account.id : undefined,
           type: "wallet",
           address,
           chainType,
@@ -227,5 +308,40 @@ export class WalletService implements OnModuleInit {
       }
     }
     return null;
+  }
+
+  private stellarNetworkName(): "testnet" | "mainnet" | "custom" {
+    const network = this.envService.STELLAR_NETWORK;
+    if (network.includes("Test SDF Network")) return "testnet";
+    if (network.includes("Public Global Stellar Network")) return "mainnet";
+    return "custom";
+  }
+
+  private toOrganizationWalletResult(wallet: {
+    issuerId: string;
+    stellarAddress: string | null;
+    network: string;
+    status: string;
+    accountActivated: boolean;
+    trustlineReady: boolean;
+    assetCode: string;
+    assetIssuer: string | null;
+    lastError: string | null;
+    updatedAt: Date;
+  }) {
+    return {
+      issuerId: wallet.issuerId,
+      address: wallet.stellarAddress,
+      network: wallet.network,
+      status: wallet.status,
+      accountActivated: wallet.accountActivated,
+      trustlineReady: wallet.trustlineReady,
+      payoutReady: wallet.status === "ACTIVE" && wallet.accountActivated && wallet.trustlineReady,
+      asset: { code: wallet.assetCode, issuer: wallet.assetIssuer },
+      lastError: wallet.status === "ERROR"
+        ? "Provisionamento não concluído. Contate o suporte para uma nova tentativa."
+        : null,
+      updatedAt: wallet.updatedAt.toISOString(),
+    };
   }
 }

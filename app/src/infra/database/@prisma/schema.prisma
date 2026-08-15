@@ -21,6 +21,30 @@ enum CredentialStatus {
   REJECTED
 }
 
+enum CommissionEntryType {
+  ACCRUAL
+  REVERSAL
+}
+
+enum CommissionEntryStatus {
+  PENDING_SECURITY
+  AVAILABLE
+  ALLOCATED
+  SETTLED
+  REVERSED
+}
+
+enum PayoutCycleStatus {
+  PREVIEW
+}
+
+enum OrganizationWalletStatus {
+  PENDING
+  ACTIVE
+  ERROR
+  SUSPENDED
+}
+
 model Credential {
   id                String           @unique @map("credential_id")
   nullifier         String?          @unique
@@ -56,11 +80,83 @@ model Attestation {
   sorobanTxHash     String?  @map("soroban_tx_hash")
   sorobanLedger     Int?     @map("soroban_ledger")
   onChainResult     Boolean  @map("on_chain_result")
+  issuerId           String?  @map("issuer_external_id")
   userWalletAddress String?  @map("user_wallet_address")
   createdAt         DateTime @map("created_at")
 
   @@index([vcHash])
+  @@index([issuerId])
   @@map("attestation")
+}
+
+model CommissionLedgerEntry {
+  id              String                @unique @map("commission_entry_id")
+  issuerId        String                @map("issuer_external_id")
+  attestationId   String?               @unique @map("attestation_id")
+  entryType       CommissionEntryType   @default(ACCRUAL) @map("entry_type")
+  status          CommissionEntryStatus @default(PENDING_SECURITY)
+  amountMinor     Int                   @map("amount_minor")
+  currency        String                @default("BRL")
+  source          String                @default("ATTESTATION_REUSE")
+  occurredAt      DateTime              @map("occurred_at")
+  availableAt     DateTime              @map("available_at")
+  payoutCycleId   String?               @map("payout_cycle_id")
+  settledAt       DateTime?             @map("settled_at")
+  reversalOfId    String?               @map("reversal_of_id")
+  createdAt       DateTime              @map("created_at")
+
+  @@index([issuerId, status, availableAt])
+  @@index([payoutCycleId])
+  @@map("commission_ledger_entries")
+}
+
+model PayoutCycle {
+  id          String            @unique @map("payout_cycle_id")
+  periodStart DateTime          @map("period_start")
+  periodEnd   DateTime          @map("period_end")
+  cutoffAt    DateTime          @map("cutoff_at")
+  status      PayoutCycleStatus @default(PREVIEW)
+  createdAt   DateTime          @map("created_at")
+  updatedAt   DateTime          @map("updated_at")
+
+  @@unique([periodStart, periodEnd, cutoffAt])
+  @@map("payout_cycles")
+}
+
+model PayoutCycleItem {
+  id             String   @unique @map("payout_cycle_item_id")
+  payoutCycleId  String   @map("payout_cycle_id")
+  issuerId       String   @map("issuer_external_id")
+  amountMinor    Int      @map("amount_minor")
+  entriesCount   Int      @map("entries_count")
+  entryIds       Json     @map("entry_ids")
+  blockedReason  String?  @map("blocked_reason")
+  walletAddress  String?  @map("wallet_address")
+  createdAt      DateTime @map("created_at")
+
+  @@unique([payoutCycleId, issuerId])
+  @@index([issuerId])
+  @@map("payout_cycle_items")
+}
+
+model OrganizationWallet {
+  id               String                   @unique @map("organization_wallet_id")
+  issuerId         String                   @unique @map("issuer_external_id")
+  privyUserId      String?                  @unique @map("privy_user_id")
+  privyWalletId    String?                  @map("privy_wallet_id")
+  stellarAddress   String?                  @unique @map("stellar_address")
+  network          String                   @map("network")
+  status           OrganizationWalletStatus @default(PENDING)
+  accountActivated Boolean                  @default(false) @map("account_activated")
+  trustlineReady   Boolean                  @default(false) @map("trustline_ready")
+  assetCode        String                   @map("asset_code")
+  assetIssuer      String?                  @map("asset_issuer")
+  lastError        String?                  @map("last_error")
+  createdAt        DateTime                 @map("created_at")
+  updatedAt        DateTime                 @map("updated_at")
+
+  @@index([status])
+  @@map("organization_wallets")
 }
 
 model Issuer {

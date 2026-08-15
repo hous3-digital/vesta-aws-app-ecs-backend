@@ -386,6 +386,10 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 export const ModelName = {
   Credential: 'Credential',
   Attestation: 'Attestation',
+  CommissionLedgerEntry: 'CommissionLedgerEntry',
+  PayoutCycle: 'PayoutCycle',
+  PayoutCycleItem: 'PayoutCycleItem',
+  OrganizationWallet: 'OrganizationWallet',
   Issuer: 'Issuer',
   BackofficeUser: 'BackofficeUser',
   Verifier: 'Verifier',
@@ -407,7 +411,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "credential" | "attestation" | "issuer" | "backofficeUser" | "verifier" | "ingress" | "egress" | "apiKey"
+    modelProps: "credential" | "attestation" | "commissionLedgerEntry" | "payoutCycle" | "payoutCycleItem" | "organizationWallet" | "issuer" | "backofficeUser" | "verifier" | "ingress" | "egress" | "apiKey"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -556,6 +560,302 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.AttestationCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.AttestationCountAggregateOutputType> | number
+        }
+      }
+    }
+    CommissionLedgerEntry: {
+      payload: Prisma.$CommissionLedgerEntryPayload<ExtArgs>
+      fields: Prisma.CommissionLedgerEntryFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CommissionLedgerEntryFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommissionLedgerEntryPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CommissionLedgerEntryFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommissionLedgerEntryPayload>
+        }
+        findFirst: {
+          args: Prisma.CommissionLedgerEntryFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommissionLedgerEntryPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CommissionLedgerEntryFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommissionLedgerEntryPayload>
+        }
+        findMany: {
+          args: Prisma.CommissionLedgerEntryFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommissionLedgerEntryPayload>[]
+        }
+        create: {
+          args: Prisma.CommissionLedgerEntryCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommissionLedgerEntryPayload>
+        }
+        createMany: {
+          args: Prisma.CommissionLedgerEntryCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CommissionLedgerEntryCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommissionLedgerEntryPayload>[]
+        }
+        delete: {
+          args: Prisma.CommissionLedgerEntryDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommissionLedgerEntryPayload>
+        }
+        update: {
+          args: Prisma.CommissionLedgerEntryUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommissionLedgerEntryPayload>
+        }
+        deleteMany: {
+          args: Prisma.CommissionLedgerEntryDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CommissionLedgerEntryUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CommissionLedgerEntryUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommissionLedgerEntryPayload>[]
+        }
+        upsert: {
+          args: Prisma.CommissionLedgerEntryUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommissionLedgerEntryPayload>
+        }
+        aggregate: {
+          args: Prisma.CommissionLedgerEntryAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCommissionLedgerEntry>
+        }
+        groupBy: {
+          args: Prisma.CommissionLedgerEntryGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CommissionLedgerEntryGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CommissionLedgerEntryCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CommissionLedgerEntryCountAggregateOutputType> | number
+        }
+      }
+    }
+    PayoutCycle: {
+      payload: Prisma.$PayoutCyclePayload<ExtArgs>
+      fields: Prisma.PayoutCycleFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PayoutCycleFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PayoutCyclePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PayoutCycleFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PayoutCyclePayload>
+        }
+        findFirst: {
+          args: Prisma.PayoutCycleFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PayoutCyclePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PayoutCycleFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PayoutCyclePayload>
+        }
+        findMany: {
+          args: Prisma.PayoutCycleFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PayoutCyclePayload>[]
+        }
+        create: {
+          args: Prisma.PayoutCycleCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PayoutCyclePayload>
+        }
+        createMany: {
+          args: Prisma.PayoutCycleCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PayoutCycleCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PayoutCyclePayload>[]
+        }
+        delete: {
+          args: Prisma.PayoutCycleDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PayoutCyclePayload>
+        }
+        update: {
+          args: Prisma.PayoutCycleUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PayoutCyclePayload>
+        }
+        deleteMany: {
+          args: Prisma.PayoutCycleDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PayoutCycleUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PayoutCycleUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PayoutCyclePayload>[]
+        }
+        upsert: {
+          args: Prisma.PayoutCycleUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PayoutCyclePayload>
+        }
+        aggregate: {
+          args: Prisma.PayoutCycleAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePayoutCycle>
+        }
+        groupBy: {
+          args: Prisma.PayoutCycleGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PayoutCycleGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PayoutCycleCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PayoutCycleCountAggregateOutputType> | number
+        }
+      }
+    }
+    PayoutCycleItem: {
+      payload: Prisma.$PayoutCycleItemPayload<ExtArgs>
+      fields: Prisma.PayoutCycleItemFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PayoutCycleItemFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PayoutCycleItemPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PayoutCycleItemFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PayoutCycleItemPayload>
+        }
+        findFirst: {
+          args: Prisma.PayoutCycleItemFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PayoutCycleItemPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PayoutCycleItemFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PayoutCycleItemPayload>
+        }
+        findMany: {
+          args: Prisma.PayoutCycleItemFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PayoutCycleItemPayload>[]
+        }
+        create: {
+          args: Prisma.PayoutCycleItemCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PayoutCycleItemPayload>
+        }
+        createMany: {
+          args: Prisma.PayoutCycleItemCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PayoutCycleItemCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PayoutCycleItemPayload>[]
+        }
+        delete: {
+          args: Prisma.PayoutCycleItemDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PayoutCycleItemPayload>
+        }
+        update: {
+          args: Prisma.PayoutCycleItemUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PayoutCycleItemPayload>
+        }
+        deleteMany: {
+          args: Prisma.PayoutCycleItemDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PayoutCycleItemUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PayoutCycleItemUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PayoutCycleItemPayload>[]
+        }
+        upsert: {
+          args: Prisma.PayoutCycleItemUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PayoutCycleItemPayload>
+        }
+        aggregate: {
+          args: Prisma.PayoutCycleItemAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePayoutCycleItem>
+        }
+        groupBy: {
+          args: Prisma.PayoutCycleItemGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PayoutCycleItemGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PayoutCycleItemCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PayoutCycleItemCountAggregateOutputType> | number
+        }
+      }
+    }
+    OrganizationWallet: {
+      payload: Prisma.$OrganizationWalletPayload<ExtArgs>
+      fields: Prisma.OrganizationWalletFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.OrganizationWalletFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationWalletPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.OrganizationWalletFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationWalletPayload>
+        }
+        findFirst: {
+          args: Prisma.OrganizationWalletFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationWalletPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.OrganizationWalletFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationWalletPayload>
+        }
+        findMany: {
+          args: Prisma.OrganizationWalletFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationWalletPayload>[]
+        }
+        create: {
+          args: Prisma.OrganizationWalletCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationWalletPayload>
+        }
+        createMany: {
+          args: Prisma.OrganizationWalletCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.OrganizationWalletCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationWalletPayload>[]
+        }
+        delete: {
+          args: Prisma.OrganizationWalletDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationWalletPayload>
+        }
+        update: {
+          args: Prisma.OrganizationWalletUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationWalletPayload>
+        }
+        deleteMany: {
+          args: Prisma.OrganizationWalletDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.OrganizationWalletUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.OrganizationWalletUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationWalletPayload>[]
+        }
+        upsert: {
+          args: Prisma.OrganizationWalletUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationWalletPayload>
+        }
+        aggregate: {
+          args: Prisma.OrganizationWalletAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateOrganizationWallet>
+        }
+        groupBy: {
+          args: Prisma.OrganizationWalletGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OrganizationWalletGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.OrganizationWalletCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OrganizationWalletCountAggregateOutputType> | number
         }
       }
     }
@@ -1076,11 +1376,80 @@ export const AttestationScalarFieldEnum = {
   sorobanTxHash: 'sorobanTxHash',
   sorobanLedger: 'sorobanLedger',
   onChainResult: 'onChainResult',
+  issuerId: 'issuerId',
   userWalletAddress: 'userWalletAddress',
   createdAt: 'createdAt'
 } as const
 
 export type AttestationScalarFieldEnum = (typeof AttestationScalarFieldEnum)[keyof typeof AttestationScalarFieldEnum]
+
+
+export const CommissionLedgerEntryScalarFieldEnum = {
+  id: 'id',
+  issuerId: 'issuerId',
+  attestationId: 'attestationId',
+  entryType: 'entryType',
+  status: 'status',
+  amountMinor: 'amountMinor',
+  currency: 'currency',
+  source: 'source',
+  occurredAt: 'occurredAt',
+  availableAt: 'availableAt',
+  payoutCycleId: 'payoutCycleId',
+  settledAt: 'settledAt',
+  reversalOfId: 'reversalOfId',
+  createdAt: 'createdAt'
+} as const
+
+export type CommissionLedgerEntryScalarFieldEnum = (typeof CommissionLedgerEntryScalarFieldEnum)[keyof typeof CommissionLedgerEntryScalarFieldEnum]
+
+
+export const PayoutCycleScalarFieldEnum = {
+  id: 'id',
+  periodStart: 'periodStart',
+  periodEnd: 'periodEnd',
+  cutoffAt: 'cutoffAt',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PayoutCycleScalarFieldEnum = (typeof PayoutCycleScalarFieldEnum)[keyof typeof PayoutCycleScalarFieldEnum]
+
+
+export const PayoutCycleItemScalarFieldEnum = {
+  id: 'id',
+  payoutCycleId: 'payoutCycleId',
+  issuerId: 'issuerId',
+  amountMinor: 'amountMinor',
+  entriesCount: 'entriesCount',
+  entryIds: 'entryIds',
+  blockedReason: 'blockedReason',
+  walletAddress: 'walletAddress',
+  createdAt: 'createdAt'
+} as const
+
+export type PayoutCycleItemScalarFieldEnum = (typeof PayoutCycleItemScalarFieldEnum)[keyof typeof PayoutCycleItemScalarFieldEnum]
+
+
+export const OrganizationWalletScalarFieldEnum = {
+  id: 'id',
+  issuerId: 'issuerId',
+  privyUserId: 'privyUserId',
+  privyWalletId: 'privyWalletId',
+  stellarAddress: 'stellarAddress',
+  network: 'network',
+  status: 'status',
+  accountActivated: 'accountActivated',
+  trustlineReady: 'trustlineReady',
+  assetCode: 'assetCode',
+  assetIssuer: 'assetIssuer',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type OrganizationWalletScalarFieldEnum = (typeof OrganizationWalletScalarFieldEnum)[keyof typeof OrganizationWalletScalarFieldEnum]
 
 
 export const IssuerScalarFieldEnum = {
@@ -1264,6 +1633,48 @@ export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel,
 
 
 /**
+ * Reference to a field of type 'CommissionEntryType'
+ */
+export type EnumCommissionEntryTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CommissionEntryType'>
+    
+
+
+/**
+ * Reference to a field of type 'CommissionEntryType[]'
+ */
+export type ListEnumCommissionEntryTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CommissionEntryType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'CommissionEntryStatus'
+ */
+export type EnumCommissionEntryStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CommissionEntryStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'CommissionEntryStatus[]'
+ */
+export type ListEnumCommissionEntryStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CommissionEntryStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'PayoutCycleStatus'
+ */
+export type EnumPayoutCycleStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PayoutCycleStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'PayoutCycleStatus[]'
+ */
+export type ListEnumPayoutCycleStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PayoutCycleStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'Json'
  */
 export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
@@ -1274,6 +1685,20 @@ export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'J
  * Reference to a field of type 'QueryMode'
  */
 export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
+
+/**
+ * Reference to a field of type 'OrganizationWalletStatus'
+ */
+export type EnumOrganizationWalletStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OrganizationWalletStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'OrganizationWalletStatus[]'
+ */
+export type ListEnumOrganizationWalletStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OrganizationWalletStatus[]'>
     
 
 
@@ -1387,6 +1812,10 @@ export type PrismaClientOptions = ({
 export type GlobalOmitConfig = {
   credential?: Prisma.CredentialOmit
   attestation?: Prisma.AttestationOmit
+  commissionLedgerEntry?: Prisma.CommissionLedgerEntryOmit
+  payoutCycle?: Prisma.PayoutCycleOmit
+  payoutCycleItem?: Prisma.PayoutCycleItemOmit
+  organizationWallet?: Prisma.OrganizationWalletOmit
   issuer?: Prisma.IssuerOmit
   backofficeUser?: Prisma.BackofficeUserOmit
   verifier?: Prisma.VerifierOmit

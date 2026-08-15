@@ -9,10 +9,11 @@ import { AdminIssuersController } from "@src/infra/auth/admin-issuers.controller
 import { BackofficeAuthController } from "@src/infra/auth/backoffice-auth.controller";
 import { BackofficeAuthGuard } from "@src/infra/auth/backoffice-auth.guard";
 import { BackofficeAuthService } from "@src/infra/auth/backoffice-auth.service";
+import { WalletModule } from "@src/modules/wallet/wallet.module";
 
 @Global()
 @Module({
-  imports: [DatabaseModule, JwtModule.register({})],
+  imports: [DatabaseModule, WalletModule, JwtModule.register({})],
   controllers: [AdminController, AdminIssuersController, BackofficeAuthController],
   providers: [ApiKeyService, ApiKeyGuard, AdminSecretGuard, BackofficeAuthGuard, BackofficeAuthService],
   exports: [ApiKeyService, ApiKeyGuard, BackofficeAuthGuard, BackofficeAuthService],

@@ -11,6 +11,7 @@ import { EgressModule } from "@src/infra/logging/egress/egress.module";
 import { IngressModule } from "@src/infra/logging/ingress/ingress.module";
 import { BackofficeModule } from "@src/modules/backoffice/backoffice.module";
 import { ChallengeModule } from "@src/modules/challenge/challenge.module";
+import { CommissionModule } from "@src/modules/commission/commission.module";
 import { CredentialModule } from "@src/modules/credential/credential.module";
 import { IssuerModule } from "@src/modules/issuer/issuer.module";
 import { ProofModule } from "@src/modules/proof/proof.module";
@@ -32,6 +33,7 @@ import { GlobalUnhandledException } from "@src/utils/subscribers/global-unhandle
 
     BackofficeModule,
     ChallengeModule,
+    CommissionModule,
     CredentialModule,
     IssuerModule,
     ProofModule,

@@ -10,6 +10,10 @@
  */
 export type * from './models/Credential'
 export type * from './models/Attestation'
+export type * from './models/CommissionLedgerEntry'
+export type * from './models/PayoutCycle'
+export type * from './models/PayoutCycleItem'
+export type * from './models/OrganizationWallet'
 export type * from './models/Issuer'
 export type * from './models/BackofficeUser'
 export type * from './models/Verifier'
