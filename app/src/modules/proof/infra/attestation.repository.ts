@@ -1,15 +1,62 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { PrismaService } from "@src/infra/database/@prisma/prisma.service";
+import { EnvService } from "@src/infra/env/env.service";
 import { Attestation } from "@src/modules/proof/domain/attestation.entity";
 import { IAttestationRepository } from "@src/modules/proof/domain/attestation.repository";
 import { AttestationMapper } from "@src/modules/proof/infra/attestation.mapper";
+import { Id } from "@src/shared/value-objects/id.value-object";
 
 @Injectable()
 export class AttestationRepository implements IAttestationRepository {
-  public constructor(private readonly prismaService: PrismaService) {}
+  private readonly logger = new Logger(AttestationRepository.name);
+
+  public constructor(
+    private readonly prismaService: PrismaService,
+    private readonly envService: EnvService,
+  ) {}
 
   public async saveOrThrow(attestation: Attestation): Promise<Attestation> {
-    await this.prismaService.attestation.create({ data: AttestationMapper.toJSON(attestation) });
+    const attestationCreate = this.prismaService.attestation.create({
+      data: AttestationMapper.toJSON(attestation),
+    });
+
+    if (!attestation.onChainResult) {
+      await attestationCreate;
+      return attestation;
+    }
+
+    if (!attestation.issuerId) {
+      this.logger.error(
+        `Attestation ${attestation.id.value} confirmada sem issuerId; comissão não registrada`,
+      );
+      await attestationCreate;
+      return attestation;
+    }
+
+    const occurredAt = attestation.createdAt;
+    const availableAt = new Date(
+      occurredAt.getTime() + this.envService.COMMISSION_SECURITY_HOURS * 60 * 60 * 1000,
+    );
+    const amountMinor = Math.round(this.envService.COMMISSION_PER_VERIFICATION_BRL * 100);
+
+    await this.prismaService.$transaction([
+      attestationCreate,
+      this.prismaService.commissionLedgerEntry.create({
+        data: {
+          id: Id.create("commission").value,
+          issuerId: attestation.issuerId,
+          attestationId: attestation.id.value,
+          entryType: "ACCRUAL",
+          status: availableAt <= new Date() ? "AVAILABLE" : "PENDING_SECURITY",
+          amountMinor,
+          currency: "BRL",
+          source: "ATTESTATION_REUSE",
+          occurredAt,
+          availableAt,
+          createdAt: new Date(),
+        },
+      }),
+    ]);
     return attestation;
   }
 

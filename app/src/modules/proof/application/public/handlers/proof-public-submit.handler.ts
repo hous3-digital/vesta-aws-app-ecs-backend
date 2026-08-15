@@ -4,6 +4,7 @@ import { ProofPublicSubmitCommand } from "@src/modules/proof/application/public/
 import { Attestation } from "@src/modules/proof/domain/attestation.entity";
 import { IAttestationRepository } from "@src/modules/proof/domain/attestation.repository";
 import { ICredentialRepository } from "@src/modules/credential/domain/credential.repository";
+import { IIssuerRepository } from "@src/modules/issuer/domain/issuer.repository";
 import { StellarService } from "@src/modules/stellar/stellar.service";
 import { ZkService } from "@src/modules/zk/zk.service";
 import { encodeProof, encodeFr } from "@src/modules/zk/zk-encoder";
@@ -18,6 +19,7 @@ export class ProofPublicSubmitHandler implements ICommandHandler<ProofPublicSubm
   public constructor(
     private readonly attestationRepository: IAttestationRepository,
     private readonly credentialRepository: ICredentialRepository,
+    private readonly issuerRepository: IIssuerRepository,
     private readonly zkService: ZkService,
     private readonly stellarService: StellarService,
   ) {}
@@ -35,6 +37,13 @@ export class ProofPublicSubmitHandler implements ICommandHandler<ProofPublicSubm
 
     if (credential.isExpired()) {
       throw new UnprocessableEntityException("Credencial expirada");
+    }
+
+    const issuer = await this.issuerRepository.findByExternalId(credential.issuerId);
+    if (!issuer) {
+      this.logger.error(
+        `Issuer ${credential.issuerId} da credencial ${credential.id.value} não encontrado; comissão não será atribuída`,
+      );
     }
 
     const proof: Groth16Proof = {
@@ -78,6 +87,7 @@ export class ProofPublicSubmitHandler implements ICommandHandler<ProofPublicSubm
       sorobanTxHash: stellarResult.txHash,
       sorobanLedger: stellarResult.ledger,
       onChainResult: stellarResult.onChainResult,
+      issuerId: issuer?.externalId ?? null,
       userWalletAddress: null,
     });
 

@@ -152,6 +152,7 @@ export class ProofPublicPrepareHandler implements ICommandHandler<ProofPublicPre
       proofHash: zkResult.proofHash,
       kycLevel: effectiveKycLevel,
       verifierId: command.verifierId,
+      issuerId: issuer?.externalId ?? null,
       userWalletAddress,
       expectedSource: source,
       innerTxHash: txBuild.innerTxHash,

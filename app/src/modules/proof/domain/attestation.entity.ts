@@ -9,6 +9,7 @@ export interface AttestationProps {
   sorobanTxHash: string | null;
   sorobanLedger: number | null;
   onChainResult: boolean;
+  issuerId: string | null;
   userWalletAddress: string | null;
   createdAt: Date;
 }
@@ -22,6 +23,7 @@ export class Attestation {
   private readonly _sorobanTxHash: string | null;
   private readonly _sorobanLedger: number | null;
   private readonly _onChainResult: boolean;
+  private readonly _issuerId: string | null;
   private readonly _userWalletAddress: string | null;
   private readonly _createdAt: Date;
 
@@ -34,6 +36,7 @@ export class Attestation {
     this._sorobanTxHash = props.sorobanTxHash;
     this._sorobanLedger = props.sorobanLedger;
     this._onChainResult = props.onChainResult;
+    this._issuerId = props.issuerId;
     this._userWalletAddress = props.userWalletAddress;
     this._createdAt = props.createdAt;
   }
@@ -46,6 +49,7 @@ export class Attestation {
   public get sorobanTxHash(): string | null { return this._sorobanTxHash; }
   public get sorobanLedger(): number | null { return this._sorobanLedger; }
   public get onChainResult(): boolean { return this._onChainResult; }
+  public get issuerId(): string | null { return this._issuerId; }
   public get userWalletAddress(): string | null { return this._userWalletAddress; }
   public get createdAt(): Date { return this._createdAt; }
 
@@ -57,6 +61,7 @@ export class Attestation {
     sorobanTxHash: string | null;
     sorobanLedger: number | null;
     onChainResult: boolean;
+    issuerId: string | null;
     userWalletAddress: string | null;
   }): Attestation {
     return new Attestation({

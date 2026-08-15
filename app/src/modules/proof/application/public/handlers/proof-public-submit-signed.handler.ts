@@ -83,6 +83,7 @@ export class ProofPublicSubmitSignedHandler
       sorobanTxHash: stellarResult.txHash,
       sorobanLedger: stellarResult.ledger,
       onChainResult: stellarResult.onChainResult,
+      issuerId: session.issuerId,
       userWalletAddress: session.userWalletAddress,
     });
 
