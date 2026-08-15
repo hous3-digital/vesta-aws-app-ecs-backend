@@ -258,9 +258,76 @@ jobs:
           cd infra/terraform
           terraform destroy -var-file=envs/staging/variables.tfvars -auto-approve
 
+  migrate-database:
+    name: Apply Prisma migrations to staging
+    needs: [terraform-cd]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: false
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_STAGING }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_STAGING }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "yarn"
+          cache-dependency-path: "app/yarn.lock"
+
+      - name: Install dependencies
+        run: cd app && yarn install --frozen-lockfile
+
+      - name: Validate Delivery 1 secrets
+        env:
+          COMMISSION_RATE_SECRET_ID: "arn:aws:secretsmanager:us-east-1:014468369894:secret:COMMISSION_PER_VERIFICATION_BRL-7gevTW"
+          PRIVY_APP_ID_SECRET_ID: "arn:aws:secretsmanager:us-east-1:014468369894:secret:PRIVY_APP_ID-Q3bsf0"
+          PRIVY_APP_SECRET_SECRET_ID: "arn:aws:secretsmanager:us-east-1:014468369894:secret:PRIVY_APP_SECRET-pqOmBK"
+        run: |
+          COMMISSION_RATE="$(aws secretsmanager get-secret-value \
+            --secret-id "${COMMISSION_RATE_SECRET_ID}" \
+            --query SecretString \
+            --output text)"
+          PRIVY_APP_ID="$(aws secretsmanager get-secret-value \
+            --secret-id "${PRIVY_APP_ID_SECRET_ID}" \
+            --query SecretString \
+            --output text)"
+          PRIVY_APP_SECRET="$(aws secretsmanager get-secret-value \
+            --secret-id "${PRIVY_APP_SECRET_SECRET_ID}" \
+            --query SecretString \
+            --output text)"
+          echo "::add-mask::${COMMISSION_RATE}"
+          echo "::add-mask::${PRIVY_APP_ID}"
+          echo "::add-mask::${PRIVY_APP_SECRET}"
+          test "${COMMISSION_RATE}" = "1.37"
+          test -n "${PRIVY_APP_ID}"
+          test -n "${PRIVY_APP_SECRET}"
+
+      - name: Apply pending migrations
+        env:
+          DATABASE_SECRET_ID: "arn:aws:secretsmanager:us-east-1:014468369894:secret:DATABASE_URL-89PrmK"
+        run: |
+          DATABASE_URL="$(aws secretsmanager get-secret-value \
+            --secret-id "${DATABASE_SECRET_ID}" \
+            --query SecretString \
+            --output text)"
+          echo "::add-mask::${DATABASE_URL}"
+          export DATABASE_URL
+          cd app
+          yarn prisma:deploy
+
   build-and-deploy-image:
     name: Build & Deploy Image to ECR
-    needs: [terraform-cd, lint]
+    needs: [migrate-database, lint]
     runs-on: ubuntu-latest
     outputs:
       image-url: ${{ steps.login-ecr.outputs.registry }}/vesta-app-backend:${{ github.sha }}

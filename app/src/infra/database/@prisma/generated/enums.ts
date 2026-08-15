@@ -12,7 +12,45 @@
 export const CredentialStatus = {
   ACTIVE: 'ACTIVE',
   REVOKED: 'REVOKED',
-  EXPIRED: 'EXPIRED'
+  EXPIRED: 'EXPIRED',
+  PENDING: 'PENDING',
+  REJECTED: 'REJECTED'
 } as const
 
 export type CredentialStatus = (typeof CredentialStatus)[keyof typeof CredentialStatus]
+
+
+export const CommissionEntryType = {
+  ACCRUAL: 'ACCRUAL',
+  REVERSAL: 'REVERSAL'
+} as const
+
+export type CommissionEntryType = (typeof CommissionEntryType)[keyof typeof CommissionEntryType]
+
+
+export const CommissionEntryStatus = {
+  PENDING_SECURITY: 'PENDING_SECURITY',
+  AVAILABLE: 'AVAILABLE',
+  ALLOCATED: 'ALLOCATED',
+  SETTLED: 'SETTLED',
+  REVERSED: 'REVERSED'
+} as const
+
+export type CommissionEntryStatus = (typeof CommissionEntryStatus)[keyof typeof CommissionEntryStatus]
+
+
+export const PayoutCycleStatus = {
+  PREVIEW: 'PREVIEW'
+} as const
+
+export type PayoutCycleStatus = (typeof PayoutCycleStatus)[keyof typeof PayoutCycleStatus]
+
+
+export const OrganizationWalletStatus = {
+  PENDING: 'PENDING',
+  ACTIVE: 'ACTIVE',
+  ERROR: 'ERROR',
+  SUSPENDED: 'SUSPENDED'
+} as const
+
+export type OrganizationWalletStatus = (typeof OrganizationWalletStatus)[keyof typeof OrganizationWalletStatus]

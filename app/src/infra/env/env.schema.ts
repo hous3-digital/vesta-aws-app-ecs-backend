@@ -37,8 +37,11 @@ const envSchema = z.object({
 
   COMMISSION_PER_VERIFICATION_BRL: z
     .string()
-    .default("1.3475")
+    .default("1.37")
     .transform((v) => parseFloat(v)),
+  COMMISSION_SECURITY_HOURS: z.string().default("48").transform((v) => parseInt(v, 10)),
+  STELLAR_PAYOUT_ASSET_CODE: z.string().min(1).default("BRL"),
+  STELLAR_PAYOUT_ASSET_ISSUER: z.string().min(1).optional(),
 });
 
 export const validate = { validate: envConfig };

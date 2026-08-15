@@ -33,8 +33,73 @@ Table attestation {
   sorobanTxHash String
   sorobanLedger Int
   onChainResult Boolean [not null]
+  issuerId String
   userWalletAddress String
   createdAt DateTime [not null]
+}
+
+Table commission_ledger_entries {
+  id String [unique, not null]
+  issuerId String [not null]
+  attestationId String [unique]
+  entryType CommissionEntryType [not null, default: 'ACCRUAL']
+  status CommissionEntryStatus [not null, default: 'PENDING_SECURITY']
+  amountMinor Int [not null]
+  currency String [not null, default: 'BRL']
+  source String [not null, default: 'ATTESTATION_REUSE']
+  occurredAt DateTime [not null]
+  availableAt DateTime [not null]
+  payoutCycleId String
+  settledAt DateTime
+  reversalOfId String
+  createdAt DateTime [not null]
+}
+
+Table payout_cycles {
+  id String [unique, not null]
+  periodStart DateTime [not null]
+  periodEnd DateTime [not null]
+  cutoffAt DateTime [not null]
+  status PayoutCycleStatus [not null, default: 'PREVIEW']
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+
+  indexes {
+    (periodStart, periodEnd, cutoffAt) [unique]
+  }
+}
+
+Table payout_cycle_items {
+  id String [unique, not null]
+  payoutCycleId String [not null]
+  issuerId String [not null]
+  amountMinor Int [not null]
+  entriesCount Int [not null]
+  entryIds Json [not null]
+  blockedReason String
+  walletAddress String
+  createdAt DateTime [not null]
+
+  indexes {
+    (payoutCycleId, issuerId) [unique]
+  }
+}
+
+Table organization_wallets {
+  id String [unique, not null]
+  issuerId String [unique, not null]
+  privyUserId String [unique]
+  privyWalletId String
+  stellarAddress String [unique]
+  network String [not null]
+  status OrganizationWalletStatus [not null, default: 'PENDING']
+  accountActivated Boolean [not null, default: false]
+  trustlineReady Boolean [not null, default: false]
+  assetCode String [not null]
+  assetIssuer String
+  lastError String
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
 }
 
 Table issuer {
@@ -94,4 +159,30 @@ Enum CredentialStatus {
   ACTIVE
   REVOKED
   EXPIRED
+  PENDING
+  REJECTED
+}
+
+Enum CommissionEntryType {
+  ACCRUAL
+  REVERSAL
+}
+
+Enum CommissionEntryStatus {
+  PENDING_SECURITY
+  AVAILABLE
+  ALLOCATED
+  SETTLED
+  REVERSED
+}
+
+Enum PayoutCycleStatus {
+  PREVIEW
+}
+
+Enum OrganizationWalletStatus {
+  PENDING
+  ACTIVE
+  ERROR
+  SUSPENDED
 }

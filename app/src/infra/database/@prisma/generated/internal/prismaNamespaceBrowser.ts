@@ -53,6 +53,10 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   Credential: 'Credential',
   Attestation: 'Attestation',
+  CommissionLedgerEntry: 'CommissionLedgerEntry',
+  PayoutCycle: 'PayoutCycle',
+  PayoutCycleItem: 'PayoutCycleItem',
+  OrganizationWallet: 'OrganizationWallet',
   Issuer: 'Issuer',
   BackofficeUser: 'BackofficeUser',
   Verifier: 'Verifier',
@@ -111,11 +115,80 @@ export const AttestationScalarFieldEnum = {
   sorobanTxHash: 'sorobanTxHash',
   sorobanLedger: 'sorobanLedger',
   onChainResult: 'onChainResult',
+  issuerId: 'issuerId',
   userWalletAddress: 'userWalletAddress',
   createdAt: 'createdAt'
 } as const
 
 export type AttestationScalarFieldEnum = (typeof AttestationScalarFieldEnum)[keyof typeof AttestationScalarFieldEnum]
+
+
+export const CommissionLedgerEntryScalarFieldEnum = {
+  id: 'id',
+  issuerId: 'issuerId',
+  attestationId: 'attestationId',
+  entryType: 'entryType',
+  status: 'status',
+  amountMinor: 'amountMinor',
+  currency: 'currency',
+  source: 'source',
+  occurredAt: 'occurredAt',
+  availableAt: 'availableAt',
+  payoutCycleId: 'payoutCycleId',
+  settledAt: 'settledAt',
+  reversalOfId: 'reversalOfId',
+  createdAt: 'createdAt'
+} as const
+
+export type CommissionLedgerEntryScalarFieldEnum = (typeof CommissionLedgerEntryScalarFieldEnum)[keyof typeof CommissionLedgerEntryScalarFieldEnum]
+
+
+export const PayoutCycleScalarFieldEnum = {
+  id: 'id',
+  periodStart: 'periodStart',
+  periodEnd: 'periodEnd',
+  cutoffAt: 'cutoffAt',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PayoutCycleScalarFieldEnum = (typeof PayoutCycleScalarFieldEnum)[keyof typeof PayoutCycleScalarFieldEnum]
+
+
+export const PayoutCycleItemScalarFieldEnum = {
+  id: 'id',
+  payoutCycleId: 'payoutCycleId',
+  issuerId: 'issuerId',
+  amountMinor: 'amountMinor',
+  entriesCount: 'entriesCount',
+  entryIds: 'entryIds',
+  blockedReason: 'blockedReason',
+  walletAddress: 'walletAddress',
+  createdAt: 'createdAt'
+} as const
+
+export type PayoutCycleItemScalarFieldEnum = (typeof PayoutCycleItemScalarFieldEnum)[keyof typeof PayoutCycleItemScalarFieldEnum]
+
+
+export const OrganizationWalletScalarFieldEnum = {
+  id: 'id',
+  issuerId: 'issuerId',
+  privyUserId: 'privyUserId',
+  privyWalletId: 'privyWalletId',
+  stellarAddress: 'stellarAddress',
+  network: 'network',
+  status: 'status',
+  accountActivated: 'accountActivated',
+  trustlineReady: 'trustlineReady',
+  assetCode: 'assetCode',
+  assetIssuer: 'assetIssuer',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type OrganizationWalletScalarFieldEnum = (typeof OrganizationWalletScalarFieldEnum)[keyof typeof OrganizationWalletScalarFieldEnum]
 
 
 export const IssuerScalarFieldEnum = {
