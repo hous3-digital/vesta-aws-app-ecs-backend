@@ -308,9 +308,18 @@ jobs:
           echo "::add-mask::${COMMISSION_RATE}"
           echo "::add-mask::${PRIVY_APP_ID}"
           echo "::add-mask::${PRIVY_APP_SECRET}"
-          test "${COMMISSION_RATE}" = "1.37"
-          test -n "${PRIVY_APP_ID}"
-          test -n "${PRIVY_APP_SECRET}"
+          if [ "${COMMISSION_RATE}" != "1.37" ]; then
+            echo "::error::COMMISSION_PER_VERIFICATION_BRL must be exactly 1.37 in staging"
+            exit 1
+          fi
+          if [ -z "${PRIVY_APP_ID}" ]; then
+            echo "::error::PRIVY_APP_ID is empty in staging"
+            exit 1
+          fi
+          if [ -z "${PRIVY_APP_SECRET}" ]; then
+            echo "::error::PRIVY_APP_SECRET is empty in staging"
+            exit 1
+          fi
 
       - name: Apply pending migrations
         env:
