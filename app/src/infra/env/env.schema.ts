@@ -37,6 +37,11 @@ const envSchema = z.object({
 
   PRIVY_APP_ID: z.string().min(1).optional(),
   PRIVY_APP_SECRET: z.string().min(32, "PRIVY_APP_SECRET must be at least 32 characters").optional(),
+  PRIVY_CUSTOM_AUTH_PRIVATE_KEY: z.string().min(1).optional(),
+  PRIVY_CUSTOM_AUTH_KEY_ID: z.string().min(1).optional(),
+  PRIVY_CUSTOM_AUTH_ISSUER: z.string().min(1).default("vesta"),
+  WEBAUTHN_ALLOWED_ORIGINS: z.string().min(1).optional(),
+  WEBAUTHN_ALLOWED_RP_IDS: z.string().min(1).default("localhost"),
 
   COMMISSION_PER_VERIFICATION_BRL: z
     .string()

@@ -19,6 +19,7 @@ export interface ProofPublicPrepareResult {
   unsignedTxXdr: string;
   requiresUserSignature: boolean;
   userWalletAddress: string | null;
+  stellarNetworkPassphrase: string;
   zkProof: {
     protocol: string;
     curve: string;
@@ -47,8 +48,8 @@ export class ProofPublicPrepareHandler implements ICommandHandler<ProofPublicPre
   public async execute(command: ProofPublicPrepareCommand): Promise<ProofPublicPrepareResult> {
     const vc = command.vc as VestaVC;
 
-    const challengeValid = await this.challengeService.consume(command.challenge);
-    if (!challengeValid) {
+    const challengeContext = await this.challengeService.consumeContext(command.challenge);
+    if (!challengeContext) {
       throw new BadRequestException(
         "Challenge inválido, expirado ou já utilizado. Solicite um novo via GET /public/auth/challenge.",
       );
@@ -103,6 +104,17 @@ export class ProofPublicPrepareHandler implements ICommandHandler<ProofPublicPre
     // Resolve issuer feature flag + lazy retroactive wallet creation
     const issuer = await this.issuerRepository.findByExternalId(credential.issuerId);
     const privyEnabled = !!issuer?.privyEnabled;
+
+    if (
+      privyEnabled &&
+      (challengeContext.kind !== "proof" ||
+        challengeContext.vcHash !== vcHash ||
+        challengeContext.issuerId !== credential.issuerId)
+    ) {
+      throw new BadRequestException(
+        "A prova para uma credencial Privy exige uma assertion Passkey verificada pelo servidor.",
+      );
+    }
 
     let userWalletAddress = credential.userWalletAddress;
     if (privyEnabled && !userWalletAddress) {
@@ -171,6 +183,7 @@ export class ProofPublicPrepareHandler implements ICommandHandler<ProofPublicPre
       unsignedTxXdr: txBuild.unsignedXdr,
       requiresUserSignature,
       userWalletAddress,
+      stellarNetworkPassphrase: this.stellarService.getNetworkPassphrase(),
       zkProof: {
         protocol: zkResult.proof.protocol,
         curve: zkResult.proof.curve,
