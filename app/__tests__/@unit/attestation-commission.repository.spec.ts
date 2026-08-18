@@ -29,23 +29,33 @@ describe("AttestationRepository commission accrual", () => {
     } as unknown as PrismaService;
     const env = {
       COMMISSION_PER_VERIFICATION_BRL: 1.37,
-      COMMISSION_SECURITY_HOURS: 48,
+      COMMISSION_SECURITY_MINUTES: 30,
     } as EnvService;
     return { repository: new AttestationRepository(prisma, env), attestationCreate, commissionCreate, transaction };
   }
 
   it("persists the issuer snapshot and exactly 137 minor units in one transaction", async () => {
     const { repository, attestationCreate, commissionCreate, transaction } = setup();
+    const confirmedAttestation = attestation();
 
-    await repository.saveOrThrow(attestation());
+    await repository.saveOrThrow(confirmedAttestation);
 
     expect(transaction).toHaveBeenCalledTimes(1);
-    expect(attestationCreate).toHaveBeenCalledWith(expect.objectContaining({
-      data: expect.objectContaining({ issuerId: "issuer_a", onChainResult: true }),
-    }));
-    expect(commissionCreate).toHaveBeenCalledWith(expect.objectContaining({
-      data: expect.objectContaining({ issuerId: "issuer_a", amountMinor: 137, currency: "BRL" }),
-    }));
+    expect(attestationCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ issuerId: "issuer_a", onChainResult: true }),
+      }),
+    );
+    expect(commissionCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          issuerId: "issuer_a",
+          amountMinor: 137,
+          currency: "BRL",
+          availableAt: new Date(confirmedAttestation.createdAt.getTime() + 30 * 60 * 1000),
+        }),
+      }),
+    );
   });
 
   it("does not create a financial entry when Stellar rejects the attestation", async () => {

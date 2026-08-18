@@ -47,6 +47,18 @@ environment = [
   {
     name  = "BACKOFFICE_JWT_EXPIRES_IN",
     value = "8h"
+  },
+  {
+    name  = "COMMISSION_SECURITY_MINUTES",
+    value = "30"
+  },
+  {
+    name  = "COMMISSION_PER_VERIFICATION_BRL",
+    value = "1.37"
+  },
+  {
+    name  = "STELLAR_PAYOUT_ASSET_CODE",
+    value = "BRL"
   }
 ]
 

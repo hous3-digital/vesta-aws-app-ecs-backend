@@ -49,8 +49,8 @@ environment = [
     value = "never"
   },
   {
-    name  = "COMMISSION_SECURITY_HOURS",
-    value = "48"
+    name  = "COMMISSION_SECURITY_MINUTES",
+    value = "30"
   },
   {
     name  = "COMMISSION_PER_VERIFICATION_BRL",

@@ -26,17 +26,13 @@ export class AttestationRepository implements IAttestationRepository {
     }
 
     if (!attestation.issuerId) {
-      this.logger.error(
-        `Attestation ${attestation.id.value} confirmada sem issuerId; comissão não registrada`,
-      );
+      this.logger.error(`Attestation ${attestation.id.value} confirmada sem issuerId; comissão não registrada`);
       await attestationCreate;
       return attestation;
     }
 
     const occurredAt = attestation.createdAt;
-    const availableAt = new Date(
-      occurredAt.getTime() + this.envService.COMMISSION_SECURITY_HOURS * 60 * 60 * 1000,
-    );
+    const availableAt = new Date(occurredAt.getTime() + this.envService.COMMISSION_SECURITY_MINUTES * 60 * 1000);
     const amountMinor = Math.round(this.envService.COMMISSION_PER_VERIFICATION_BRL * 100);
 
     await this.prismaService.$transaction([
