@@ -85,8 +85,8 @@ export class EnvService {
     return this.configService.get("COMMISSION_PER_VERIFICATION_BRL") as number;
   }
 
-  public get COMMISSION_SECURITY_HOURS() {
-    return this.configService.get("COMMISSION_SECURITY_HOURS") as number;
+  public get COMMISSION_SECURITY_MINUTES() {
+    return this.configService.get("COMMISSION_SECURITY_MINUTES") as number;
   }
 
   public get STELLAR_PAYOUT_ASSET_CODE() {
