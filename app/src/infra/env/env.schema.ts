@@ -8,7 +8,10 @@ const envConfig = (config: Record<string, unknown>) => {
 const envSchema = z.object({
   NODE_ENV: z.enum(["local", "test", "development", "production"]),
 
-  PORT: z.string().default("3000").transform((val) => parseInt(val, 10)),
+  PORT: z
+    .string()
+    .default("3000")
+    .transform((val) => parseInt(val, 10)),
 
   DATABASE_URL: z.string().url(),
 
@@ -39,7 +42,11 @@ const envSchema = z.object({
     .string()
     .default("1.37")
     .transform((v) => parseFloat(v)),
-  COMMISSION_SECURITY_HOURS: z.string().default("48").transform((v) => parseInt(v, 10)),
+  COMMISSION_SECURITY_MINUTES: z
+    .string()
+    .default("30")
+    .transform((v) => parseInt(v, 10))
+    .pipe(z.number().int().nonnegative()),
   STELLAR_PAYOUT_ASSET_CODE: z.string().min(1).default("BRL"),
   STELLAR_PAYOUT_ASSET_ISSUER: z.string().min(1).optional(),
 });
