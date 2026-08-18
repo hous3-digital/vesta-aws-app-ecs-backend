@@ -489,10 +489,6 @@ export type NullableIntFieldUpdateOperationsInput = {
   divide?: number
 }
 
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
-}
-
 
 
 export type AttestationSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1178,11 +1174,6 @@ export type AttestationFindManyArgs<ExtArgs extends runtime.Types.Extensions.Int
    * Skip the first `n` Attestations.
    */
   skip?: number
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-   * 
-   * Filter by unique combinations of Attestations.
-   */
   distinct?: Prisma.AttestationScalarFieldEnum | Prisma.AttestationScalarFieldEnum[]
 }
 

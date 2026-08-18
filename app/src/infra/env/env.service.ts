@@ -81,6 +81,26 @@ export class EnvService {
     return this.configService.get("PRIVY_APP_SECRET") as string | undefined;
   }
 
+  public get PRIVY_CUSTOM_AUTH_PRIVATE_KEY() {
+    return this.configService.get("PRIVY_CUSTOM_AUTH_PRIVATE_KEY") as string | undefined;
+  }
+
+  public get PRIVY_CUSTOM_AUTH_KEY_ID() {
+    return this.configService.get("PRIVY_CUSTOM_AUTH_KEY_ID") as string | undefined;
+  }
+
+  public get PRIVY_CUSTOM_AUTH_ISSUER() {
+    return this.configService.get("PRIVY_CUSTOM_AUTH_ISSUER") as string;
+  }
+
+  public get WEBAUTHN_ALLOWED_ORIGINS() {
+    return (this.configService.get("WEBAUTHN_ALLOWED_ORIGINS") ?? this.CORS_ALLOWED_ORIGINS) as string;
+  }
+
+  public get WEBAUTHN_ALLOWED_RP_IDS() {
+    return this.configService.get("WEBAUTHN_ALLOWED_RP_IDS") as string;
+  }
+
   public get COMMISSION_PER_VERIFICATION_BRL() {
     return this.configService.get("COMMISSION_PER_VERIFICATION_BRL") as number;
   }

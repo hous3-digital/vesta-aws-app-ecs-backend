@@ -45,6 +45,14 @@ environment = [
     value = "https://backoffice.hous3-trust.com,https://backoffice.vestazk.com,https://vesta-demo-stellar.vercel.app,http://localhost:5173,https://*.idcerberus.com"
   },
   {
+    name  = "WEBAUTHN_ALLOWED_ORIGINS",
+    value = "https://vesta-demo-stellar.vercel.app,http://localhost:5173,https://*.idcerberus.com"
+  },
+  {
+    name  = "WEBAUTHN_ALLOWED_RP_IDS",
+    value = "vesta-demo-stellar.vercel.app,localhost,*.idcerberus.com"
+  },
+  {
     name  = "BACKOFFICE_JWT_EXPIRES_IN",
     value = "8h"
   },
