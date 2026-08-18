@@ -52,6 +52,7 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   Credential: 'Credential',
+  PasskeyCredential: 'PasskeyCredential',
   Attestation: 'Attestation',
   CommissionLedgerEntry: 'CommissionLedgerEntry',
   PayoutCycle: 'PayoutCycle',
@@ -104,6 +105,24 @@ export const CredentialScalarFieldEnum = {
 } as const
 
 export type CredentialScalarFieldEnum = (typeof CredentialScalarFieldEnum)[keyof typeof CredentialScalarFieldEnum]
+
+
+export const PasskeyCredentialScalarFieldEnum = {
+  id: 'id',
+  vcHash: 'vcHash',
+  issuerId: 'issuerId',
+  subjectDid: 'subjectDid',
+  publicKey: 'publicKey',
+  counter: 'counter',
+  transports: 'transports',
+  deviceType: 'deviceType',
+  backedUp: 'backedUp',
+  rpId: 'rpId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PasskeyCredentialScalarFieldEnum = (typeof PasskeyCredentialScalarFieldEnum)[keyof typeof PasskeyCredentialScalarFieldEnum]
 
 
 export const AttestationScalarFieldEnum = {
@@ -268,6 +287,14 @@ export const SortOrder = {
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const JsonNullValueInput = {

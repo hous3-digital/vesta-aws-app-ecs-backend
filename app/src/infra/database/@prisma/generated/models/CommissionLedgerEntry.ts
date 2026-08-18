@@ -555,14 +555,6 @@ export type EnumCommissionEntryStatusFieldUpdateOperationsInput = {
   set?: $Enums.CommissionEntryStatus
 }
 
-export type IntFieldUpdateOperationsInput = {
-  set?: number
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 
 
 export type CommissionLedgerEntrySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1266,11 +1258,6 @@ export type CommissionLedgerEntryFindManyArgs<ExtArgs extends runtime.Types.Exte
    * Skip the first `n` CommissionLedgerEntries.
    */
   skip?: number
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-   * 
-   * Filter by unique combinations of CommissionLedgerEntries.
-   */
   distinct?: Prisma.CommissionLedgerEntryScalarFieldEnum | Prisma.CommissionLedgerEntryScalarFieldEnum[]
 }
 

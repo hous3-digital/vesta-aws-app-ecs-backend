@@ -9,6 +9,7 @@
  * 🟢 You can import this file directly.
  */
 export type * from './models/Credential'
+export type * from './models/PasskeyCredential'
 export type * from './models/Attestation'
 export type * from './models/CommissionLedgerEntry'
 export type * from './models/PayoutCycle'
