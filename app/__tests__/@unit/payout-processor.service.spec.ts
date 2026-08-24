@@ -34,18 +34,22 @@ describe("PayoutProcessorService", () => {
     }),
   };
   const gateway = { settle: jest.fn(), reconcile: jest.fn() };
+  const walletService = { refreshOrganizationWalletReadiness: jest.fn() };
   const service = new PayoutProcessorService(
     prisma as never,
     gateway as never,
     { PAYOUT_PROCESSOR_INTERVAL_MS: 10_000 } as never,
+    walletService as never,
   );
 
   beforeEach(() => {
     jest.clearAllMocks();
+    walletService.refreshOrganizationWalletReadiness.mockResolvedValue({
+      payoutReady: true,
+      address: candidate.destinationAddress,
+    });
     prisma.payoutRequest.findMany.mockResolvedValue([]);
-    prisma.payoutRequest.findFirst
-      .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce(candidate);
+    prisma.payoutRequest.findFirst.mockResolvedValueOnce(null).mockResolvedValueOnce(candidate);
     prisma.payoutRequest.updateMany.mockResolvedValue({ count: 1 });
     prisma.payoutAttempt.count.mockResolvedValue(0);
     prisma.payoutAttempt.create.mockResolvedValue({ id: "attempt-1" });
@@ -62,21 +66,27 @@ describe("PayoutProcessorService", () => {
     gateway.settle.mockResolvedValue({ txHash: "tx-1", ledger: 123 });
     await service.processNext();
 
-    expect(tx.payoutRequest.update).toHaveBeenCalledWith(expect.objectContaining({
-      data: expect.objectContaining({ status: "CONFIRMED", stellarTxHash: "tx-1", activeIssuerId: null }),
-    }));
-    expect(tx.commissionLedgerEntry.updateMany).toHaveBeenCalledWith(expect.objectContaining({
-      data: expect.objectContaining({ status: "SETTLED" }),
-    }));
+    expect(tx.payoutRequest.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ status: "CONFIRMED", stellarTxHash: "tx-1", activeIssuerId: null }),
+      }),
+    );
+    expect(tx.commissionLedgerEntry.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ status: "SETTLED" }),
+      }),
+    );
   });
 
   it("libera os créditos quando a rede rejeita definitivamente antes de pagar", async () => {
     gateway.settle.mockRejectedValue(new SettlementRejectedError("CONTRACT_REJECTED", "rejeitado"));
     await service.processNext();
 
-    expect(prisma.payoutRequest.update).toHaveBeenCalledWith(expect.objectContaining({
-      data: expect.objectContaining({ status: "FAILED", activeIssuerId: null }),
-    }));
+    expect(prisma.payoutRequest.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ status: "FAILED", activeIssuerId: null }),
+      }),
+    );
     expect(prisma.commissionLedgerEntry.updateMany).toHaveBeenCalledWith({
       where: { payoutRequestId: "payout-1", status: "ALLOCATED" },
       data: { status: "AVAILABLE", payoutRequestId: null },
@@ -85,21 +95,22 @@ describe("PayoutProcessorService", () => {
 
   it("concilia pelo hash sem reenviar quando a confirmação inicial ficou incerta", async () => {
     const unknown = { ...candidate, status: "UNKNOWN", stellarTxHash: "tx-pending", updatedAt: new Date() };
-    prisma.payoutRequest.findFirst
-      .mockReset()
-      .mockResolvedValueOnce(unknown)
-      .mockResolvedValueOnce(null);
+    prisma.payoutRequest.findFirst.mockReset().mockResolvedValueOnce(unknown).mockResolvedValueOnce(null);
     gateway.reconcile.mockResolvedValue({ status: "CONFIRMED", ledger: 456 });
 
     await service.processNext();
 
     expect(gateway.reconcile).toHaveBeenCalledWith("tx-pending");
     expect(gateway.settle).not.toHaveBeenCalled();
-    expect(prisma.payoutRequest.update).toHaveBeenCalledWith(expect.objectContaining({
-      data: expect.objectContaining({ status: "CONFIRMED", stellarLedger: 456, activeIssuerId: null }),
-    }));
-    expect(prisma.commissionLedgerEntry.updateMany).toHaveBeenCalledWith(expect.objectContaining({
-      data: expect.objectContaining({ status: "SETTLED" }),
-    }));
+    expect(prisma.payoutRequest.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ status: "CONFIRMED", stellarLedger: 456, activeIssuerId: null }),
+      }),
+    );
+    expect(prisma.commissionLedgerEntry.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ status: "SETTLED" }),
+      }),
+    );
   });
 });

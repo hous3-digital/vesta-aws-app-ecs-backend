@@ -29,6 +29,10 @@ export class EnvService {
     return this.configService.get("STELLAR_RPC_URL") as string;
   }
 
+  public get STELLAR_HORIZON_URL() {
+    return this.configService.get("STELLAR_HORIZON_URL") as string | undefined;
+  }
+
   public get STELLAR_NETWORK() {
     return this.configService.get("STELLAR_NETWORK") as string;
   }

@@ -11,7 +11,13 @@ export type ChallengeContext =
   | { kind: "legacy" }
   | { kind: "passkey-registration"; issuerId: string; rpId: string; vcHash: string }
   | { kind: "passkey-authentication"; issuerId: string; rpId: string }
-  | { kind: "proof"; issuerId: string; vcHash: string };
+  | { kind: "proof"; issuerId: string; vcHash: string }
+  | {
+      kind: "organization-wallet-control";
+      issuerId: string;
+      userId: string;
+      walletAddress: string;
+    };
 
 interface StoredChallenge {
   expiresAt: number;
@@ -52,7 +58,9 @@ export class ChallengeService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  public async generate(context: ChallengeContext = { kind: "legacy" }): Promise<{ challenge: string; expiresAt: number }> {
+  public async generate(
+    context: ChallengeContext = { kind: "legacy" },
+  ): Promise<{ challenge: string; expiresAt: number }> {
     // Mantém o formato hexadecimal do endpoint legado. Hex também é uma
     // string base64url canônica, portanto funciona nas options WebAuthn JSON.
     const challenge = randomBytes(32).toString("hex");

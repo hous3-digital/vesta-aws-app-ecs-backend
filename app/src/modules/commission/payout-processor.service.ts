@@ -7,6 +7,7 @@ import {
   SettlementUnknownError,
   SettlementRejectedError,
 } from "@src/modules/commission/payout-settlement.gateway";
+import { WalletService } from "@src/modules/wallet/wallet.service";
 
 @Injectable()
 export class PayoutProcessorService implements OnModuleInit, OnModuleDestroy {
@@ -18,6 +19,7 @@ export class PayoutProcessorService implements OnModuleInit, OnModuleDestroy {
     private readonly prisma: PrismaService,
     private readonly gateway: PayoutSettlementGateway,
     private readonly env: EnvService,
+    private readonly walletService: WalletService,
   ) {}
 
   public onModuleInit(): void {
@@ -60,6 +62,13 @@ export class PayoutProcessorService implements OnModuleInit, OnModuleDestroy {
       });
 
       try {
+        const wallet = await this.walletService.refreshOrganizationWalletReadiness(candidate.issuerId);
+        if (!wallet.payoutReady || wallet.address !== candidate.destinationAddress) {
+          throw new SettlementRejectedError(
+            "DESTINATION_NOT_READY",
+            "A carteira de destino não está apta ao repasse no momento da liquidação",
+          );
+        }
         const settled = await this.gateway.settle({
           payoutId: candidate.onChainPayoutId,
           destinationAddress: candidate.destinationAddress,
@@ -191,9 +200,7 @@ export class PayoutProcessorService implements OnModuleInit, OnModuleDestroy {
       }),
       this.prisma.commissionLedgerEntry.updateMany({
         where: { payoutRequestId: payout.id, status: "ALLOCATED" },
-        data: confirmed
-          ? { status: "SETTLED", settledAt: now }
-          : { status: "AVAILABLE", payoutRequestId: null },
+        data: confirmed ? { status: "SETTLED", settledAt: now } : { status: "AVAILABLE", payoutRequestId: null },
       }),
     ]);
     this.logger.log(`Repasse ${payout.id} conciliado como ${result.status}`);

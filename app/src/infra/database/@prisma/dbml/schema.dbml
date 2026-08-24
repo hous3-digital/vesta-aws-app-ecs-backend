@@ -164,6 +164,9 @@ Table organization_wallets {
   status OrganizationWalletStatus [not null, default: 'PENDING']
   accountActivated Boolean [not null, default: false]
   trustlineReady Boolean [not null, default: false]
+  controlVerifiedAt DateTime
+  controlVerifiedByUserId String
+  trustlineVerifiedAt DateTime
   assetCode String [not null]
   assetIssuer String
   lastError String
