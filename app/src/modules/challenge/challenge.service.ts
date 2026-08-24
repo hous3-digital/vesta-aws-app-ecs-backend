@@ -1,7 +1,8 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
 import { EnvService } from "@src/infra/env/env.service";
-import { randomBytes } from "crypto";
+import { createHash, randomBytes } from "crypto";
 import Redis from "ioredis";
+import { PrismaService } from "@src/infra/database/@prisma/prisma.service";
 
 const CHALLENGE_TTL_SECONDS = 60;
 const CHALLENGE_PREFIX = "challenge:";
@@ -21,14 +22,16 @@ interface StoredChallenge {
 export class ChallengeService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(ChallengeService.name);
   private redis: Redis | null = null;
-  private readonly memoryStore = new Map<string, StoredChallenge>();
 
-  public constructor(private readonly envService: EnvService) {}
+  public constructor(
+    private readonly envService: EnvService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   public async onModuleInit(): Promise<void> {
     const redisUrl = this.envService.REDIS_URL;
     if (!redisUrl) {
-      this.logger.warn("REDIS_URL não configurado — challenge store rodando em memória (não escala com múltiplas instâncias)");
+      this.logger.log("REDIS_URL não configurado — challenge store compartilhado usando PostgreSQL");
       return;
     }
 
@@ -37,7 +40,7 @@ export class ChallengeService implements OnModuleInit, OnModuleDestroy {
       await this.redis.connect();
       this.logger.log("Challenge store conectado ao Redis");
     } catch (err) {
-      this.logger.error(`Falha ao conectar ao Redis: ${(err as Error).message} — fallback para memória`);
+      this.logger.error(`Falha ao conectar ao Redis: ${(err as Error).message} — fallback para PostgreSQL`);
       this.redis?.disconnect();
       this.redis = null;
     }
@@ -59,8 +62,15 @@ export class ChallengeService implements OnModuleInit, OnModuleDestroy {
     if (this.redis) {
       await this.redis.set(`${CHALLENGE_PREFIX}${challenge}`, JSON.stringify(stored), "EX", CHALLENGE_TTL_SECONDS);
     } else {
-      this.memoryStore.set(challenge, stored);
-      this.cleanup();
+      await this.prisma.authChallenge.create({
+        data: {
+          challengeHash: this.hash(challenge),
+          context: context as object,
+          expiresAt: new Date(expiresAt),
+          createdAt: new Date(),
+        },
+      });
+      void this.prisma.authChallenge.deleteMany({ where: { expiresAt: { lt: new Date() } } });
     }
 
     this.logger.debug("Challenge gerado");
@@ -84,26 +94,22 @@ export class ChallengeService implements OnModuleInit, OnModuleDestroy {
       return Date.now() <= stored.expiresAt ? stored.context : null;
     }
 
-    const stored = this.memoryStore.get(challenge);
-    if (!stored) {
+    const challengeHash = this.hash(challenge);
+    const stored = await this.prisma.authChallenge.findUnique({ where: { challengeHash } });
+    if (!stored || stored.expiresAt.getTime() < Date.now()) {
+      if (stored) await this.prisma.authChallenge.deleteMany({ where: { challengeHash } });
       this.logger.warn(`Challenge inválido ou já consumido: ${challenge.slice(0, 16)}...`);
       return null;
     }
-
-    this.memoryStore.delete(challenge);
-
-    if (Date.now() > stored.expiresAt) {
-      this.logger.warn(`Challenge expirado: ${challenge.slice(0, 16)}...`);
+    const consumed = await this.prisma.authChallenge.deleteMany({ where: { challengeHash } });
+    if (consumed.count !== 1) {
+      this.logger.warn(`Challenge já consumido concorrentemente: ${challenge.slice(0, 16)}...`);
       return null;
     }
-
-    return stored.context;
+    return stored.context as ChallengeContext;
   }
 
-  private cleanup(): void {
-    const now = Date.now();
-    for (const [key, stored] of this.memoryStore) {
-      if (now > stored.expiresAt) this.memoryStore.delete(key);
-    }
+  private hash(challenge: string): string {
+    return createHash("sha256").update(challenge).digest("hex");
   }
 }

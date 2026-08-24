@@ -35,7 +35,7 @@ describe("PasskeyAuthService", () => {
     passkeyCredential: {
       create: jest.fn(),
       findUnique: jest.fn(),
-      update: jest.fn(),
+      updateMany: jest.fn(),
     },
   };
   const walletService = {
@@ -90,6 +90,7 @@ describe("PasskeyAuthService", () => {
     });
     walletService.isEnabledForIssuer.mockResolvedValue(true);
     walletService.issueCustomAuthToken.mockResolvedValue({ token: "signed.jwt.value", expiresAt: 123 });
+    prisma.passkeyCredential.updateMany.mockResolvedValue({ count: 1 });
 
     const result = await service.verifyAuthentication({
       issuerId: "issuer-1",
@@ -102,7 +103,7 @@ describe("PasskeyAuthService", () => {
       } as never,
     });
 
-    expect(prisma.passkeyCredential.update).toHaveBeenCalledWith(expect.objectContaining({
+    expect(prisma.passkeyCredential.updateMany).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({ counter: 8 }),
     }));
     expect(walletService.issueCustomAuthToken).toHaveBeenCalledWith(credential.subjectDid);

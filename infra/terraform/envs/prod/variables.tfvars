@@ -46,11 +46,11 @@ environment = [
   },
   {
     name  = "WEBAUTHN_ALLOWED_ORIGINS",
-    value = "https://vesta-demo-stellar.vercel.app,http://localhost:5173,https://*.idcerberus.com"
+    value = "https://vesta-demo-stellar.vercel.app,https://*.idcerberus.com"
   },
   {
     name  = "WEBAUTHN_ALLOWED_RP_IDS",
-    value = "vesta-demo-stellar.vercel.app,localhost,*.idcerberus.com"
+    value = "vesta-demo-stellar.vercel.app,*.idcerberus.com"
   },
   {
     name  = "BACKOFFICE_JWT_EXPIRES_IN",
@@ -67,6 +67,18 @@ environment = [
   {
     name  = "STELLAR_PAYOUT_ASSET_CODE",
     value = "BRL"
+  },
+  {
+    name  = "STELLAR_PAYOUT_ASSET_DECIMALS",
+    value = "7"
+  },
+  {
+    name  = "STELLAR_PAYOUT_CONTRACT_ID",
+    value = "PLACEHOLDER"
+  },
+  {
+    name  = "PAYOUT_PROCESSOR_INTERVAL_MS",
+    value = "10000"
   }
 ]
 

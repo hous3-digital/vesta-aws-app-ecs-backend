@@ -67,6 +67,18 @@ environment = [
   {
     name  = "STELLAR_PAYOUT_ASSET_CODE",
     value = "BRL"
+  },
+  {
+    name  = "STELLAR_PAYOUT_ASSET_DECIMALS",
+    value = "7"
+  },
+  {
+    name  = "STELLAR_PAYOUT_CONTRACT_ID",
+    value = "PLACEHOLDER"
+  },
+  {
+    name  = "PAYOUT_PROCESSOR_INTERVAL_MS",
+    value = "10000"
   }
 ]
 
