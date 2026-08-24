@@ -34,6 +34,9 @@ export type OrganizationWalletMinAggregateOutputType = {
   status: $Enums.OrganizationWalletStatus | null
   accountActivated: boolean | null
   trustlineReady: boolean | null
+  controlVerifiedAt: Date | null
+  controlVerifiedByUserId: string | null
+  trustlineVerifiedAt: Date | null
   assetCode: string | null
   assetIssuer: string | null
   lastError: string | null
@@ -51,6 +54,9 @@ export type OrganizationWalletMaxAggregateOutputType = {
   status: $Enums.OrganizationWalletStatus | null
   accountActivated: boolean | null
   trustlineReady: boolean | null
+  controlVerifiedAt: Date | null
+  controlVerifiedByUserId: string | null
+  trustlineVerifiedAt: Date | null
   assetCode: string | null
   assetIssuer: string | null
   lastError: string | null
@@ -68,6 +74,9 @@ export type OrganizationWalletCountAggregateOutputType = {
   status: number
   accountActivated: number
   trustlineReady: number
+  controlVerifiedAt: number
+  controlVerifiedByUserId: number
+  trustlineVerifiedAt: number
   assetCode: number
   assetIssuer: number
   lastError: number
@@ -87,6 +96,9 @@ export type OrganizationWalletMinAggregateInputType = {
   status?: true
   accountActivated?: true
   trustlineReady?: true
+  controlVerifiedAt?: true
+  controlVerifiedByUserId?: true
+  trustlineVerifiedAt?: true
   assetCode?: true
   assetIssuer?: true
   lastError?: true
@@ -104,6 +116,9 @@ export type OrganizationWalletMaxAggregateInputType = {
   status?: true
   accountActivated?: true
   trustlineReady?: true
+  controlVerifiedAt?: true
+  controlVerifiedByUserId?: true
+  trustlineVerifiedAt?: true
   assetCode?: true
   assetIssuer?: true
   lastError?: true
@@ -121,6 +136,9 @@ export type OrganizationWalletCountAggregateInputType = {
   status?: true
   accountActivated?: true
   trustlineReady?: true
+  controlVerifiedAt?: true
+  controlVerifiedByUserId?: true
+  trustlineVerifiedAt?: true
   assetCode?: true
   assetIssuer?: true
   lastError?: true
@@ -211,6 +229,9 @@ export type OrganizationWalletGroupByOutputType = {
   status: $Enums.OrganizationWalletStatus
   accountActivated: boolean
   trustlineReady: boolean
+  controlVerifiedAt: Date | null
+  controlVerifiedByUserId: string | null
+  trustlineVerifiedAt: Date | null
   assetCode: string
   assetIssuer: string | null
   lastError: string | null
@@ -249,6 +270,9 @@ export type OrganizationWalletWhereInput = {
   status?: Prisma.EnumOrganizationWalletStatusFilter<"OrganizationWallet"> | $Enums.OrganizationWalletStatus
   accountActivated?: Prisma.BoolFilter<"OrganizationWallet"> | boolean
   trustlineReady?: Prisma.BoolFilter<"OrganizationWallet"> | boolean
+  controlVerifiedAt?: Prisma.DateTimeNullableFilter<"OrganizationWallet"> | Date | string | null
+  controlVerifiedByUserId?: Prisma.StringNullableFilter<"OrganizationWallet"> | string | null
+  trustlineVerifiedAt?: Prisma.DateTimeNullableFilter<"OrganizationWallet"> | Date | string | null
   assetCode?: Prisma.StringFilter<"OrganizationWallet"> | string
   assetIssuer?: Prisma.StringNullableFilter<"OrganizationWallet"> | string | null
   lastError?: Prisma.StringNullableFilter<"OrganizationWallet"> | string | null
@@ -266,6 +290,9 @@ export type OrganizationWalletOrderByWithRelationInput = {
   status?: Prisma.SortOrder
   accountActivated?: Prisma.SortOrder
   trustlineReady?: Prisma.SortOrder
+  controlVerifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  controlVerifiedByUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  trustlineVerifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   assetCode?: Prisma.SortOrder
   assetIssuer?: Prisma.SortOrderInput | Prisma.SortOrder
   lastError?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -286,6 +313,9 @@ export type OrganizationWalletWhereUniqueInput = Prisma.AtLeast<{
   status?: Prisma.EnumOrganizationWalletStatusFilter<"OrganizationWallet"> | $Enums.OrganizationWalletStatus
   accountActivated?: Prisma.BoolFilter<"OrganizationWallet"> | boolean
   trustlineReady?: Prisma.BoolFilter<"OrganizationWallet"> | boolean
+  controlVerifiedAt?: Prisma.DateTimeNullableFilter<"OrganizationWallet"> | Date | string | null
+  controlVerifiedByUserId?: Prisma.StringNullableFilter<"OrganizationWallet"> | string | null
+  trustlineVerifiedAt?: Prisma.DateTimeNullableFilter<"OrganizationWallet"> | Date | string | null
   assetCode?: Prisma.StringFilter<"OrganizationWallet"> | string
   assetIssuer?: Prisma.StringNullableFilter<"OrganizationWallet"> | string | null
   lastError?: Prisma.StringNullableFilter<"OrganizationWallet"> | string | null
@@ -303,6 +333,9 @@ export type OrganizationWalletOrderByWithAggregationInput = {
   status?: Prisma.SortOrder
   accountActivated?: Prisma.SortOrder
   trustlineReady?: Prisma.SortOrder
+  controlVerifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  controlVerifiedByUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  trustlineVerifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   assetCode?: Prisma.SortOrder
   assetIssuer?: Prisma.SortOrderInput | Prisma.SortOrder
   lastError?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -326,6 +359,9 @@ export type OrganizationWalletScalarWhereWithAggregatesInput = {
   status?: Prisma.EnumOrganizationWalletStatusWithAggregatesFilter<"OrganizationWallet"> | $Enums.OrganizationWalletStatus
   accountActivated?: Prisma.BoolWithAggregatesFilter<"OrganizationWallet"> | boolean
   trustlineReady?: Prisma.BoolWithAggregatesFilter<"OrganizationWallet"> | boolean
+  controlVerifiedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"OrganizationWallet"> | Date | string | null
+  controlVerifiedByUserId?: Prisma.StringNullableWithAggregatesFilter<"OrganizationWallet"> | string | null
+  trustlineVerifiedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"OrganizationWallet"> | Date | string | null
   assetCode?: Prisma.StringWithAggregatesFilter<"OrganizationWallet"> | string
   assetIssuer?: Prisma.StringNullableWithAggregatesFilter<"OrganizationWallet"> | string | null
   lastError?: Prisma.StringNullableWithAggregatesFilter<"OrganizationWallet"> | string | null
@@ -343,6 +379,9 @@ export type OrganizationWalletCreateInput = {
   status?: $Enums.OrganizationWalletStatus
   accountActivated?: boolean
   trustlineReady?: boolean
+  controlVerifiedAt?: Date | string | null
+  controlVerifiedByUserId?: string | null
+  trustlineVerifiedAt?: Date | string | null
   assetCode: string
   assetIssuer?: string | null
   lastError?: string | null
@@ -360,6 +399,9 @@ export type OrganizationWalletUncheckedCreateInput = {
   status?: $Enums.OrganizationWalletStatus
   accountActivated?: boolean
   trustlineReady?: boolean
+  controlVerifiedAt?: Date | string | null
+  controlVerifiedByUserId?: string | null
+  trustlineVerifiedAt?: Date | string | null
   assetCode: string
   assetIssuer?: string | null
   lastError?: string | null
@@ -377,6 +419,9 @@ export type OrganizationWalletUpdateInput = {
   status?: Prisma.EnumOrganizationWalletStatusFieldUpdateOperationsInput | $Enums.OrganizationWalletStatus
   accountActivated?: Prisma.BoolFieldUpdateOperationsInput | boolean
   trustlineReady?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  controlVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  controlVerifiedByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trustlineVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assetCode?: Prisma.StringFieldUpdateOperationsInput | string
   assetIssuer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -394,6 +439,9 @@ export type OrganizationWalletUncheckedUpdateInput = {
   status?: Prisma.EnumOrganizationWalletStatusFieldUpdateOperationsInput | $Enums.OrganizationWalletStatus
   accountActivated?: Prisma.BoolFieldUpdateOperationsInput | boolean
   trustlineReady?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  controlVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  controlVerifiedByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trustlineVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assetCode?: Prisma.StringFieldUpdateOperationsInput | string
   assetIssuer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -411,6 +459,9 @@ export type OrganizationWalletCreateManyInput = {
   status?: $Enums.OrganizationWalletStatus
   accountActivated?: boolean
   trustlineReady?: boolean
+  controlVerifiedAt?: Date | string | null
+  controlVerifiedByUserId?: string | null
+  trustlineVerifiedAt?: Date | string | null
   assetCode: string
   assetIssuer?: string | null
   lastError?: string | null
@@ -428,6 +479,9 @@ export type OrganizationWalletUpdateManyMutationInput = {
   status?: Prisma.EnumOrganizationWalletStatusFieldUpdateOperationsInput | $Enums.OrganizationWalletStatus
   accountActivated?: Prisma.BoolFieldUpdateOperationsInput | boolean
   trustlineReady?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  controlVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  controlVerifiedByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trustlineVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assetCode?: Prisma.StringFieldUpdateOperationsInput | string
   assetIssuer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -445,6 +499,9 @@ export type OrganizationWalletUncheckedUpdateManyInput = {
   status?: Prisma.EnumOrganizationWalletStatusFieldUpdateOperationsInput | $Enums.OrganizationWalletStatus
   accountActivated?: Prisma.BoolFieldUpdateOperationsInput | boolean
   trustlineReady?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  controlVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  controlVerifiedByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trustlineVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assetCode?: Prisma.StringFieldUpdateOperationsInput | string
   assetIssuer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -462,6 +519,9 @@ export type OrganizationWalletCountOrderByAggregateInput = {
   status?: Prisma.SortOrder
   accountActivated?: Prisma.SortOrder
   trustlineReady?: Prisma.SortOrder
+  controlVerifiedAt?: Prisma.SortOrder
+  controlVerifiedByUserId?: Prisma.SortOrder
+  trustlineVerifiedAt?: Prisma.SortOrder
   assetCode?: Prisma.SortOrder
   assetIssuer?: Prisma.SortOrder
   lastError?: Prisma.SortOrder
@@ -479,6 +539,9 @@ export type OrganizationWalletMaxOrderByAggregateInput = {
   status?: Prisma.SortOrder
   accountActivated?: Prisma.SortOrder
   trustlineReady?: Prisma.SortOrder
+  controlVerifiedAt?: Prisma.SortOrder
+  controlVerifiedByUserId?: Prisma.SortOrder
+  trustlineVerifiedAt?: Prisma.SortOrder
   assetCode?: Prisma.SortOrder
   assetIssuer?: Prisma.SortOrder
   lastError?: Prisma.SortOrder
@@ -496,6 +559,9 @@ export type OrganizationWalletMinOrderByAggregateInput = {
   status?: Prisma.SortOrder
   accountActivated?: Prisma.SortOrder
   trustlineReady?: Prisma.SortOrder
+  controlVerifiedAt?: Prisma.SortOrder
+  controlVerifiedByUserId?: Prisma.SortOrder
+  trustlineVerifiedAt?: Prisma.SortOrder
   assetCode?: Prisma.SortOrder
   assetIssuer?: Prisma.SortOrder
   lastError?: Prisma.SortOrder
@@ -519,6 +585,9 @@ export type OrganizationWalletSelect<ExtArgs extends runtime.Types.Extensions.In
   status?: boolean
   accountActivated?: boolean
   trustlineReady?: boolean
+  controlVerifiedAt?: boolean
+  controlVerifiedByUserId?: boolean
+  trustlineVerifiedAt?: boolean
   assetCode?: boolean
   assetIssuer?: boolean
   lastError?: boolean
@@ -536,6 +605,9 @@ export type OrganizationWalletSelectCreateManyAndReturn<ExtArgs extends runtime.
   status?: boolean
   accountActivated?: boolean
   trustlineReady?: boolean
+  controlVerifiedAt?: boolean
+  controlVerifiedByUserId?: boolean
+  trustlineVerifiedAt?: boolean
   assetCode?: boolean
   assetIssuer?: boolean
   lastError?: boolean
@@ -553,6 +625,9 @@ export type OrganizationWalletSelectUpdateManyAndReturn<ExtArgs extends runtime.
   status?: boolean
   accountActivated?: boolean
   trustlineReady?: boolean
+  controlVerifiedAt?: boolean
+  controlVerifiedByUserId?: boolean
+  trustlineVerifiedAt?: boolean
   assetCode?: boolean
   assetIssuer?: boolean
   lastError?: boolean
@@ -570,6 +645,9 @@ export type OrganizationWalletSelectScalar = {
   status?: boolean
   accountActivated?: boolean
   trustlineReady?: boolean
+  controlVerifiedAt?: boolean
+  controlVerifiedByUserId?: boolean
+  trustlineVerifiedAt?: boolean
   assetCode?: boolean
   assetIssuer?: boolean
   lastError?: boolean
@@ -577,7 +655,7 @@ export type OrganizationWalletSelectScalar = {
   updatedAt?: boolean
 }
 
-export type OrganizationWalletOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "issuerId" | "privyUserId" | "privyWalletId" | "stellarAddress" | "network" | "status" | "accountActivated" | "trustlineReady" | "assetCode" | "assetIssuer" | "lastError" | "createdAt" | "updatedAt", ExtArgs["result"]["organizationWallet"]>
+export type OrganizationWalletOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "issuerId" | "privyUserId" | "privyWalletId" | "stellarAddress" | "network" | "status" | "accountActivated" | "trustlineReady" | "controlVerifiedAt" | "controlVerifiedByUserId" | "trustlineVerifiedAt" | "assetCode" | "assetIssuer" | "lastError" | "createdAt" | "updatedAt", ExtArgs["result"]["organizationWallet"]>
 
 export type $OrganizationWalletPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "OrganizationWallet"
@@ -592,6 +670,9 @@ export type $OrganizationWalletPayload<ExtArgs extends runtime.Types.Extensions.
     status: $Enums.OrganizationWalletStatus
     accountActivated: boolean
     trustlineReady: boolean
+    controlVerifiedAt: Date | null
+    controlVerifiedByUserId: string | null
+    trustlineVerifiedAt: Date | null
     assetCode: string
     assetIssuer: string | null
     lastError: string | null
@@ -1029,6 +1110,9 @@ export interface OrganizationWalletFieldRefs {
   readonly status: Prisma.FieldRef<"OrganizationWallet", 'OrganizationWalletStatus'>
   readonly accountActivated: Prisma.FieldRef<"OrganizationWallet", 'Boolean'>
   readonly trustlineReady: Prisma.FieldRef<"OrganizationWallet", 'Boolean'>
+  readonly controlVerifiedAt: Prisma.FieldRef<"OrganizationWallet", 'DateTime'>
+  readonly controlVerifiedByUserId: Prisma.FieldRef<"OrganizationWallet", 'String'>
+  readonly trustlineVerifiedAt: Prisma.FieldRef<"OrganizationWallet", 'DateTime'>
   readonly assetCode: Prisma.FieldRef<"OrganizationWallet", 'String'>
   readonly assetIssuer: Prisma.FieldRef<"OrganizationWallet", 'String'>
   readonly lastError: Prisma.FieldRef<"OrganizationWallet", 'String'>
@@ -1210,11 +1294,6 @@ export type OrganizationWalletFindManyArgs<ExtArgs extends runtime.Types.Extensi
    * Skip the first `n` OrganizationWallets.
    */
   skip?: number
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-   * 
-   * Filter by unique combinations of OrganizationWallets.
-   */
   distinct?: Prisma.OrganizationWalletScalarFieldEnum | Prisma.OrganizationWalletScalarFieldEnum[]
 }
 

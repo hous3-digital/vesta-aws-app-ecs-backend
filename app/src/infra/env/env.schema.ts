@@ -16,6 +16,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string().url(),
 
   STELLAR_RPC_URL: z.string().url().default("https://soroban-testnet.stellar.org"),
+  STELLAR_HORIZON_URL: z.string().url().optional(),
   STELLAR_NETWORK: z.string().min(1).default("Test SDF Network ; September 2015"),
   VESTA_CONTRACT_ID: z.string().min(1).default("PLACEHOLDER"),
   VESTA_DEPLOYER_SECRET: z.string().optional().default(""),
@@ -37,6 +38,11 @@ const envSchema = z.object({
 
   PRIVY_APP_ID: z.string().min(1).optional(),
   PRIVY_APP_SECRET: z.string().min(32, "PRIVY_APP_SECRET must be at least 32 characters").optional(),
+  PRIVY_CUSTOM_AUTH_PRIVATE_KEY: z.string().min(1).optional(),
+  PRIVY_CUSTOM_AUTH_KEY_ID: z.string().min(1).optional(),
+  PRIVY_CUSTOM_AUTH_ISSUER: z.string().min(1).default("vesta"),
+  WEBAUTHN_ALLOWED_ORIGINS: z.string().min(1).optional(),
+  WEBAUTHN_ALLOWED_RP_IDS: z.string().min(1).default("localhost"),
 
   COMMISSION_PER_VERIFICATION_BRL: z
     .string()
@@ -49,6 +55,18 @@ const envSchema = z.object({
     .pipe(z.number().int().nonnegative()),
   STELLAR_PAYOUT_ASSET_CODE: z.string().min(1).default("BRL"),
   STELLAR_PAYOUT_ASSET_ISSUER: z.string().min(1).optional(),
+  STELLAR_PAYOUT_ASSET_DECIMALS: z
+    .string()
+    .default("7")
+    .transform((v) => parseInt(v, 10))
+    .pipe(z.number().int().min(0).max(18)),
+  STELLAR_PAYOUT_CONTRACT_ID: z.string().min(1).default("PLACEHOLDER"),
+  STELLAR_PAYOUT_OPERATOR_SECRET: z.string().optional().default(""),
+  PAYOUT_PROCESSOR_INTERVAL_MS: z
+    .string()
+    .default("10000")
+    .transform((v) => parseInt(v, 10))
+    .pipe(z.number().int().min(1000)),
 });
 
 export const validate = { validate: envConfig };

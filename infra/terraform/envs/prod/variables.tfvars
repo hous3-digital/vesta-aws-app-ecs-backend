@@ -29,6 +29,10 @@ environment = [
     value = "https://soroban-rpc.mainnet.stellar.gateway.fm"
   },
   {
+    name  = "STELLAR_HORIZON_URL",
+    value = "https://horizon.stellar.org"
+  },
+  {
     name  = "ZK_ARTIFACTS_DIR",
     value = "./zk-artifacts"
   },
@@ -45,6 +49,14 @@ environment = [
     value = "https://backoffice.hous3-trust.com,https://backoffice.vestazk.com,https://vesta-demo-stellar.vercel.app,http://localhost:5173,https://*.idcerberus.com"
   },
   {
+    name  = "WEBAUTHN_ALLOWED_ORIGINS",
+    value = "https://vesta-demo-stellar.vercel.app,https://*.idcerberus.com"
+  },
+  {
+    name  = "WEBAUTHN_ALLOWED_RP_IDS",
+    value = "vesta-demo-stellar.vercel.app,*.idcerberus.com"
+  },
+  {
     name  = "BACKOFFICE_JWT_EXPIRES_IN",
     value = "8h"
   },
@@ -59,6 +71,18 @@ environment = [
   {
     name  = "STELLAR_PAYOUT_ASSET_CODE",
     value = "BRL"
+  },
+  {
+    name  = "STELLAR_PAYOUT_ASSET_DECIMALS",
+    value = "7"
+  },
+  {
+    name  = "STELLAR_PAYOUT_CONTRACT_ID",
+    value = "PLACEHOLDER"
+  },
+  {
+    name  = "PAYOUT_PROCESSOR_INTERVAL_MS",
+    value = "10000"
   }
 ]
 

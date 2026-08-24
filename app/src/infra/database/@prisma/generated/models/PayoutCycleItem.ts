@@ -1116,11 +1116,6 @@ export type PayoutCycleItemFindManyArgs<ExtArgs extends runtime.Types.Extensions
    * Skip the first `n` PayoutCycleItems.
    */
   skip?: number
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-   * 
-   * Filter by unique combinations of PayoutCycleItems.
-   */
   distinct?: Prisma.PayoutCycleItemScalarFieldEnum | Prisma.PayoutCycleItemScalarFieldEnum[]
 }
 
