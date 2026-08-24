@@ -11,7 +11,7 @@ import {
 @Injectable()
 export class PayoutProcessorService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PayoutProcessorService.name);
-  private timer: NodeJS.Timeout | null = null;
+  private timer: ReturnType<typeof globalThis.setInterval> | null = null;
   private running = false;
 
   public constructor(
@@ -21,13 +21,13 @@ export class PayoutProcessorService implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   public onModuleInit(): void {
-    this.timer = setInterval(() => void this.processNext(), this.env.PAYOUT_PROCESSOR_INTERVAL_MS);
+    this.timer = globalThis.setInterval(() => void this.processNext(), this.env.PAYOUT_PROCESSOR_INTERVAL_MS);
     this.timer.unref();
     void this.processNext();
   }
 
   public onModuleDestroy(): void {
-    if (this.timer) clearInterval(this.timer);
+    if (this.timer) globalThis.clearInterval(this.timer);
   }
 
   public async processNext(): Promise<void> {
