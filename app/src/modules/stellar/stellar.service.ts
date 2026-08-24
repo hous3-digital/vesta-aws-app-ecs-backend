@@ -3,9 +3,11 @@ import { EnvService } from "@src/infra/env/env.service";
 import type { EncodedProof, EncodedVerificationKey } from "@src/shared/types/vesta-vc.types";
 import {
   BASE_FEE,
+  Asset,
   Contract,
   FeeBumpTransaction,
   Keypair,
+  Horizon,
   Operation,
   rpc as SorobanRpc,
   Transaction,
@@ -39,6 +41,18 @@ export interface StellarSubmitResult {
   mock: boolean;
 }
 
+export interface StellarAccountReadiness {
+  accountActivated: boolean;
+  trustlineReady: boolean;
+  trustlineLedger: number | null;
+}
+
+export interface UnsignedTrustlineTransaction {
+  unsignedXdr: string;
+  transactionHash: `0x${string}`;
+  expiresAt: string;
+}
+
 @Injectable()
 export class StellarService implements OnModuleInit {
   private readonly logger = new Logger(StellarService.name);
@@ -48,6 +62,7 @@ export class StellarService implements OnModuleInit {
   private readonly deployerSecret: string;
   private mockMode: boolean;
   private server!: SorobanRpc.Server;
+  private horizon!: Horizon.Server;
 
   public constructor(private readonly envService: EnvService) {
     this.rpcUrl = envService.STELLAR_RPC_URL;
@@ -59,14 +74,143 @@ export class StellarService implements OnModuleInit {
 
   public onModuleInit(): void {
     this.server = new SorobanRpc.Server(this.rpcUrl);
+    const horizonUrl =
+      this.envService.STELLAR_HORIZON_URL ??
+      (this.networkPassphrase.includes("Public Global Stellar Network")
+        ? "https://horizon.stellar.org"
+        : "https://horizon-testnet.stellar.org");
+    this.horizon = new Horizon.Server(horizonUrl);
 
     if (this.mockMode) {
       this.logger.warn(
-        "Stellar em MOCK MODE — configure VESTA_CONTRACT_ID e VESTA_DEPLOYER_SECRET " + "para ativar verificação on-chain real.",
+        "Stellar em MOCK MODE — configure VESTA_CONTRACT_ID e VESTA_DEPLOYER_SECRET " +
+          "para ativar verificação on-chain real.",
       );
     } else {
       this.logger.log(`Stellar Soroban conectado — Contrato: ${this.contractId}`);
     }
+  }
+
+  public async getAccountReadiness(
+    address: string,
+    assetCode: string,
+    assetIssuer?: string | null,
+  ): Promise<StellarAccountReadiness> {
+    try {
+      const account = await this.horizon.loadAccount(address);
+      if (assetCode.toUpperCase() === "XLM") {
+        return { accountActivated: true, trustlineReady: true, trustlineLedger: null };
+      }
+      if (!assetIssuer) {
+        return { accountActivated: true, trustlineReady: false, trustlineLedger: null };
+      }
+      const trustline = account.balances.find(
+        (balance) =>
+          "asset_code" in balance && balance.asset_code === assetCode && balance.asset_issuer === assetIssuer,
+      );
+      return {
+        accountActivated: true,
+        trustlineReady: Boolean(
+          trustline &&
+          "is_authorized" in trustline &&
+          "limit" in trustline &&
+          trustline.is_authorized &&
+          Number(trustline.limit) > 0,
+        ),
+        trustlineLedger: trustline && "last_modified_ledger" in trustline ? trustline.last_modified_ledger : null,
+      };
+    } catch (cause) {
+      const status = (cause as { response?: { status?: number } }).response?.status;
+      if (status === 404) {
+        return { accountActivated: false, trustlineReady: false, trustlineLedger: null };
+      }
+      this.logger.error(`Falha ao validar conta ${address} no Horizon: ${(cause as Error).message}`);
+      throw new ServiceUnavailableException("Não foi possível validar a conta Stellar agora");
+    }
+  }
+
+  public async buildTrustlineTransaction(params: {
+    address: string;
+    assetCode: string;
+    assetIssuer: string;
+  }): Promise<UnsignedTrustlineTransaction> {
+    if (!this.deployerSecret) {
+      throw new ServiceUnavailableException("Patrocinador Stellar da trustline não configurado");
+    }
+    const account = await this.horizon.loadAccount(params.address);
+    const sponsor = Keypair.fromSecret(this.deployerSecret);
+    const expiresAt = new Date(Date.now() + 2 * 60 * 1000);
+    const transaction = new TransactionBuilder(account, {
+      fee: BASE_FEE,
+      networkPassphrase: this.networkPassphrase,
+    })
+      .addOperation(
+        Operation.beginSponsoringFutureReserves({
+          source: sponsor.publicKey(),
+          sponsoredId: params.address,
+        }),
+      )
+      .addOperation(
+        Operation.changeTrust({
+          source: params.address,
+          asset: new Asset(params.assetCode, params.assetIssuer),
+        }),
+      )
+      .addOperation(Operation.endSponsoringFutureReserves({ source: params.address }))
+      .setTimeout(120)
+      .build();
+    transaction.sign(sponsor);
+    return {
+      unsignedXdr: transaction.toXDR(),
+      transactionHash: `0x${transaction.hash().toString("hex")}`,
+      expiresAt: expiresAt.toISOString(),
+    };
+  }
+
+  public async submitTrustlineTransaction(params: {
+    address: string;
+    assetCode: string;
+    assetIssuer: string;
+    unsignedXdr: string;
+    signature: string;
+  }): Promise<{ txHash: string; ledger: number }> {
+    const parsed = TransactionBuilder.fromXDR(params.unsignedXdr, this.networkPassphrase);
+    if (!(parsed instanceof Transaction)) throw new Error("Fee bump não permitido na ativação da trustline");
+    if (!this.deployerSecret || parsed.source !== params.address || parsed.operations.length !== 3) {
+      throw new Error("Transação de trustline inválida");
+    }
+    const sponsor = Keypair.fromSecret(this.deployerSecret);
+    const beginSponsorship = parsed.operations[0];
+    const operation = parsed.operations[1];
+    const endSponsorship = parsed.operations[2];
+    if (
+      beginSponsorship.type !== "beginSponsoringFutureReserves" ||
+      beginSponsorship.source !== sponsor.publicKey() ||
+      beginSponsorship.sponsoredId !== params.address ||
+      operation.type !== "changeTrust" ||
+      operation.source !== params.address ||
+      !(operation.line instanceof Asset) ||
+      operation.line.getCode() !== params.assetCode ||
+      operation.line.getIssuer() !== params.assetIssuer ||
+      endSponsorship.type !== "endSponsoringFutureReserves" ||
+      endSponsorship.source !== params.address
+    ) {
+      throw new Error("Ativo da trustline não corresponde à configuração de repasse");
+    }
+    const sponsorSigned = parsed.signatures.some((decorated) => sponsor.verify(parsed.hash(), decorated.signature()));
+    if (!sponsorSigned) throw new Error("Patrocínio da trustline não está assinado pela Vesta");
+    const signatureHex = params.signature.replace(/^0x/, "");
+    const signatureBytes = Buffer.from(signatureHex, "hex");
+    if (!Keypair.fromPublicKey(params.address).verify(parsed.hash(), signatureBytes)) {
+      throw new Error("Assinatura Stellar inválida");
+    }
+    parsed.addSignature(params.address, signatureBytes.toString("base64"));
+    const submitted = await this.horizon.submitTransaction(parsed);
+    return { txHash: submitted.hash, ledger: submitted.ledger };
+  }
+
+  public getNetworkPassphrase(): string {
+    return this.networkPassphrase;
   }
 
   public isMockMode(): boolean {
@@ -173,9 +317,7 @@ export class StellarService implements OnModuleInit {
    * o SDK apenas repassar; quando é o usuário, o SDK precisa assinar antes
    * de chamar submitWithFeeBump.
    */
-  public async buildUnsignedZkProofTx(
-    params: BuildUnsignedZkProofTxParams,
-  ): Promise<BuildUnsignedZkProofTxResult> {
+  public async buildUnsignedZkProofTx(params: BuildUnsignedZkProofTxParams): Promise<BuildUnsignedZkProofTxResult> {
     if (this.mockMode) {
       // Em mock mode, retorna XDR placeholder — submit-signed também mockado
       return {
@@ -345,7 +487,8 @@ export class StellarService implements OnModuleInit {
     const toBuffer = (v: Buffer | { type: string; data: number[] }): Buffer =>
       Buffer.isBuffer(v) ? v : Buffer.from((v as { type: string; data: number[] }).data);
 
-    const bufToScVal = (buf: Buffer | { type: string; data: number[] }) => nativeToScVal(toBuffer(buf), { type: "bytes" });
+    const bufToScVal = (buf: Buffer | { type: string; data: number[] }) =>
+      nativeToScVal(toBuffer(buf), { type: "bytes" });
 
     const vkIcScVals = encodedVk.ic.map(bufToScVal);
     const pubSignalScVals = encodedPublicSignals.map(bufToScVal);

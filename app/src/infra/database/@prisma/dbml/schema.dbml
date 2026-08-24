@@ -24,6 +24,28 @@ Table credentials {
   expiresAt DateTime
 }
 
+Table passkey_credentials {
+  id String [unique, not null]
+  vcHash String [unique, not null]
+  issuerId String [not null]
+  subjectDid String [not null]
+  publicKey String [not null]
+  counter Int [not null, default: 0]
+  transports Json
+  deviceType String [not null]
+  backedUp Boolean [not null, default: false]
+  rpId String [not null]
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+}
+
+Table auth_challenges {
+  challengeHash String [unique, not null]
+  context Json [not null]
+  expiresAt DateTime [not null]
+  createdAt DateTime [not null]
+}
+
 Table attestation {
   id String [unique, not null]
   vcHash String [not null]
@@ -50,9 +72,56 @@ Table commission_ledger_entries {
   occurredAt DateTime [not null]
   availableAt DateTime [not null]
   payoutCycleId String
+  payoutRequestId String
   settledAt DateTime
   reversalOfId String
   createdAt DateTime [not null]
+}
+
+Table payout_requests {
+  id String [unique, not null]
+  issuerId String [not null]
+  activeIssuerId String [unique]
+  walletId String [not null]
+  destinationAddress String [not null]
+  amountMinor BigInt [not null]
+  currency String [not null, default: 'BRL']
+  settlementAssetCode String [not null]
+  settlementAssetIssuer String
+  settlementAmountAtomic BigInt [not null]
+  status PayoutRequestStatus [not null, default: 'REQUESTED']
+  idempotencyKeyHash String [not null]
+  onChainPayoutId String [unique, not null]
+  stellarTxHash String [unique]
+  stellarLedger Int
+  failureCode String
+  requestedAt DateTime [not null]
+  processingStartedAt DateTime
+  submittedAt DateTime
+  confirmedAt DateTime
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+
+  indexes {
+    (issuerId, idempotencyKeyHash) [unique]
+  }
+}
+
+Table payout_attempts {
+  id String [unique, not null]
+  payoutRequestId String [not null]
+  attemptNumber Int [not null]
+  status PayoutAttemptStatus [not null, default: 'PROCESSING']
+  stellarTxHash String
+  stellarLedger Int
+  failureCode String
+  startedAt DateTime [not null]
+  completedAt DateTime
+  createdAt DateTime [not null]
+
+  indexes {
+    (payoutRequestId, attemptNumber) [unique]
+  }
 }
 
 Table payout_cycles {
@@ -95,6 +164,9 @@ Table organization_wallets {
   status OrganizationWalletStatus [not null, default: 'PENDING']
   accountActivated Boolean [not null, default: false]
   trustlineReady Boolean [not null, default: false]
+  controlVerifiedAt DateTime
+  controlVerifiedByUserId String
+  trustlineVerifiedAt DateTime
   assetCode String [not null]
   assetIssuer String
   lastError String
@@ -185,4 +257,21 @@ Enum OrganizationWalletStatus {
   ACTIVE
   ERROR
   SUSPENDED
+}
+
+Enum PayoutRequestStatus {
+  REQUESTED
+  PROCESSING
+  SUBMITTED
+  CONFIRMED
+  FAILED
+  UNKNOWN
+  REQUIRES_REVIEW
+}
+
+Enum PayoutAttemptStatus {
+  PROCESSING
+  CONFIRMED
+  FAILED
+  UNKNOWN
 }

@@ -15,6 +15,19 @@ env:
   TF_BACKEND_BUCKET: "trust-staging-terraform-state"
 
 jobs:
+  payout-contract:
+    name: Payout contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32v1-none
+      - name: Test payout contract
+        run: cargo test --manifest-path app/contracts/vesta-payout-vault/Cargo.toml
+      - name: Build payout contract WASM
+        run: cargo build --manifest-path app/contracts/vesta-payout-vault/Cargo.toml --target wasm32v1-none --release
+
   install:
     name: Install
     runs-on: ubuntu-latest

@@ -54,6 +54,7 @@ export class CommissionLedgerService {
       status: row.status,
       attestationId: row.attestationId,
       payoutCycleId: row.payoutCycleId,
+      payoutRequestId: row.payoutRequestId,
     }));
     return { items, nextCursor: hasNext ? items.at(-1)?.id ?? null : null };
   }
