@@ -3,9 +3,11 @@ import { EnvModule } from "@src/infra/env/env.module";
 import { IssuerModule } from "@src/modules/issuer/issuer.module";
 import { StellarModule } from "@src/modules/stellar/stellar.module";
 import { WalletService } from "@src/modules/wallet/wallet.service";
+import { DatabaseModule } from "@src/infra/database/database.module";
+import { JwtModule } from "@nestjs/jwt";
 
 @Module({
-  imports: [EnvModule, IssuerModule, StellarModule],
+  imports: [DatabaseModule, EnvModule, IssuerModule, JwtModule.register({}), StellarModule],
   providers: [WalletService],
   exports: [WalletService],
 })
