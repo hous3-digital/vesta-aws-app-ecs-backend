@@ -6,6 +6,7 @@ import { StellarService } from "@src/modules/stellar/stellar.service";
 // Privy server SDK — instalado via @privy-io/server-auth
 import { PrivyClient } from "@privy-io/server-auth";
 import { Id } from "@src/shared/value-objects/id.value-object";
+import { JwtService } from "@nestjs/jwt";
 
 export interface PrecreateWalletResult {
   privyUserId: string;
@@ -72,6 +73,7 @@ export class WalletService implements OnModuleInit {
     private readonly prisma: PrismaService,
     private readonly issuerRepository: IIssuerRepository,
     private readonly stellarService: StellarService,
+    private readonly jwtService: JwtService = new JwtService(),
   ) {}
 
   public onModuleInit(): void {
@@ -256,14 +258,39 @@ export class WalletService implements OnModuleInit {
     return wallet ? this.toOrganizationWalletResult(wallet) : null;
   }
 
+  public async issueCustomAuthToken(subjectDid: string): Promise<{ token: string; expiresAt: number }> {
+    const privateKey = this.envService.PRIVY_CUSTOM_AUTH_PRIVATE_KEY?.replace(/\\n/g, "\n");
+    const keyId = this.envService.PRIVY_CUSTOM_AUTH_KEY_ID;
+    if (!privateKey || !keyId) {
+      throw new Error(
+        "Privy custom auth não configurado: defina PRIVY_CUSTOM_AUTH_PRIVATE_KEY e PRIVY_CUSTOM_AUTH_KEY_ID",
+      );
+    }
+
+    const expiresInSeconds = 60;
+    const token = await this.jwtService.signAsync(
+      {},
+      {
+        algorithm: "ES256",
+        privateKey,
+        keyid: keyId,
+        issuer: this.envService.PRIVY_CUSTOM_AUTH_ISSUER,
+        audience: this.envService.PRIVY_APP_ID,
+        subject: subjectDid,
+        expiresIn: expiresInSeconds,
+      },
+    );
+    return { token, expiresAt: Date.now() + expiresInSeconds * 1000 };
+  }
+
   /**
-   * Verifica um identity token Privy recebido do SDK e extrai claims.
+   * Verifica um access token Privy recebido do SDK e extrai claims.
    * Usado pelo handler /public/proof/submit-signed para confirmar que a
    * assinatura veio do usuario esperado.
    */
-  public async verifyIdentityToken(token: string): Promise<PrivyIdentityClaims> {
+  public async verifyAccessToken(token: string): Promise<PrivyIdentityClaims> {
     if (!this.client) {
-      throw new Error("WalletService.verifyIdentityToken chamado sem Privy configurado");
+      throw new Error("WalletService.verifyAccessToken chamado sem Privy configurado");
     }
 
     const client = this.client as unknown as PrivyClientLike;

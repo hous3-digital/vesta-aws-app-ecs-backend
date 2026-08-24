@@ -69,6 +69,10 @@ export class StellarService implements OnModuleInit {
     }
   }
 
+  public getNetworkPassphrase(): string {
+    return this.networkPassphrase;
+  }
+
   public isMockMode(): boolean {
     return this.mockMode;
   }
