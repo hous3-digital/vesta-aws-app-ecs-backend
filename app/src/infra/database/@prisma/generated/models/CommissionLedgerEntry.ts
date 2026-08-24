@@ -46,6 +46,7 @@ export type CommissionLedgerEntryMinAggregateOutputType = {
   occurredAt: Date | null
   availableAt: Date | null
   payoutCycleId: string | null
+  payoutRequestId: string | null
   settledAt: Date | null
   reversalOfId: string | null
   createdAt: Date | null
@@ -63,6 +64,7 @@ export type CommissionLedgerEntryMaxAggregateOutputType = {
   occurredAt: Date | null
   availableAt: Date | null
   payoutCycleId: string | null
+  payoutRequestId: string | null
   settledAt: Date | null
   reversalOfId: string | null
   createdAt: Date | null
@@ -80,6 +82,7 @@ export type CommissionLedgerEntryCountAggregateOutputType = {
   occurredAt: number
   availableAt: number
   payoutCycleId: number
+  payoutRequestId: number
   settledAt: number
   reversalOfId: number
   createdAt: number
@@ -107,6 +110,7 @@ export type CommissionLedgerEntryMinAggregateInputType = {
   occurredAt?: true
   availableAt?: true
   payoutCycleId?: true
+  payoutRequestId?: true
   settledAt?: true
   reversalOfId?: true
   createdAt?: true
@@ -124,6 +128,7 @@ export type CommissionLedgerEntryMaxAggregateInputType = {
   occurredAt?: true
   availableAt?: true
   payoutCycleId?: true
+  payoutRequestId?: true
   settledAt?: true
   reversalOfId?: true
   createdAt?: true
@@ -141,6 +146,7 @@ export type CommissionLedgerEntryCountAggregateInputType = {
   occurredAt?: true
   availableAt?: true
   payoutCycleId?: true
+  payoutRequestId?: true
   settledAt?: true
   reversalOfId?: true
   createdAt?: true
@@ -245,6 +251,7 @@ export type CommissionLedgerEntryGroupByOutputType = {
   occurredAt: Date
   availableAt: Date
   payoutCycleId: string | null
+  payoutRequestId: string | null
   settledAt: Date | null
   reversalOfId: string | null
   createdAt: Date
@@ -285,6 +292,7 @@ export type CommissionLedgerEntryWhereInput = {
   occurredAt?: Prisma.DateTimeFilter<"CommissionLedgerEntry"> | Date | string
   availableAt?: Prisma.DateTimeFilter<"CommissionLedgerEntry"> | Date | string
   payoutCycleId?: Prisma.StringNullableFilter<"CommissionLedgerEntry"> | string | null
+  payoutRequestId?: Prisma.StringNullableFilter<"CommissionLedgerEntry"> | string | null
   settledAt?: Prisma.DateTimeNullableFilter<"CommissionLedgerEntry"> | Date | string | null
   reversalOfId?: Prisma.StringNullableFilter<"CommissionLedgerEntry"> | string | null
   createdAt?: Prisma.DateTimeFilter<"CommissionLedgerEntry"> | Date | string
@@ -302,6 +310,7 @@ export type CommissionLedgerEntryOrderByWithRelationInput = {
   occurredAt?: Prisma.SortOrder
   availableAt?: Prisma.SortOrder
   payoutCycleId?: Prisma.SortOrderInput | Prisma.SortOrder
+  payoutRequestId?: Prisma.SortOrderInput | Prisma.SortOrder
   settledAt?: Prisma.SortOrderInput | Prisma.SortOrder
   reversalOfId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -322,6 +331,7 @@ export type CommissionLedgerEntryWhereUniqueInput = Prisma.AtLeast<{
   occurredAt?: Prisma.DateTimeFilter<"CommissionLedgerEntry"> | Date | string
   availableAt?: Prisma.DateTimeFilter<"CommissionLedgerEntry"> | Date | string
   payoutCycleId?: Prisma.StringNullableFilter<"CommissionLedgerEntry"> | string | null
+  payoutRequestId?: Prisma.StringNullableFilter<"CommissionLedgerEntry"> | string | null
   settledAt?: Prisma.DateTimeNullableFilter<"CommissionLedgerEntry"> | Date | string | null
   reversalOfId?: Prisma.StringNullableFilter<"CommissionLedgerEntry"> | string | null
   createdAt?: Prisma.DateTimeFilter<"CommissionLedgerEntry"> | Date | string
@@ -339,6 +349,7 @@ export type CommissionLedgerEntryOrderByWithAggregationInput = {
   occurredAt?: Prisma.SortOrder
   availableAt?: Prisma.SortOrder
   payoutCycleId?: Prisma.SortOrderInput | Prisma.SortOrder
+  payoutRequestId?: Prisma.SortOrderInput | Prisma.SortOrder
   settledAt?: Prisma.SortOrderInput | Prisma.SortOrder
   reversalOfId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -364,6 +375,7 @@ export type CommissionLedgerEntryScalarWhereWithAggregatesInput = {
   occurredAt?: Prisma.DateTimeWithAggregatesFilter<"CommissionLedgerEntry"> | Date | string
   availableAt?: Prisma.DateTimeWithAggregatesFilter<"CommissionLedgerEntry"> | Date | string
   payoutCycleId?: Prisma.StringNullableWithAggregatesFilter<"CommissionLedgerEntry"> | string | null
+  payoutRequestId?: Prisma.StringNullableWithAggregatesFilter<"CommissionLedgerEntry"> | string | null
   settledAt?: Prisma.DateTimeNullableWithAggregatesFilter<"CommissionLedgerEntry"> | Date | string | null
   reversalOfId?: Prisma.StringNullableWithAggregatesFilter<"CommissionLedgerEntry"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"CommissionLedgerEntry"> | Date | string
@@ -381,6 +393,7 @@ export type CommissionLedgerEntryCreateInput = {
   occurredAt: Date | string
   availableAt: Date | string
   payoutCycleId?: string | null
+  payoutRequestId?: string | null
   settledAt?: Date | string | null
   reversalOfId?: string | null
   createdAt: Date | string
@@ -398,6 +411,7 @@ export type CommissionLedgerEntryUncheckedCreateInput = {
   occurredAt: Date | string
   availableAt: Date | string
   payoutCycleId?: string | null
+  payoutRequestId?: string | null
   settledAt?: Date | string | null
   reversalOfId?: string | null
   createdAt: Date | string
@@ -415,6 +429,7 @@ export type CommissionLedgerEntryUpdateInput = {
   occurredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   availableAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   payoutCycleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  payoutRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   settledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reversalOfId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -432,6 +447,7 @@ export type CommissionLedgerEntryUncheckedUpdateInput = {
   occurredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   availableAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   payoutCycleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  payoutRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   settledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reversalOfId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -449,6 +465,7 @@ export type CommissionLedgerEntryCreateManyInput = {
   occurredAt: Date | string
   availableAt: Date | string
   payoutCycleId?: string | null
+  payoutRequestId?: string | null
   settledAt?: Date | string | null
   reversalOfId?: string | null
   createdAt: Date | string
@@ -466,6 +483,7 @@ export type CommissionLedgerEntryUpdateManyMutationInput = {
   occurredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   availableAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   payoutCycleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  payoutRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   settledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reversalOfId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -483,6 +501,7 @@ export type CommissionLedgerEntryUncheckedUpdateManyInput = {
   occurredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   availableAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   payoutCycleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  payoutRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   settledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reversalOfId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -500,6 +519,7 @@ export type CommissionLedgerEntryCountOrderByAggregateInput = {
   occurredAt?: Prisma.SortOrder
   availableAt?: Prisma.SortOrder
   payoutCycleId?: Prisma.SortOrder
+  payoutRequestId?: Prisma.SortOrder
   settledAt?: Prisma.SortOrder
   reversalOfId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -521,6 +541,7 @@ export type CommissionLedgerEntryMaxOrderByAggregateInput = {
   occurredAt?: Prisma.SortOrder
   availableAt?: Prisma.SortOrder
   payoutCycleId?: Prisma.SortOrder
+  payoutRequestId?: Prisma.SortOrder
   settledAt?: Prisma.SortOrder
   reversalOfId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -538,6 +559,7 @@ export type CommissionLedgerEntryMinOrderByAggregateInput = {
   occurredAt?: Prisma.SortOrder
   availableAt?: Prisma.SortOrder
   payoutCycleId?: Prisma.SortOrder
+  payoutRequestId?: Prisma.SortOrder
   settledAt?: Prisma.SortOrder
   reversalOfId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -555,14 +577,6 @@ export type EnumCommissionEntryStatusFieldUpdateOperationsInput = {
   set?: $Enums.CommissionEntryStatus
 }
 
-export type IntFieldUpdateOperationsInput = {
-  set?: number
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 
 
 export type CommissionLedgerEntrySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -577,6 +591,7 @@ export type CommissionLedgerEntrySelect<ExtArgs extends runtime.Types.Extensions
   occurredAt?: boolean
   availableAt?: boolean
   payoutCycleId?: boolean
+  payoutRequestId?: boolean
   settledAt?: boolean
   reversalOfId?: boolean
   createdAt?: boolean
@@ -594,6 +609,7 @@ export type CommissionLedgerEntrySelectCreateManyAndReturn<ExtArgs extends runti
   occurredAt?: boolean
   availableAt?: boolean
   payoutCycleId?: boolean
+  payoutRequestId?: boolean
   settledAt?: boolean
   reversalOfId?: boolean
   createdAt?: boolean
@@ -611,6 +627,7 @@ export type CommissionLedgerEntrySelectUpdateManyAndReturn<ExtArgs extends runti
   occurredAt?: boolean
   availableAt?: boolean
   payoutCycleId?: boolean
+  payoutRequestId?: boolean
   settledAt?: boolean
   reversalOfId?: boolean
   createdAt?: boolean
@@ -628,12 +645,13 @@ export type CommissionLedgerEntrySelectScalar = {
   occurredAt?: boolean
   availableAt?: boolean
   payoutCycleId?: boolean
+  payoutRequestId?: boolean
   settledAt?: boolean
   reversalOfId?: boolean
   createdAt?: boolean
 }
 
-export type CommissionLedgerEntryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "issuerId" | "attestationId" | "entryType" | "status" | "amountMinor" | "currency" | "source" | "occurredAt" | "availableAt" | "payoutCycleId" | "settledAt" | "reversalOfId" | "createdAt", ExtArgs["result"]["commissionLedgerEntry"]>
+export type CommissionLedgerEntryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "issuerId" | "attestationId" | "entryType" | "status" | "amountMinor" | "currency" | "source" | "occurredAt" | "availableAt" | "payoutCycleId" | "payoutRequestId" | "settledAt" | "reversalOfId" | "createdAt", ExtArgs["result"]["commissionLedgerEntry"]>
 
 export type $CommissionLedgerEntryPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "CommissionLedgerEntry"
@@ -650,6 +668,7 @@ export type $CommissionLedgerEntryPayload<ExtArgs extends runtime.Types.Extensio
     occurredAt: Date
     availableAt: Date
     payoutCycleId: string | null
+    payoutRequestId: string | null
     settledAt: Date | null
     reversalOfId: string | null
     createdAt: Date
@@ -1087,6 +1106,7 @@ export interface CommissionLedgerEntryFieldRefs {
   readonly occurredAt: Prisma.FieldRef<"CommissionLedgerEntry", 'DateTime'>
   readonly availableAt: Prisma.FieldRef<"CommissionLedgerEntry", 'DateTime'>
   readonly payoutCycleId: Prisma.FieldRef<"CommissionLedgerEntry", 'String'>
+  readonly payoutRequestId: Prisma.FieldRef<"CommissionLedgerEntry", 'String'>
   readonly settledAt: Prisma.FieldRef<"CommissionLedgerEntry", 'DateTime'>
   readonly reversalOfId: Prisma.FieldRef<"CommissionLedgerEntry", 'String'>
   readonly createdAt: Prisma.FieldRef<"CommissionLedgerEntry", 'DateTime'>
@@ -1266,11 +1286,6 @@ export type CommissionLedgerEntryFindManyArgs<ExtArgs extends runtime.Types.Exte
    * Skip the first `n` CommissionLedgerEntries.
    */
   skip?: number
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-   * 
-   * Filter by unique combinations of CommissionLedgerEntries.
-   */
   distinct?: Prisma.CommissionLedgerEntryScalarFieldEnum | Prisma.CommissionLedgerEntryScalarFieldEnum[]
 }
 

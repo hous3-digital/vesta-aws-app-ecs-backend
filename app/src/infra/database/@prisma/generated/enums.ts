@@ -54,3 +54,26 @@ export const OrganizationWalletStatus = {
 } as const
 
 export type OrganizationWalletStatus = (typeof OrganizationWalletStatus)[keyof typeof OrganizationWalletStatus]
+
+
+export const PayoutRequestStatus = {
+  REQUESTED: 'REQUESTED',
+  PROCESSING: 'PROCESSING',
+  SUBMITTED: 'SUBMITTED',
+  CONFIRMED: 'CONFIRMED',
+  FAILED: 'FAILED',
+  UNKNOWN: 'UNKNOWN',
+  REQUIRES_REVIEW: 'REQUIRES_REVIEW'
+} as const
+
+export type PayoutRequestStatus = (typeof PayoutRequestStatus)[keyof typeof PayoutRequestStatus]
+
+
+export const PayoutAttemptStatus = {
+  PROCESSING: 'PROCESSING',
+  CONFIRMED: 'CONFIRMED',
+  FAILED: 'FAILED',
+  UNKNOWN: 'UNKNOWN'
+} as const
+
+export type PayoutAttemptStatus = (typeof PayoutAttemptStatus)[keyof typeof PayoutAttemptStatus]

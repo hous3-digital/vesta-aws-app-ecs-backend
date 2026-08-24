@@ -37,6 +37,9 @@ export class PasskeyAuthService {
     const credential = await this.credentialRepository.findByVcHash(vcHash);
     if (!credential) throw new NotFoundException("Credencial não encontrada");
     if (credential.issuerId !== issuerId) throw new ForbiddenException("Credencial pertence a outro issuer");
+    if (!credential.isApproved() || credential.isExpired() || credential.isRevoked()) {
+      throw new ForbiddenException("Credencial revogada, expirada ou não aprovada");
+    }
 
     const existing = await this.prisma.passkeyCredential.findUnique({ where: { vcHash } });
     if (existing) {
@@ -169,8 +172,8 @@ export class PasskeyAuthService {
     });
     if (!verification.verified) throw new BadRequestException("Assertion do Passkey não pôde ser verificada");
 
-    await this.prisma.passkeyCredential.update({
-      where: { id: passkey.id },
+    const counterUpdated = await this.prisma.passkeyCredential.updateMany({
+      where: { id: passkey.id, counter: passkey.counter },
       data: {
         counter: verification.authenticationInfo.newCounter,
         backedUp: verification.authenticationInfo.credentialBackedUp,
@@ -178,6 +181,9 @@ export class PasskeyAuthService {
         updatedAt: new Date(),
       },
     });
+    if (counterUpdated.count !== 1) {
+      throw new ConflictException("O contador da Passkey mudou durante a autenticação; tente novamente");
+    }
 
     const proof = await this.challengeService.generate({
       kind: "proof",
