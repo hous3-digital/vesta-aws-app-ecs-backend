@@ -29,6 +29,10 @@ environment = [
     value = "https://soroban-testnet.stellar.org"
   },
   {
+    name  = "STELLAR_HORIZON_URL",
+    value = "https://horizon-testnet.stellar.org"
+  },
+  {
     name  = "ZK_ARTIFACTS_DIR",
     value = "./zk-artifacts"
   },

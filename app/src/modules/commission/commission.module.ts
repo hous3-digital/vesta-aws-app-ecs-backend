@@ -7,9 +7,10 @@ import { PayoutProcessorService } from "@src/modules/commission/payout-processor
 import { PayoutRequestService } from "@src/modules/commission/payout-request.service";
 import { PayoutSettlementGateway } from "@src/modules/commission/payout-settlement.gateway";
 import { SorobanPayoutSettlementGateway } from "@src/modules/commission/soroban-payout-settlement.gateway";
+import { WalletModule } from "@src/modules/wallet/wallet.module";
 
 @Module({
-  imports: [DatabaseModule, EnvModule],
+  imports: [DatabaseModule, EnvModule, WalletModule],
   controllers: [PayoutBackofficeController],
   providers: [
     CommissionLedgerService,

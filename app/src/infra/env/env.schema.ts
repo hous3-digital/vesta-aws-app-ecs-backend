@@ -16,6 +16,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string().url(),
 
   STELLAR_RPC_URL: z.string().url().default("https://soroban-testnet.stellar.org"),
+  STELLAR_HORIZON_URL: z.string().url().optional(),
   STELLAR_NETWORK: z.string().min(1).default("Test SDF Network ; September 2015"),
   VESTA_CONTRACT_ID: z.string().min(1).default("PLACEHOLDER"),
   VESTA_DEPLOYER_SECRET: z.string().optional().default(""),

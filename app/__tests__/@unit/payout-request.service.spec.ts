@@ -8,6 +8,7 @@ describe("PayoutRequestService", () => {
     status: "ACTIVE",
     accountActivated: true,
     trustlineReady: true,
+    controlVerifiedAt: new Date(),
     stellarAddress: "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF",
     assetCode: "BRL",
     assetIssuer: "GBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
@@ -49,16 +50,16 @@ describe("PayoutRequestService", () => {
     STELLAR_PAYOUT_CONTRACT_ID: "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
     STELLAR_PAYOUT_OPERATOR_SECRET: "S-test-only",
   };
-  const service = new PayoutRequestService(prisma as never, env as never);
+  const walletService = { refreshOrganizationWalletReadiness: jest.fn() };
+  const service = new PayoutRequestService(prisma as never, env as never, walletService as never);
 
   beforeEach(() => {
     jest.clearAllMocks();
+    walletService.refreshOrganizationWalletReadiness.mockResolvedValue({ payoutReady: true });
     prisma.payoutRequest.findUnique.mockResolvedValue(null);
     tx.payoutRequest.findUnique.mockResolvedValue(null);
     tx.organizationWallet.findUnique.mockResolvedValue(wallet);
-    tx.commissionLedgerEntry.updateMany
-      .mockResolvedValueOnce({ count: 0 })
-      .mockResolvedValueOnce({ count: 2 });
+    tx.commissionLedgerEntry.updateMany.mockResolvedValueOnce({ count: 0 }).mockResolvedValueOnce({ count: 2 });
     tx.commissionLedgerEntry.findMany.mockResolvedValue([
       { id: "entry-1", amountMinor: 137 },
       { id: "entry-2", amountMinor: 137 },

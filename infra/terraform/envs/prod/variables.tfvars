@@ -29,6 +29,10 @@ environment = [
     value = "https://soroban-rpc.mainnet.stellar.gateway.fm"
   },
   {
+    name  = "STELLAR_HORIZON_URL",
+    value = "https://horizon.stellar.org"
+  },
+  {
     name  = "ZK_ARTIFACTS_DIR",
     value = "./zk-artifacts"
   },

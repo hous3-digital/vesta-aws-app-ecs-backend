@@ -1,19 +1,16 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from "@nestjs/common";
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { createHash } from "crypto";
 import { PrismaService } from "@src/infra/database/@prisma/prisma.service";
 import { EnvService } from "@src/infra/env/env.service";
 import { Id } from "@src/shared/value-objects/id.value-object";
+import { WalletService } from "@src/modules/wallet/wallet.service";
 
 @Injectable()
 export class PayoutRequestService {
   public constructor(
     private readonly prisma: PrismaService,
     private readonly env: EnvService,
+    private readonly walletService: WalletService,
   ) {}
 
   public async requestAllAvailable(issuerId: string, idempotencyKey: string) {
@@ -29,6 +26,7 @@ export class PayoutRequestService {
       where: { issuerId_idempotencyKeyHash: { issuerId, idempotencyKeyHash } },
     });
     if (existing) return this.toResult(existing);
+    await this.walletService.refreshOrganizationWalletReadiness(issuerId);
 
     let created;
     try {
@@ -131,6 +129,7 @@ export class PayoutRequestService {
   }
 
   public async getReadiness(issuerId: string) {
+    await this.walletService.refreshOrganizationWalletReadiness(issuerId);
     const wallet = await this.prisma.organizationWallet.findUnique({ where: { issuerId } });
     const walletReason = this.walletBlockReason(wallet);
     const contractReady = this.isSettlementConfigured();
@@ -150,15 +149,19 @@ export class PayoutRequestService {
     return amountMinor / divisor;
   }
 
-  private walletBlockReason(wallet: {
-    status: string;
-    accountActivated: boolean;
-    trustlineReady: boolean;
-    stellarAddress: string | null;
-  } | null): string | null {
+  private walletBlockReason(
+    wallet: {
+      status: string;
+      accountActivated: boolean;
+      trustlineReady: boolean;
+      controlVerifiedAt: Date | null;
+      stellarAddress: string | null;
+    } | null,
+  ): string | null {
     if (!wallet) return "Carteira organizacional ainda não provisionada";
     if (wallet.status !== "ACTIVE") return "Carteira organizacional não está ativa";
     if (!wallet.accountActivated || !wallet.stellarAddress) return "Conta Stellar ainda não está ativada";
+    if (!wallet.controlVerifiedAt) return "Controle da carteira ainda não foi confirmado no backoffice";
     if (!wallet.trustlineReady) return "Trustline do ativo de liquidação ainda não está pronta";
     return null;
   }
