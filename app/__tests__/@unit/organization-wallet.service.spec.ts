@@ -92,4 +92,53 @@ describe("WalletService organization wallet", () => {
       expect.objectContaining({ address: "GEXISTING" }),
     );
   });
+
+  it("fills a missing asset issuer on an existing wallet from the environment", async () => {
+    let stored = {
+      issuerId: "issuer_a",
+      stellarAddress: "GEXISTING",
+      network: "testnet",
+      status: "ACTIVE",
+      accountActivated: true,
+      trustlineReady: false,
+      assetCode: "BRL",
+      assetIssuer: null as string | null,
+      controlVerifiedAt: new Date(),
+      trustlineVerifiedAt: null as Date | null,
+      lastError: null as string | null,
+      updatedAt: new Date(),
+    };
+    const update = jest.fn().mockImplementation(({ data }) => {
+      stored = { ...stored, ...data };
+      return Promise.resolve(stored);
+    });
+    const prisma = {
+      organizationWallet: {
+        findUnique: jest.fn().mockImplementation(() => Promise.resolve(stored)),
+        update,
+      },
+    } as unknown as PrismaService;
+    const getAccountReadiness = jest.fn().mockResolvedValue({ accountActivated: true, trustlineReady: false });
+    const service = new WalletService(
+      {
+        STELLAR_NETWORK: "Test SDF Network ; September 2015",
+        STELLAR_PAYOUT_ASSET_CODE: "BRL",
+        STELLAR_PAYOUT_ASSET_ISSUER: "GASSET",
+      } as EnvService,
+      prisma,
+      {} as IIssuerRepository,
+      { getAccountReadiness } as unknown as StellarService,
+    );
+
+    await expect(service.refreshOrganizationWalletReadiness("issuer_a")).resolves.toEqual(
+      expect.objectContaining({
+        asset: { code: "BRL", issuer: "GASSET" },
+      }),
+    );
+    expect(update).toHaveBeenNthCalledWith(1, {
+      where: { issuerId: "issuer_a" },
+      data: { assetIssuer: "GASSET", updatedAt: expect.any(Date) },
+    });
+    expect(getAccountReadiness).toHaveBeenCalledWith("GEXISTING", "BRL", "GASSET");
+  });
 });

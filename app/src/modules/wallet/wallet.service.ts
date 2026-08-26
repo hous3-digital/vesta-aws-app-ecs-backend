@@ -324,7 +324,20 @@ export class WalletService implements OnModuleInit {
   }
 
   public async refreshOrganizationWalletReadiness(issuerId: string) {
-    const wallet = await this.requireOrganizationWallet(issuerId);
+    let wallet = await this.requireOrganizationWallet(issuerId);
+    const configuredAssetIssuer = this.envService.STELLAR_PAYOUT_ASSET_ISSUER;
+    if (
+      !wallet.assetIssuer &&
+      wallet.assetCode.toUpperCase() !== "XLM" &&
+      wallet.assetCode === this.envService.STELLAR_PAYOUT_ASSET_CODE &&
+      configuredAssetIssuer
+    ) {
+      wallet = await this.prisma.organizationWallet.update({
+        where: { issuerId },
+        data: { assetIssuer: configuredAssetIssuer, updatedAt: new Date() },
+      });
+      this.logger.log(`Emissor do ativo sincronizado para a carteira organizacional ${issuerId}`);
+    }
     if (!wallet.stellarAddress) return this.toOrganizationWalletResult(wallet);
     const readiness = await this.stellarService.getAccountReadiness(
       wallet.stellarAddress,
