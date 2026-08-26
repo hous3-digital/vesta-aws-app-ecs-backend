@@ -8,6 +8,19 @@ import { PrivyClient } from "@privy-io/server-auth";
 import { Id } from "@src/shared/value-objects/id.value-object";
 import { JwtService } from "@nestjs/jwt";
 import { Keypair } from "@stellar/stellar-sdk";
+import { createPublicKey } from "node:crypto";
+
+export interface CustomAuthJwks {
+  keys: Array<{
+    alg: "ES256";
+    crv: "P-256";
+    kid: string;
+    kty: "EC";
+    use: "sig";
+    x: string;
+    y: string;
+  }>;
+}
 
 export interface PrecreateWalletResult {
   privyUserId: string;
@@ -68,6 +81,7 @@ export class WalletService implements OnModuleInit {
   private readonly logger = new Logger(WalletService.name);
   private client: PrivyClient | null = null;
   private enabled = false;
+  private customAuthJwks: CustomAuthJwks | null = null;
 
   public constructor(
     private readonly envService: EnvService,
@@ -377,13 +391,7 @@ export class WalletService implements OnModuleInit {
   }
 
   public async issueCustomAuthToken(subjectDid: string): Promise<{ token: string; expiresAt: number }> {
-    const privateKey = this.envService.PRIVY_CUSTOM_AUTH_PRIVATE_KEY?.replace(/\\n/g, "\n");
-    const keyId = this.envService.PRIVY_CUSTOM_AUTH_KEY_ID;
-    if (!privateKey || !keyId) {
-      throw new Error(
-        "Privy custom auth não configurado: defina PRIVY_CUSTOM_AUTH_PRIVATE_KEY e PRIVY_CUSTOM_AUTH_KEY_ID",
-      );
-    }
+    const { privateKey, keyId } = this.requireCustomAuthSigningKey();
 
     const expiresInSeconds = 60;
     const token = await this.jwtService.signAsync(
@@ -399,6 +407,52 @@ export class WalletService implements OnModuleInit {
       },
     );
     return { token, expiresAt: Date.now() + expiresInSeconds * 1000 };
+  }
+
+  /**
+   * Public verification material consumed by Privy for ES256 custom-auth JWTs.
+   * The public key is derived from the configured private key so signing and
+   * verification cannot silently drift to different key pairs.
+   */
+  public getCustomAuthJwks(): CustomAuthJwks {
+    if (this.customAuthJwks) return this.customAuthJwks;
+
+    const { privateKey, keyId } = this.requireCustomAuthSigningKey();
+    const publicJwk = createPublicKey(privateKey).export({ format: "jwk" });
+    if (
+      publicJwk.kty !== "EC" ||
+      publicJwk.crv !== "P-256" ||
+      typeof publicJwk.x !== "string" ||
+      typeof publicJwk.y !== "string"
+    ) {
+      throw new Error("PRIVY_CUSTOM_AUTH_PRIVATE_KEY deve ser uma chave EC P-256 para ES256");
+    }
+
+    this.customAuthJwks = {
+      keys: [
+        {
+          alg: "ES256",
+          crv: "P-256",
+          kid: keyId,
+          kty: "EC",
+          use: "sig",
+          x: publicJwk.x,
+          y: publicJwk.y,
+        },
+      ],
+    };
+    return this.customAuthJwks;
+  }
+
+  private requireCustomAuthSigningKey(): { privateKey: string; keyId: string } {
+    const privateKey = this.envService.PRIVY_CUSTOM_AUTH_PRIVATE_KEY?.replace(/\\n/g, "\n");
+    const keyId = this.envService.PRIVY_CUSTOM_AUTH_KEY_ID;
+    if (!privateKey || !keyId) {
+      throw new Error(
+        "Privy custom auth não configurado: defina PRIVY_CUSTOM_AUTH_PRIVATE_KEY e PRIVY_CUSTOM_AUTH_KEY_ID",
+      );
+    }
+    return { privateKey, keyId };
   }
 
   /**
