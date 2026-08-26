@@ -45,10 +45,50 @@ export { Prisma }
  */
 export type Credential = Prisma.CredentialModel
 /**
+ * Model PasskeyCredential
+ *
+ */
+export type PasskeyCredential = Prisma.PasskeyCredentialModel
+/**
+ * Model AuthChallenge
+ *
+ */
+export type AuthChallenge = Prisma.AuthChallengeModel
+/**
  * Model Attestation
  *
  */
 export type Attestation = Prisma.AttestationModel
+/**
+ * Model CommissionLedgerEntry
+ *
+ */
+export type CommissionLedgerEntry = Prisma.CommissionLedgerEntryModel
+/**
+ * Model PayoutRequest
+ *
+ */
+export type PayoutRequest = Prisma.PayoutRequestModel
+/**
+ * Model PayoutAttempt
+ *
+ */
+export type PayoutAttempt = Prisma.PayoutAttemptModel
+/**
+ * Model PayoutCycle
+ *
+ */
+export type PayoutCycle = Prisma.PayoutCycleModel
+/**
+ * Model PayoutCycleItem
+ *
+ */
+export type PayoutCycleItem = Prisma.PayoutCycleItemModel
+/**
+ * Model OrganizationWallet
+ *
+ */
+export type OrganizationWallet = Prisma.OrganizationWalletModel
 /**
  * Model Issuer
  *

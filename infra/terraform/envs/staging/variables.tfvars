@@ -29,6 +29,10 @@ environment = [
     value = "https://soroban-testnet.stellar.org"
   },
   {
+    name  = "STELLAR_HORIZON_URL",
+    value = "https://horizon-testnet.stellar.org"
+  },
+  {
     name  = "ZK_ARTIFACTS_DIR",
     value = "./zk-artifacts"
   },
@@ -45,8 +49,40 @@ environment = [
     value = "https://backoffice.trust-staging.com,https://vesta-demo-stellar.vercel.app,http://localhost:5173,https://*.idcerberus.com"
   },
   {
+    name  = "WEBAUTHN_ALLOWED_ORIGINS",
+    value = "https://vesta-demo-stellar.vercel.app,http://localhost:5173,https://*.idcerberus.com"
+  },
+  {
+    name  = "WEBAUTHN_ALLOWED_RP_IDS",
+    value = "vesta-demo-stellar.vercel.app,localhost,*.idcerberus.com"
+  },
+  {
     name  = "BACKOFFICE_JWT_EXPIRES_IN",
     value = "never"
+  },
+  {
+    name  = "COMMISSION_SECURITY_MINUTES",
+    value = "30"
+  },
+  {
+    name  = "COMMISSION_PER_VERIFICATION_BRL",
+    value = "1.37"
+  },
+  {
+    name  = "STELLAR_PAYOUT_ASSET_CODE",
+    value = "BRL"
+  },
+  {
+    name  = "STELLAR_PAYOUT_ASSET_DECIMALS",
+    value = "7"
+  },
+  {
+    name  = "STELLAR_PAYOUT_CONTRACT_ID",
+    value = "PLACEHOLDER"
+  },
+  {
+    name  = "PAYOUT_PROCESSOR_INTERVAL_MS",
+    value = "10000"
   }
 ]
 
@@ -74,10 +110,6 @@ secrets = [
   {
     name      = "BACKOFFICE_JWT_SECRET",
     valueFrom = "arn:aws:secretsmanager:us-east-1:014468369894:secret:BACKOFFICE_JWT_SECRET-8qbacm"
-  },
-  {
-    name      = "COMMISSION_PER_VERIFICATION_BRL",
-    valueFrom = "arn:aws:secretsmanager:us-east-1:014468369894:secret:COMMISSION_PER_VERIFICATION_BRL-7gevTW"
   },
   {
     name      = "PRIVY_APP_SECRET",
