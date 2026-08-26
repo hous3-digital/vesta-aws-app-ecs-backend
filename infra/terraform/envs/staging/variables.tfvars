@@ -15,6 +15,11 @@ cpu           = 1024
 memory        = 2048
 redirect_host = "vesta.trust-staging.com"
 
+privy_custom_auth_secret_names = {
+  private_key = "PRIVY_CUSTOM_AUTH_PRIVATE_KEY"
+  key_id      = "PRIVY_CUSTOM_AUTH_KEY_ID"
+}
+
 environment = [
   {
     name  = "NODE_ENV",
