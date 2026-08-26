@@ -1,3 +1,8 @@
+data "aws_secretsmanager_secret" "privy_custom_auth" {
+  for_each = var.privy_custom_auth_secret_names == null ? {} : tomap(var.privy_custom_auth_secret_names)
+  name     = each.value
+}
+
 module "ecs_service" {
   source = "git::https://github.com/terraform-aws-modules/terraform-aws-ecs.git//modules/service?ref=8d25f4e9989475e2b94ede517253e2d069990073"
 
@@ -39,11 +44,16 @@ module "ecs_service" {
       readonlyRootFilesystem    = false
       memory_reservation        = var.memory_reservation
       environment               = var.environment
-      secrets                   = var.secrets
+      secrets                   = concat(var.secrets, local.privy_custom_auth_secrets)
     }
   }
 
   subnet_ids = var.subnet_ids
+
+  task_exec_secret_arns = concat(
+    [for secret in var.secrets : secret.valueFrom],
+    [for secret in local.privy_custom_auth_secrets : secret.valueFrom]
+  )
 
   security_group_ingress_rules = {
     ingress_all = {
