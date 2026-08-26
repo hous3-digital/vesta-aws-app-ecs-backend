@@ -78,6 +78,10 @@ environment = [
     value = "BRL"
   },
   {
+    name  = "STELLAR_PAYOUT_ASSET_ISSUER",
+    value = "GDUFIQROJ7CMF5AW3EGGG3LSB6QP5M5ASKL62HBX5TAR4ZNQWYQQI5ZK"
+  },
+  {
     name  = "STELLAR_PAYOUT_ASSET_DECIMALS",
     value = "7"
   },
