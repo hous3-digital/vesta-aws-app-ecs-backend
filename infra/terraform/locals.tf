@@ -1,4 +1,15 @@
 locals {
+  privy_custom_auth_secrets = var.privy_custom_auth_secret_names == null ? [] : [
+    {
+      name      = "PRIVY_CUSTOM_AUTH_PRIVATE_KEY"
+      valueFrom = data.aws_secretsmanager_secret.privy_custom_auth["private_key"].arn
+    },
+    {
+      name      = "PRIVY_CUSTOM_AUTH_KEY_ID"
+      valueFrom = data.aws_secretsmanager_secret.privy_custom_auth["key_id"].arn
+    }
+  ]
+
   common_resources = {
     name          = var.name
     vpc_id        = var.service-vpc-id

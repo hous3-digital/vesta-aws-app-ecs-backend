@@ -1,10 +1,11 @@
-import { BadRequestException, Body, ConflictException, Controller, NotFoundException, Post } from "@nestjs/common";
+import { BadRequestException, Body, ConflictException, Controller, NotFoundException, Param, Post } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import { hash } from "bcrypt";
 import { randomBytes } from "crypto";
 import { AdminSecret } from "@src/infra/auth/admin-secret.guard";
 import { PublicEndpoint } from "@src/infra/auth/public.decorator";
 import { PrismaService } from "@src/infra/database/@prisma/prisma.service";
+import { WalletService } from "@src/modules/wallet/wallet.service";
 
 interface CreateIssuerBody {
   issuerId?: string;
@@ -25,7 +26,10 @@ interface CreateBackofficeUserBody {
 @PublicEndpoint()
 @AdminSecret()
 export class AdminIssuersController {
-  public constructor(private readonly prisma: PrismaService) {}
+  public constructor(
+    private readonly prisma: PrismaService,
+    private readonly walletService: WalletService,
+  ) {}
 
   @ApiOperation({ summary: "Cria um issuer" })
   @Post("/issuers")
@@ -61,6 +65,8 @@ export class AdminIssuersController {
       },
     });
 
+    const organizationWallet = await this.walletService.provisionForOrganization(issuer.issuerId);
+
     return {
       id: issuer.id,
       issuerId: issuer.issuerId,
@@ -68,7 +74,14 @@ export class AdminIssuersController {
       status: issuer.status,
       privyEnabled: issuer.privyEnabled,
       createdAt: issuer.createdAt,
+      organizationWallet,
     };
+  }
+
+  @ApiOperation({ summary: "Provisiona ou recupera a wallet Stellar organizacional do issuer" })
+  @Post("/issuers/:issuerId/wallet")
+  public async provisionOrganizationWallet(@Param("issuerId") issuerId: string) {
+    return this.walletService.provisionForOrganization(issuerId);
   }
 
   @ApiOperation({ summary: "Cria um acesso de backoffice para issuer existente" })

@@ -43,6 +43,7 @@ export type AttestationMinAggregateOutputType = {
   sorobanTxHash: string | null
   sorobanLedger: number | null
   onChainResult: boolean | null
+  issuerId: string | null
   userWalletAddress: string | null
   createdAt: Date | null
 }
@@ -56,6 +57,7 @@ export type AttestationMaxAggregateOutputType = {
   sorobanTxHash: string | null
   sorobanLedger: number | null
   onChainResult: boolean | null
+  issuerId: string | null
   userWalletAddress: string | null
   createdAt: Date | null
 }
@@ -69,6 +71,7 @@ export type AttestationCountAggregateOutputType = {
   sorobanTxHash: number
   sorobanLedger: number
   onChainResult: number
+  issuerId: number
   userWalletAddress: number
   createdAt: number
   _all: number
@@ -92,6 +95,7 @@ export type AttestationMinAggregateInputType = {
   sorobanTxHash?: true
   sorobanLedger?: true
   onChainResult?: true
+  issuerId?: true
   userWalletAddress?: true
   createdAt?: true
 }
@@ -105,6 +109,7 @@ export type AttestationMaxAggregateInputType = {
   sorobanTxHash?: true
   sorobanLedger?: true
   onChainResult?: true
+  issuerId?: true
   userWalletAddress?: true
   createdAt?: true
 }
@@ -118,6 +123,7 @@ export type AttestationCountAggregateInputType = {
   sorobanTxHash?: true
   sorobanLedger?: true
   onChainResult?: true
+  issuerId?: true
   userWalletAddress?: true
   createdAt?: true
   _all?: true
@@ -218,6 +224,7 @@ export type AttestationGroupByOutputType = {
   sorobanTxHash: string | null
   sorobanLedger: number | null
   onChainResult: boolean
+  issuerId: string | null
   userWalletAddress: string | null
   createdAt: Date
   _count: AttestationCountAggregateOutputType | null
@@ -254,6 +261,7 @@ export type AttestationWhereInput = {
   sorobanTxHash?: Prisma.StringNullableFilter<"Attestation"> | string | null
   sorobanLedger?: Prisma.IntNullableFilter<"Attestation"> | number | null
   onChainResult?: Prisma.BoolFilter<"Attestation"> | boolean
+  issuerId?: Prisma.StringNullableFilter<"Attestation"> | string | null
   userWalletAddress?: Prisma.StringNullableFilter<"Attestation"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Attestation"> | Date | string
 }
@@ -267,6 +275,7 @@ export type AttestationOrderByWithRelationInput = {
   sorobanTxHash?: Prisma.SortOrderInput | Prisma.SortOrder
   sorobanLedger?: Prisma.SortOrderInput | Prisma.SortOrder
   onChainResult?: Prisma.SortOrder
+  issuerId?: Prisma.SortOrderInput | Prisma.SortOrder
   userWalletAddress?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -283,6 +292,7 @@ export type AttestationWhereUniqueInput = Prisma.AtLeast<{
   sorobanTxHash?: Prisma.StringNullableFilter<"Attestation"> | string | null
   sorobanLedger?: Prisma.IntNullableFilter<"Attestation"> | number | null
   onChainResult?: Prisma.BoolFilter<"Attestation"> | boolean
+  issuerId?: Prisma.StringNullableFilter<"Attestation"> | string | null
   userWalletAddress?: Prisma.StringNullableFilter<"Attestation"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Attestation"> | Date | string
 }, "id">
@@ -296,6 +306,7 @@ export type AttestationOrderByWithAggregationInput = {
   sorobanTxHash?: Prisma.SortOrderInput | Prisma.SortOrder
   sorobanLedger?: Prisma.SortOrderInput | Prisma.SortOrder
   onChainResult?: Prisma.SortOrder
+  issuerId?: Prisma.SortOrderInput | Prisma.SortOrder
   userWalletAddress?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.AttestationCountOrderByAggregateInput
@@ -317,6 +328,7 @@ export type AttestationScalarWhereWithAggregatesInput = {
   sorobanTxHash?: Prisma.StringNullableWithAggregatesFilter<"Attestation"> | string | null
   sorobanLedger?: Prisma.IntNullableWithAggregatesFilter<"Attestation"> | number | null
   onChainResult?: Prisma.BoolWithAggregatesFilter<"Attestation"> | boolean
+  issuerId?: Prisma.StringNullableWithAggregatesFilter<"Attestation"> | string | null
   userWalletAddress?: Prisma.StringNullableWithAggregatesFilter<"Attestation"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Attestation"> | Date | string
 }
@@ -330,6 +342,7 @@ export type AttestationCreateInput = {
   sorobanTxHash?: string | null
   sorobanLedger?: number | null
   onChainResult: boolean
+  issuerId?: string | null
   userWalletAddress?: string | null
   createdAt: Date | string
 }
@@ -343,6 +356,7 @@ export type AttestationUncheckedCreateInput = {
   sorobanTxHash?: string | null
   sorobanLedger?: number | null
   onChainResult: boolean
+  issuerId?: string | null
   userWalletAddress?: string | null
   createdAt: Date | string
 }
@@ -356,6 +370,7 @@ export type AttestationUpdateInput = {
   sorobanTxHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sorobanLedger?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   onChainResult?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  issuerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userWalletAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -369,6 +384,7 @@ export type AttestationUncheckedUpdateInput = {
   sorobanTxHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sorobanLedger?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   onChainResult?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  issuerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userWalletAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -382,6 +398,7 @@ export type AttestationCreateManyInput = {
   sorobanTxHash?: string | null
   sorobanLedger?: number | null
   onChainResult: boolean
+  issuerId?: string | null
   userWalletAddress?: string | null
   createdAt: Date | string
 }
@@ -395,6 +412,7 @@ export type AttestationUpdateManyMutationInput = {
   sorobanTxHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sorobanLedger?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   onChainResult?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  issuerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userWalletAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -408,6 +426,7 @@ export type AttestationUncheckedUpdateManyInput = {
   sorobanTxHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sorobanLedger?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   onChainResult?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  issuerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userWalletAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -421,6 +440,7 @@ export type AttestationCountOrderByAggregateInput = {
   sorobanTxHash?: Prisma.SortOrder
   sorobanLedger?: Prisma.SortOrder
   onChainResult?: Prisma.SortOrder
+  issuerId?: Prisma.SortOrder
   userWalletAddress?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -438,6 +458,7 @@ export type AttestationMaxOrderByAggregateInput = {
   sorobanTxHash?: Prisma.SortOrder
   sorobanLedger?: Prisma.SortOrder
   onChainResult?: Prisma.SortOrder
+  issuerId?: Prisma.SortOrder
   userWalletAddress?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -451,6 +472,7 @@ export type AttestationMinOrderByAggregateInput = {
   sorobanTxHash?: Prisma.SortOrder
   sorobanLedger?: Prisma.SortOrder
   onChainResult?: Prisma.SortOrder
+  issuerId?: Prisma.SortOrder
   userWalletAddress?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -467,10 +489,6 @@ export type NullableIntFieldUpdateOperationsInput = {
   divide?: number
 }
 
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
-}
-
 
 
 export type AttestationSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -482,6 +500,7 @@ export type AttestationSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   sorobanTxHash?: boolean
   sorobanLedger?: boolean
   onChainResult?: boolean
+  issuerId?: boolean
   userWalletAddress?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["attestation"]>
@@ -495,6 +514,7 @@ export type AttestationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   sorobanTxHash?: boolean
   sorobanLedger?: boolean
   onChainResult?: boolean
+  issuerId?: boolean
   userWalletAddress?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["attestation"]>
@@ -508,6 +528,7 @@ export type AttestationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   sorobanTxHash?: boolean
   sorobanLedger?: boolean
   onChainResult?: boolean
+  issuerId?: boolean
   userWalletAddress?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["attestation"]>
@@ -521,11 +542,12 @@ export type AttestationSelectScalar = {
   sorobanTxHash?: boolean
   sorobanLedger?: boolean
   onChainResult?: boolean
+  issuerId?: boolean
   userWalletAddress?: boolean
   createdAt?: boolean
 }
 
-export type AttestationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "vcHash" | "proofHash" | "verifierId" | "kycLevel" | "sorobanTxHash" | "sorobanLedger" | "onChainResult" | "userWalletAddress" | "createdAt", ExtArgs["result"]["attestation"]>
+export type AttestationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "vcHash" | "proofHash" | "verifierId" | "kycLevel" | "sorobanTxHash" | "sorobanLedger" | "onChainResult" | "issuerId" | "userWalletAddress" | "createdAt", ExtArgs["result"]["attestation"]>
 
 export type $AttestationPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Attestation"
@@ -539,6 +561,7 @@ export type $AttestationPayload<ExtArgs extends runtime.Types.Extensions.Interna
     sorobanTxHash: string | null
     sorobanLedger: number | null
     onChainResult: boolean
+    issuerId: string | null
     userWalletAddress: string | null
     createdAt: Date
   }, ExtArgs["result"]["attestation"]>
@@ -972,6 +995,7 @@ export interface AttestationFieldRefs {
   readonly sorobanTxHash: Prisma.FieldRef<"Attestation", 'String'>
   readonly sorobanLedger: Prisma.FieldRef<"Attestation", 'Int'>
   readonly onChainResult: Prisma.FieldRef<"Attestation", 'Boolean'>
+  readonly issuerId: Prisma.FieldRef<"Attestation", 'String'>
   readonly userWalletAddress: Prisma.FieldRef<"Attestation", 'String'>
   readonly createdAt: Prisma.FieldRef<"Attestation", 'DateTime'>
 }
@@ -1150,11 +1174,6 @@ export type AttestationFindManyArgs<ExtArgs extends runtime.Types.Extensions.Int
    * Skip the first `n` Attestations.
    */
   skip?: number
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-   * 
-   * Filter by unique combinations of Attestations.
-   */
   distinct?: Prisma.AttestationScalarFieldEnum | Prisma.AttestationScalarFieldEnum[]
 }
 

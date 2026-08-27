@@ -15,6 +15,11 @@ cpu           = 1024
 memory        = 2048
 redirect_host = "vesta.trust-staging.com"
 
+privy_custom_auth_secret_names = {
+  private_key = "PRIVY_CUSTOM_AUTH_PRIVATE_KEY"
+  key_id      = "PRIVY_CUSTOM_AUTH_KEY_ID"
+}
+
 environment = [
   {
     name  = "NODE_ENV",
@@ -27,6 +32,10 @@ environment = [
   {
     name  = "STELLAR_RPC_URL",
     value = "https://soroban-testnet.stellar.org"
+  },
+  {
+    name  = "STELLAR_HORIZON_URL",
+    value = "https://horizon-testnet.stellar.org"
   },
   {
     name  = "ZK_ARTIFACTS_DIR",
@@ -45,8 +54,48 @@ environment = [
     value = "https://backoffice.trust-staging.com,https://vesta-demo-stellar.vercel.app,http://localhost:5173,https://*.idcerberus.com"
   },
   {
+    name  = "WEBAUTHN_ALLOWED_ORIGINS",
+    value = "https://vesta-demo-stellar.vercel.app,http://localhost:5173,https://*.idcerberus.com"
+  },
+  {
+    name  = "WEBAUTHN_ALLOWED_RP_IDS",
+    value = "vesta-demo-stellar.vercel.app,localhost,*.idcerberus.com"
+  },
+  {
     name  = "BACKOFFICE_JWT_EXPIRES_IN",
     value = "never"
+  },
+  {
+    name  = "COMMISSION_SECURITY_MINUTES",
+    value = "30"
+  },
+  {
+    name  = "COMMISSION_PER_VERIFICATION_BRL",
+    value = "1.37"
+  },
+  {
+    name  = "STELLAR_PAYOUT_ASSET_CODE",
+    value = "BRL"
+  },
+  {
+    name  = "STELLAR_PAYOUT_ASSET_ISSUER",
+    value = "GDUFIQROJ7CMF5AW3EGGG3LSB6QP5M5ASKL62HBX5TAR4ZNQWYQQI5ZK"
+  },
+  {
+    name  = "STELLAR_PAYOUT_ASSET_DECIMALS",
+    value = "7"
+  },
+  {
+    name  = "STELLAR_PAYOUT_CONTRACT_ID",
+    value = "CAF4HZZDURUQHYIOCW4LMDMJI4T6RKEJV62OK7FI3H64K5Z5WHBSWEWI"
+  },
+  {
+    name  = "PAYOUT_VAULT_FUNDING_BRL",
+    value = "1000"
+  },
+  {
+    name  = "PAYOUT_PROCESSOR_INTERVAL_MS",
+    value = "10000"
   }
 ]
 
@@ -64,6 +113,10 @@ secrets = [
     valueFrom = "arn:aws:secretsmanager:us-east-1:014468369894:secret:VESTA_DEPLOYER_SECRET-NuPUJR"
   },
   {
+    name      = "STELLAR_PAYOUT_OPERATOR_SECRET",
+    valueFrom = "arn:aws:secretsmanager:us-east-1:014468369894:secret:VESTA_DEPLOYER_SECRET-NuPUJR"
+  },
+  {
     name      = "CPF_HMAC_SECRET",
     valueFrom = "arn:aws:secretsmanager:us-east-1:014468369894:secret:CPF_HMAC_SECRET-DGhmXY"
   },
@@ -74,10 +127,6 @@ secrets = [
   {
     name      = "BACKOFFICE_JWT_SECRET",
     valueFrom = "arn:aws:secretsmanager:us-east-1:014468369894:secret:BACKOFFICE_JWT_SECRET-8qbacm"
-  },
-  {
-    name      = "COMMISSION_PER_VERIFICATION_BRL",
-    valueFrom = "arn:aws:secretsmanager:us-east-1:014468369894:secret:COMMISSION_PER_VERIFICATION_BRL-7gevTW"
   },
   {
     name      = "PRIVY_APP_SECRET",
