@@ -954,11 +954,6 @@ export type VerifierFindManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Skip the first `n` Verifiers.
    */
   skip?: number
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-   * 
-   * Filter by unique combinations of Verifiers.
-   */
   distinct?: Prisma.VerifierScalarFieldEnum | Prisma.VerifierScalarFieldEnum[]
 }
 
