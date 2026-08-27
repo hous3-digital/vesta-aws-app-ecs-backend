@@ -1,3 +1,17 @@
+# ----------- CONTRACT BUILD STAGE -----------
+FROM rust:slim-bookworm AS contract-builder
+
+WORKDIR /contract
+
+RUN rustup target add wasm32v1-none
+
+COPY contracts/vesta-payout-vault ./vesta-payout-vault
+
+RUN cargo build \
+    --manifest-path vesta-payout-vault/Cargo.toml \
+    --target wasm32v1-none \
+    --release
+
 # ----------- BUILD STAGE -----------
 FROM node:22-slim AS builder
 
@@ -38,6 +52,9 @@ COPY --from=builder /app/yarn.lock ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/zk-artifacts ./zk-artifacts
+COPY --from=contract-builder \
+  /contract/vesta-payout-vault/target/wasm32v1-none/release/vesta_payout_vault.wasm \
+  ./contract-artifacts/vesta_payout_vault.wasm
 
 RUN yarn install --production --frozen-lockfile && yarn cache clean
 
