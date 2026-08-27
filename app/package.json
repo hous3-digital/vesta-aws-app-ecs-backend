@@ -23,6 +23,7 @@
     "prisma:migrate:test": "dotenv -e .env.test -- npx prisma migrate --config src/infra/database/@prisma/prisma.config.ts",
     "prisma:reset:test": "dotenv -e .env.test -- npx prisma migrate reset -f --config src/infra/database/@prisma/prisma.config.ts && dotenv -e .env.test -- npx prisma db seed --config src/infra/database/@prisma/prisma.config.ts",
     "prisma:cleanup:test": "dotenv -e .env.test -- ts-node -r tsconfig-paths/register ./__tests__/helpers/cleanup.helper.ts",
+    "payout:vault:deploy": "node dist/src/scripts/deploy-payout-vault.js",
     "docker:up": "docker compose up",
     "docker:down": "docker compose down",
     "docker:up:test": "set -a; source .env.test; set +a; docker-compose -f docker-compose-test.yaml up -d",
