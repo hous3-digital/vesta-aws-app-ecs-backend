@@ -87,7 +87,11 @@ environment = [
   },
   {
     name  = "STELLAR_PAYOUT_CONTRACT_ID",
-    value = "PLACEHOLDER"
+    value = "CAF4HZZDURUQHYIOCW4LMDMJI4T6RKEJV62OK7FI3H64K5Z5WHBSWEWI"
+  },
+  {
+    name  = "PAYOUT_VAULT_FUNDING_BRL",
+    value = "1000"
   },
   {
     name  = "PAYOUT_PROCESSOR_INTERVAL_MS",
@@ -106,6 +110,10 @@ secrets = [
   },
   {
     name      = "VESTA_DEPLOYER_SECRET",
+    valueFrom = "arn:aws:secretsmanager:us-east-1:014468369894:secret:VESTA_DEPLOYER_SECRET-NuPUJR"
+  },
+  {
+    name      = "STELLAR_PAYOUT_OPERATOR_SECRET",
     valueFrom = "arn:aws:secretsmanager:us-east-1:014468369894:secret:VESTA_DEPLOYER_SECRET-NuPUJR"
   },
   {
