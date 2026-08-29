@@ -189,6 +189,7 @@ Table backoffice_users {
   issuerId String [not null]
   email String [unique, not null]
   passwordHash String [not null]
+  authVersion Int [not null, default: 0]
   name String
   active Boolean [not null, default: true]
   createdAt DateTime [not null]

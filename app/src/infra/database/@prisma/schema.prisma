@@ -274,6 +274,7 @@ model BackofficeUser {
   issuerId     String   @map("issuer_external_id")
   email        String   @unique
   passwordHash String   @map("password_hash")
+  authVersion  Int      @default(0) @map("auth_version")
   name         String?
   active       Boolean  @default(true)
   createdAt    DateTime @map("created_at")

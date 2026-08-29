@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Post, UnauthorizedException } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import { BackofficeAuthService } from "@src/infra/auth/backoffice-auth.service";
 import { BackofficeAuth } from "@src/infra/auth/backoffice-auth.guard";
@@ -9,6 +9,11 @@ import { PublicEndpoint } from "@src/infra/auth/public.decorator";
 interface LoginBody {
   email: string;
   password: string;
+}
+
+interface ChangePasswordBody {
+  currentPassword: string;
+  newPassword: string;
 }
 
 @ApiTags("backoffice/auth")
@@ -33,5 +38,19 @@ export class BackofficeAuthController {
   @Get("/me")
   public async me(@CurrentBackofficeUser() user: AuthenticatedRequest["backofficeUser"]) {
     return { user };
+  }
+
+  @ApiOperation({ summary: "Altera a senha do usuário autenticado e revoga sessões anteriores" })
+  @PublicEndpoint()
+  @BackofficeAuth()
+  @Post("/password")
+  public async changePassword(
+    @CurrentBackofficeUser() user: NonNullable<AuthenticatedRequest["backofficeUser"]>,
+    @Body() body: ChangePasswordBody,
+  ) {
+    if (typeof body.currentPassword !== "string" || typeof body.newPassword !== "string") {
+      throw new BadRequestException("currentPassword and newPassword are required");
+    }
+    return this.authService.changePassword(user, body.currentPassword, body.newPassword);
   }
 }

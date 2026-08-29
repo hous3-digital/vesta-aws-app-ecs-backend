@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, UnauthorizedException } from "@nestjs/common";
 import type { JwtSignOptions } from "@nestjs/jwt";
 import { JwtService } from "@nestjs/jwt";
 import { PrismaService } from "@src/infra/database/@prisma/prisma.service";
@@ -11,7 +11,12 @@ interface BackofficeJwtPayload {
   issuerId: string;
   email: string;
   name: string | null;
+  authVersion?: number;
 }
+
+const PASSWORD_MIN_LENGTH = 12;
+const PASSWORD_MAX_BYTES = 72;
+const PASSWORD_BCRYPT_ROUNDS = 12;
 
 @Injectable()
 export class BackofficeAuthService {
@@ -44,7 +49,7 @@ export class BackofficeAuthService {
     };
 
     return {
-      accessToken: await this.sign(session),
+      accessToken: await this.sign(session, user.authVersion),
       tokenType: "Bearer",
       expiresIn: this.getExpiresInSeconds(),
       user: session,
@@ -56,10 +61,10 @@ export class BackofficeAuthService {
     const payload = await this.verifyToken(token, secret);
     const user = await this.prisma.backofficeUser.findFirst({
       where: { id: payload.sub, issuerId: payload.issuerId, active: true },
-      select: { id: true, issuerId: true, email: true, name: true },
+      select: { id: true, issuerId: true, email: true, name: true, authVersion: true },
     });
 
-    if (!user) {
+    if (!user || (payload.authVersion ?? 0) !== user.authVersion) {
       throw new UnauthorizedException("Backoffice user not found or inactive");
     }
 
@@ -71,7 +76,38 @@ export class BackofficeAuthService {
     };
   }
 
-  private async sign(session: BackofficeSession): Promise<string> {
+  public async changePassword(
+    session: BackofficeSession,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<{ changed: true }> {
+    this.validateNewPassword(newPassword);
+    const user = await this.prisma.backofficeUser.findFirst({
+      where: { id: session.userId, issuerId: session.issuerId, active: true },
+      select: { passwordHash: true, authVersion: true },
+    });
+
+    if (!user || !(await bcrypt.compare(currentPassword, user.passwordHash))) {
+      throw new ForbiddenException("Current password is incorrect");
+    }
+    if (await bcrypt.compare(newPassword, user.passwordHash)) {
+      throw new BadRequestException("New password must be different from the current password");
+    }
+
+    const updated = await this.prisma.backofficeUser.updateMany({
+      where: { id: session.userId, issuerId: session.issuerId, active: true, authVersion: user.authVersion },
+      data: {
+        passwordHash: await bcrypt.hash(newPassword, PASSWORD_BCRYPT_ROUNDS),
+        authVersion: { increment: 1 },
+        updatedAt: new Date(),
+      },
+    });
+    if (updated.count !== 1) throw new ConflictException("Password was changed by another session");
+
+    return { changed: true };
+  }
+
+  private async sign(session: BackofficeSession, authVersion: number): Promise<string> {
     const expiresIn = this.envService.BACKOFFICE_JWT_EXPIRES_IN;
     const options: JwtSignOptions = {
       subject: session.userId,
@@ -86,9 +122,25 @@ export class BackofficeAuthService {
         issuerId: session.issuerId,
         email: session.email,
         name: session.name,
+        authVersion,
       },
       options,
     );
+  }
+
+  private validateNewPassword(password: string): void {
+    const hasRequiredLength = password.length >= PASSWORD_MIN_LENGTH;
+    const fitsBcryptLimit = Buffer.byteLength(password, "utf8") <= PASSWORD_MAX_BYTES;
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSymbol = /[^A-Za-z0-9]/.test(password);
+
+    if (!hasRequiredLength || !fitsBcryptLimit || !hasUppercase || !hasLowercase || !hasNumber || !hasSymbol) {
+      throw new BadRequestException(
+        "New password must have 12 or more characters, including uppercase, lowercase, number and symbol, and must not exceed 72 bytes",
+      );
+    }
   }
 
   private async verifyToken(token: string, secret: string): Promise<BackofficeJwtPayload> {
