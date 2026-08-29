@@ -289,6 +289,7 @@ export const BackofficeUserScalarFieldEnum = {
   issuerId: 'issuerId',
   email: 'email',
   passwordHash: 'passwordHash',
+  authVersion: 'authVersion',
   name: 'name',
   active: 'active',
   createdAt: 'createdAt',

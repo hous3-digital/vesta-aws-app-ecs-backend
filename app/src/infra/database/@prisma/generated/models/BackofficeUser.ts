@@ -20,8 +20,18 @@ export type BackofficeUserModel = runtime.Types.Result.DefaultSelection<Prisma.$
 
 export type AggregateBackofficeUser = {
   _count: BackofficeUserCountAggregateOutputType | null
+  _avg: BackofficeUserAvgAggregateOutputType | null
+  _sum: BackofficeUserSumAggregateOutputType | null
   _min: BackofficeUserMinAggregateOutputType | null
   _max: BackofficeUserMaxAggregateOutputType | null
+}
+
+export type BackofficeUserAvgAggregateOutputType = {
+  authVersion: number | null
+}
+
+export type BackofficeUserSumAggregateOutputType = {
+  authVersion: number | null
 }
 
 export type BackofficeUserMinAggregateOutputType = {
@@ -29,6 +39,7 @@ export type BackofficeUserMinAggregateOutputType = {
   issuerId: string | null
   email: string | null
   passwordHash: string | null
+  authVersion: number | null
   name: string | null
   active: boolean | null
   createdAt: Date | null
@@ -40,6 +51,7 @@ export type BackofficeUserMaxAggregateOutputType = {
   issuerId: string | null
   email: string | null
   passwordHash: string | null
+  authVersion: number | null
   name: string | null
   active: boolean | null
   createdAt: Date | null
@@ -51,6 +63,7 @@ export type BackofficeUserCountAggregateOutputType = {
   issuerId: number
   email: number
   passwordHash: number
+  authVersion: number
   name: number
   active: number
   createdAt: number
@@ -59,11 +72,20 @@ export type BackofficeUserCountAggregateOutputType = {
 }
 
 
+export type BackofficeUserAvgAggregateInputType = {
+  authVersion?: true
+}
+
+export type BackofficeUserSumAggregateInputType = {
+  authVersion?: true
+}
+
 export type BackofficeUserMinAggregateInputType = {
   id?: true
   issuerId?: true
   email?: true
   passwordHash?: true
+  authVersion?: true
   name?: true
   active?: true
   createdAt?: true
@@ -75,6 +97,7 @@ export type BackofficeUserMaxAggregateInputType = {
   issuerId?: true
   email?: true
   passwordHash?: true
+  authVersion?: true
   name?: true
   active?: true
   createdAt?: true
@@ -86,6 +109,7 @@ export type BackofficeUserCountAggregateInputType = {
   issuerId?: true
   email?: true
   passwordHash?: true
+  authVersion?: true
   name?: true
   active?: true
   createdAt?: true
@@ -131,6 +155,18 @@ export type BackofficeUserAggregateArgs<ExtArgs extends runtime.Types.Extensions
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: BackofficeUserAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: BackofficeUserSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: BackofficeUserMinAggregateInputType
@@ -161,6 +197,8 @@ export type BackofficeUserGroupByArgs<ExtArgs extends runtime.Types.Extensions.I
   take?: number
   skip?: number
   _count?: BackofficeUserCountAggregateInputType | true
+  _avg?: BackofficeUserAvgAggregateInputType
+  _sum?: BackofficeUserSumAggregateInputType
   _min?: BackofficeUserMinAggregateInputType
   _max?: BackofficeUserMaxAggregateInputType
 }
@@ -170,11 +208,14 @@ export type BackofficeUserGroupByOutputType = {
   issuerId: string
   email: string
   passwordHash: string
+  authVersion: number
   name: string | null
   active: boolean
   createdAt: Date
   updatedAt: Date
   _count: BackofficeUserCountAggregateOutputType | null
+  _avg: BackofficeUserAvgAggregateOutputType | null
+  _sum: BackofficeUserSumAggregateOutputType | null
   _min: BackofficeUserMinAggregateOutputType | null
   _max: BackofficeUserMaxAggregateOutputType | null
 }
@@ -202,6 +243,7 @@ export type BackofficeUserWhereInput = {
   issuerId?: Prisma.StringFilter<"BackofficeUser"> | string
   email?: Prisma.StringFilter<"BackofficeUser"> | string
   passwordHash?: Prisma.StringFilter<"BackofficeUser"> | string
+  authVersion?: Prisma.IntFilter<"BackofficeUser"> | number
   name?: Prisma.StringNullableFilter<"BackofficeUser"> | string | null
   active?: Prisma.BoolFilter<"BackofficeUser"> | boolean
   createdAt?: Prisma.DateTimeFilter<"BackofficeUser"> | Date | string
@@ -213,6 +255,7 @@ export type BackofficeUserOrderByWithRelationInput = {
   issuerId?: Prisma.SortOrder
   email?: Prisma.SortOrder
   passwordHash?: Prisma.SortOrder
+  authVersion?: Prisma.SortOrder
   name?: Prisma.SortOrderInput | Prisma.SortOrder
   active?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -227,6 +270,7 @@ export type BackofficeUserWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.BackofficeUserWhereInput | Prisma.BackofficeUserWhereInput[]
   issuerId?: Prisma.StringFilter<"BackofficeUser"> | string
   passwordHash?: Prisma.StringFilter<"BackofficeUser"> | string
+  authVersion?: Prisma.IntFilter<"BackofficeUser"> | number
   name?: Prisma.StringNullableFilter<"BackofficeUser"> | string | null
   active?: Prisma.BoolFilter<"BackofficeUser"> | boolean
   createdAt?: Prisma.DateTimeFilter<"BackofficeUser"> | Date | string
@@ -238,13 +282,16 @@ export type BackofficeUserOrderByWithAggregationInput = {
   issuerId?: Prisma.SortOrder
   email?: Prisma.SortOrder
   passwordHash?: Prisma.SortOrder
+  authVersion?: Prisma.SortOrder
   name?: Prisma.SortOrderInput | Prisma.SortOrder
   active?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.BackofficeUserCountOrderByAggregateInput
+  _avg?: Prisma.BackofficeUserAvgOrderByAggregateInput
   _max?: Prisma.BackofficeUserMaxOrderByAggregateInput
   _min?: Prisma.BackofficeUserMinOrderByAggregateInput
+  _sum?: Prisma.BackofficeUserSumOrderByAggregateInput
 }
 
 export type BackofficeUserScalarWhereWithAggregatesInput = {
@@ -255,6 +302,7 @@ export type BackofficeUserScalarWhereWithAggregatesInput = {
   issuerId?: Prisma.StringWithAggregatesFilter<"BackofficeUser"> | string
   email?: Prisma.StringWithAggregatesFilter<"BackofficeUser"> | string
   passwordHash?: Prisma.StringWithAggregatesFilter<"BackofficeUser"> | string
+  authVersion?: Prisma.IntWithAggregatesFilter<"BackofficeUser"> | number
   name?: Prisma.StringNullableWithAggregatesFilter<"BackofficeUser"> | string | null
   active?: Prisma.BoolWithAggregatesFilter<"BackofficeUser"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"BackofficeUser"> | Date | string
@@ -266,6 +314,7 @@ export type BackofficeUserCreateInput = {
   issuerId: string
   email: string
   passwordHash: string
+  authVersion?: number
   name?: string | null
   active?: boolean
   createdAt: Date | string
@@ -277,6 +326,7 @@ export type BackofficeUserUncheckedCreateInput = {
   issuerId: string
   email: string
   passwordHash: string
+  authVersion?: number
   name?: string | null
   active?: boolean
   createdAt: Date | string
@@ -288,6 +338,7 @@ export type BackofficeUserUpdateInput = {
   issuerId?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  authVersion?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -299,6 +350,7 @@ export type BackofficeUserUncheckedUpdateInput = {
   issuerId?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  authVersion?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -310,6 +362,7 @@ export type BackofficeUserCreateManyInput = {
   issuerId: string
   email: string
   passwordHash: string
+  authVersion?: number
   name?: string | null
   active?: boolean
   createdAt: Date | string
@@ -321,6 +374,7 @@ export type BackofficeUserUpdateManyMutationInput = {
   issuerId?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  authVersion?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -332,6 +386,7 @@ export type BackofficeUserUncheckedUpdateManyInput = {
   issuerId?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  authVersion?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -343,10 +398,15 @@ export type BackofficeUserCountOrderByAggregateInput = {
   issuerId?: Prisma.SortOrder
   email?: Prisma.SortOrder
   passwordHash?: Prisma.SortOrder
+  authVersion?: Prisma.SortOrder
   name?: Prisma.SortOrder
   active?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type BackofficeUserAvgOrderByAggregateInput = {
+  authVersion?: Prisma.SortOrder
 }
 
 export type BackofficeUserMaxOrderByAggregateInput = {
@@ -354,6 +414,7 @@ export type BackofficeUserMaxOrderByAggregateInput = {
   issuerId?: Prisma.SortOrder
   email?: Prisma.SortOrder
   passwordHash?: Prisma.SortOrder
+  authVersion?: Prisma.SortOrder
   name?: Prisma.SortOrder
   active?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -365,10 +426,15 @@ export type BackofficeUserMinOrderByAggregateInput = {
   issuerId?: Prisma.SortOrder
   email?: Prisma.SortOrder
   passwordHash?: Prisma.SortOrder
+  authVersion?: Prisma.SortOrder
   name?: Prisma.SortOrder
   active?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type BackofficeUserSumOrderByAggregateInput = {
+  authVersion?: Prisma.SortOrder
 }
 
 
@@ -378,6 +444,7 @@ export type BackofficeUserSelect<ExtArgs extends runtime.Types.Extensions.Intern
   issuerId?: boolean
   email?: boolean
   passwordHash?: boolean
+  authVersion?: boolean
   name?: boolean
   active?: boolean
   createdAt?: boolean
@@ -389,6 +456,7 @@ export type BackofficeUserSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   issuerId?: boolean
   email?: boolean
   passwordHash?: boolean
+  authVersion?: boolean
   name?: boolean
   active?: boolean
   createdAt?: boolean
@@ -400,6 +468,7 @@ export type BackofficeUserSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   issuerId?: boolean
   email?: boolean
   passwordHash?: boolean
+  authVersion?: boolean
   name?: boolean
   active?: boolean
   createdAt?: boolean
@@ -411,13 +480,14 @@ export type BackofficeUserSelectScalar = {
   issuerId?: boolean
   email?: boolean
   passwordHash?: boolean
+  authVersion?: boolean
   name?: boolean
   active?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type BackofficeUserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "issuerId" | "email" | "passwordHash" | "name" | "active" | "createdAt" | "updatedAt", ExtArgs["result"]["backofficeUser"]>
+export type BackofficeUserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "issuerId" | "email" | "passwordHash" | "authVersion" | "name" | "active" | "createdAt" | "updatedAt", ExtArgs["result"]["backofficeUser"]>
 
 export type $BackofficeUserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "BackofficeUser"
@@ -427,6 +497,7 @@ export type $BackofficeUserPayload<ExtArgs extends runtime.Types.Extensions.Inte
     issuerId: string
     email: string
     passwordHash: string
+    authVersion: number
     name: string | null
     active: boolean
     createdAt: Date
@@ -858,6 +929,7 @@ export interface BackofficeUserFieldRefs {
   readonly issuerId: Prisma.FieldRef<"BackofficeUser", 'String'>
   readonly email: Prisma.FieldRef<"BackofficeUser", 'String'>
   readonly passwordHash: Prisma.FieldRef<"BackofficeUser", 'String'>
+  readonly authVersion: Prisma.FieldRef<"BackofficeUser", 'Int'>
   readonly name: Prisma.FieldRef<"BackofficeUser", 'String'>
   readonly active: Prisma.FieldRef<"BackofficeUser", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"BackofficeUser", 'DateTime'>
