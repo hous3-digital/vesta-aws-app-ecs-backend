@@ -6,6 +6,7 @@ describe("PayoutProcessorService", () => {
     id: "payout-1",
     issuerId: "issuer-1",
     onChainPayoutId: "ab".repeat(32),
+    onChainBeneficiaryId: "cd".repeat(32),
     destinationAddress: "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF",
     settlementAmountAtomic: 13_700_000n,
   };
@@ -27,7 +28,7 @@ describe("PayoutProcessorService", () => {
       update: jest.fn(),
       updateMany: jest.fn(),
     },
-    commissionLedgerEntry: { updateMany: jest.fn() },
+    commissionLedgerEntry: { updateMany: jest.fn(), count: jest.fn() },
     $transaction: jest.fn(async (value: unknown) => {
       if (typeof value === "function") return (value as (client: typeof tx) => unknown)(tx);
       return Promise.all(value as Promise<unknown>[]);
@@ -57,6 +58,7 @@ describe("PayoutProcessorService", () => {
     prisma.payoutAttempt.updateMany.mockResolvedValue({ count: 1 });
     prisma.payoutRequest.update.mockResolvedValue({});
     prisma.commissionLedgerEntry.updateMany.mockResolvedValue({ count: 1 });
+    prisma.commissionLedgerEntry.count.mockResolvedValue(0);
     tx.payoutAttempt.update.mockResolvedValue({});
     tx.payoutRequest.update.mockResolvedValue({});
     tx.commissionLedgerEntry.updateMany.mockResolvedValue({ count: 1 });
@@ -70,6 +72,9 @@ describe("PayoutProcessorService", () => {
       expect.objectContaining({
         data: expect.objectContaining({ status: "CONFIRMED", stellarTxHash: "tx-1", activeIssuerId: null }),
       }),
+    );
+    expect(gateway.settle).toHaveBeenCalledWith(
+      expect.objectContaining({ beneficiaryId: candidate.onChainBeneficiaryId }),
     );
     expect(tx.commissionLedgerEntry.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -112,5 +117,18 @@ describe("PayoutProcessorService", () => {
         data: expect.objectContaining({ status: "SETTLED" }),
       }),
     );
+  });
+
+  it("aguarda os créditos on-chain antes de iniciar uma liquidação já reservada", async () => {
+    prisma.commissionLedgerEntry.count.mockResolvedValue(1);
+
+    await service.processNext();
+
+    expect(gateway.settle).not.toHaveBeenCalled();
+    expect(prisma.payoutAttempt.create).not.toHaveBeenCalled();
+    expect(prisma.payoutRequest.updateMany).toHaveBeenLastCalledWith({
+      where: { id: "payout-1", status: "PROCESSING" },
+      data: { status: "REQUESTED", processingStartedAt: null, updatedAt: expect.any(Date) },
+    });
   });
 });

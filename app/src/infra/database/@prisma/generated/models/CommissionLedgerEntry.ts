@@ -28,10 +28,14 @@ export type AggregateCommissionLedgerEntry = {
 
 export type CommissionLedgerEntryAvgAggregateOutputType = {
   amountMinor: number | null
+  onChainAmountAtomic: number | null
+  onChainLedger: number | null
 }
 
 export type CommissionLedgerEntrySumAggregateOutputType = {
   amountMinor: number | null
+  onChainAmountAtomic: bigint | null
+  onChainLedger: number | null
 }
 
 export type CommissionLedgerEntryMinAggregateOutputType = {
@@ -49,6 +53,15 @@ export type CommissionLedgerEntryMinAggregateOutputType = {
   payoutRequestId: string | null
   settledAt: Date | null
   reversalOfId: string | null
+  onChainCreditId: string | null
+  onChainBeneficiaryId: string | null
+  onChainAmountAtomic: bigint | null
+  onChainStatus: $Enums.CommissionOnChainStatus | null
+  onChainTxHash: string | null
+  onChainLedger: number | null
+  onChainCreditedAt: Date | null
+  onChainFailureCode: string | null
+  onChainUpdatedAt: Date | null
   createdAt: Date | null
 }
 
@@ -67,6 +80,15 @@ export type CommissionLedgerEntryMaxAggregateOutputType = {
   payoutRequestId: string | null
   settledAt: Date | null
   reversalOfId: string | null
+  onChainCreditId: string | null
+  onChainBeneficiaryId: string | null
+  onChainAmountAtomic: bigint | null
+  onChainStatus: $Enums.CommissionOnChainStatus | null
+  onChainTxHash: string | null
+  onChainLedger: number | null
+  onChainCreditedAt: Date | null
+  onChainFailureCode: string | null
+  onChainUpdatedAt: Date | null
   createdAt: Date | null
 }
 
@@ -85,6 +107,15 @@ export type CommissionLedgerEntryCountAggregateOutputType = {
   payoutRequestId: number
   settledAt: number
   reversalOfId: number
+  onChainCreditId: number
+  onChainBeneficiaryId: number
+  onChainAmountAtomic: number
+  onChainStatus: number
+  onChainTxHash: number
+  onChainLedger: number
+  onChainCreditedAt: number
+  onChainFailureCode: number
+  onChainUpdatedAt: number
   createdAt: number
   _all: number
 }
@@ -92,10 +123,14 @@ export type CommissionLedgerEntryCountAggregateOutputType = {
 
 export type CommissionLedgerEntryAvgAggregateInputType = {
   amountMinor?: true
+  onChainAmountAtomic?: true
+  onChainLedger?: true
 }
 
 export type CommissionLedgerEntrySumAggregateInputType = {
   amountMinor?: true
+  onChainAmountAtomic?: true
+  onChainLedger?: true
 }
 
 export type CommissionLedgerEntryMinAggregateInputType = {
@@ -113,6 +148,15 @@ export type CommissionLedgerEntryMinAggregateInputType = {
   payoutRequestId?: true
   settledAt?: true
   reversalOfId?: true
+  onChainCreditId?: true
+  onChainBeneficiaryId?: true
+  onChainAmountAtomic?: true
+  onChainStatus?: true
+  onChainTxHash?: true
+  onChainLedger?: true
+  onChainCreditedAt?: true
+  onChainFailureCode?: true
+  onChainUpdatedAt?: true
   createdAt?: true
 }
 
@@ -131,6 +175,15 @@ export type CommissionLedgerEntryMaxAggregateInputType = {
   payoutRequestId?: true
   settledAt?: true
   reversalOfId?: true
+  onChainCreditId?: true
+  onChainBeneficiaryId?: true
+  onChainAmountAtomic?: true
+  onChainStatus?: true
+  onChainTxHash?: true
+  onChainLedger?: true
+  onChainCreditedAt?: true
+  onChainFailureCode?: true
+  onChainUpdatedAt?: true
   createdAt?: true
 }
 
@@ -149,6 +202,15 @@ export type CommissionLedgerEntryCountAggregateInputType = {
   payoutRequestId?: true
   settledAt?: true
   reversalOfId?: true
+  onChainCreditId?: true
+  onChainBeneficiaryId?: true
+  onChainAmountAtomic?: true
+  onChainStatus?: true
+  onChainTxHash?: true
+  onChainLedger?: true
+  onChainCreditedAt?: true
+  onChainFailureCode?: true
+  onChainUpdatedAt?: true
   createdAt?: true
   _all?: true
 }
@@ -254,6 +316,15 @@ export type CommissionLedgerEntryGroupByOutputType = {
   payoutRequestId: string | null
   settledAt: Date | null
   reversalOfId: string | null
+  onChainCreditId: string | null
+  onChainBeneficiaryId: string | null
+  onChainAmountAtomic: bigint | null
+  onChainStatus: $Enums.CommissionOnChainStatus
+  onChainTxHash: string | null
+  onChainLedger: number | null
+  onChainCreditedAt: Date | null
+  onChainFailureCode: string | null
+  onChainUpdatedAt: Date | null
   createdAt: Date
   _count: CommissionLedgerEntryCountAggregateOutputType | null
   _avg: CommissionLedgerEntryAvgAggregateOutputType | null
@@ -295,6 +366,15 @@ export type CommissionLedgerEntryWhereInput = {
   payoutRequestId?: Prisma.StringNullableFilter<"CommissionLedgerEntry"> | string | null
   settledAt?: Prisma.DateTimeNullableFilter<"CommissionLedgerEntry"> | Date | string | null
   reversalOfId?: Prisma.StringNullableFilter<"CommissionLedgerEntry"> | string | null
+  onChainCreditId?: Prisma.StringNullableFilter<"CommissionLedgerEntry"> | string | null
+  onChainBeneficiaryId?: Prisma.StringNullableFilter<"CommissionLedgerEntry"> | string | null
+  onChainAmountAtomic?: Prisma.BigIntNullableFilter<"CommissionLedgerEntry"> | bigint | number | null
+  onChainStatus?: Prisma.EnumCommissionOnChainStatusFilter<"CommissionLedgerEntry"> | $Enums.CommissionOnChainStatus
+  onChainTxHash?: Prisma.StringNullableFilter<"CommissionLedgerEntry"> | string | null
+  onChainLedger?: Prisma.IntNullableFilter<"CommissionLedgerEntry"> | number | null
+  onChainCreditedAt?: Prisma.DateTimeNullableFilter<"CommissionLedgerEntry"> | Date | string | null
+  onChainFailureCode?: Prisma.StringNullableFilter<"CommissionLedgerEntry"> | string | null
+  onChainUpdatedAt?: Prisma.DateTimeNullableFilter<"CommissionLedgerEntry"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"CommissionLedgerEntry"> | Date | string
 }
 
@@ -313,12 +393,23 @@ export type CommissionLedgerEntryOrderByWithRelationInput = {
   payoutRequestId?: Prisma.SortOrderInput | Prisma.SortOrder
   settledAt?: Prisma.SortOrderInput | Prisma.SortOrder
   reversalOfId?: Prisma.SortOrderInput | Prisma.SortOrder
+  onChainCreditId?: Prisma.SortOrderInput | Prisma.SortOrder
+  onChainBeneficiaryId?: Prisma.SortOrderInput | Prisma.SortOrder
+  onChainAmountAtomic?: Prisma.SortOrderInput | Prisma.SortOrder
+  onChainStatus?: Prisma.SortOrder
+  onChainTxHash?: Prisma.SortOrderInput | Prisma.SortOrder
+  onChainLedger?: Prisma.SortOrderInput | Prisma.SortOrder
+  onChainCreditedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  onChainFailureCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  onChainUpdatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
 export type CommissionLedgerEntryWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   attestationId?: string
+  onChainCreditId?: string
+  onChainTxHash?: string
   AND?: Prisma.CommissionLedgerEntryWhereInput | Prisma.CommissionLedgerEntryWhereInput[]
   OR?: Prisma.CommissionLedgerEntryWhereInput[]
   NOT?: Prisma.CommissionLedgerEntryWhereInput | Prisma.CommissionLedgerEntryWhereInput[]
@@ -334,8 +425,15 @@ export type CommissionLedgerEntryWhereUniqueInput = Prisma.AtLeast<{
   payoutRequestId?: Prisma.StringNullableFilter<"CommissionLedgerEntry"> | string | null
   settledAt?: Prisma.DateTimeNullableFilter<"CommissionLedgerEntry"> | Date | string | null
   reversalOfId?: Prisma.StringNullableFilter<"CommissionLedgerEntry"> | string | null
+  onChainBeneficiaryId?: Prisma.StringNullableFilter<"CommissionLedgerEntry"> | string | null
+  onChainAmountAtomic?: Prisma.BigIntNullableFilter<"CommissionLedgerEntry"> | bigint | number | null
+  onChainStatus?: Prisma.EnumCommissionOnChainStatusFilter<"CommissionLedgerEntry"> | $Enums.CommissionOnChainStatus
+  onChainLedger?: Prisma.IntNullableFilter<"CommissionLedgerEntry"> | number | null
+  onChainCreditedAt?: Prisma.DateTimeNullableFilter<"CommissionLedgerEntry"> | Date | string | null
+  onChainFailureCode?: Prisma.StringNullableFilter<"CommissionLedgerEntry"> | string | null
+  onChainUpdatedAt?: Prisma.DateTimeNullableFilter<"CommissionLedgerEntry"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"CommissionLedgerEntry"> | Date | string
-}, "id" | "attestationId">
+}, "id" | "attestationId" | "onChainCreditId" | "onChainTxHash">
 
 export type CommissionLedgerEntryOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -352,6 +450,15 @@ export type CommissionLedgerEntryOrderByWithAggregationInput = {
   payoutRequestId?: Prisma.SortOrderInput | Prisma.SortOrder
   settledAt?: Prisma.SortOrderInput | Prisma.SortOrder
   reversalOfId?: Prisma.SortOrderInput | Prisma.SortOrder
+  onChainCreditId?: Prisma.SortOrderInput | Prisma.SortOrder
+  onChainBeneficiaryId?: Prisma.SortOrderInput | Prisma.SortOrder
+  onChainAmountAtomic?: Prisma.SortOrderInput | Prisma.SortOrder
+  onChainStatus?: Prisma.SortOrder
+  onChainTxHash?: Prisma.SortOrderInput | Prisma.SortOrder
+  onChainLedger?: Prisma.SortOrderInput | Prisma.SortOrder
+  onChainCreditedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  onChainFailureCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  onChainUpdatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.CommissionLedgerEntryCountOrderByAggregateInput
   _avg?: Prisma.CommissionLedgerEntryAvgOrderByAggregateInput
@@ -378,6 +485,15 @@ export type CommissionLedgerEntryScalarWhereWithAggregatesInput = {
   payoutRequestId?: Prisma.StringNullableWithAggregatesFilter<"CommissionLedgerEntry"> | string | null
   settledAt?: Prisma.DateTimeNullableWithAggregatesFilter<"CommissionLedgerEntry"> | Date | string | null
   reversalOfId?: Prisma.StringNullableWithAggregatesFilter<"CommissionLedgerEntry"> | string | null
+  onChainCreditId?: Prisma.StringNullableWithAggregatesFilter<"CommissionLedgerEntry"> | string | null
+  onChainBeneficiaryId?: Prisma.StringNullableWithAggregatesFilter<"CommissionLedgerEntry"> | string | null
+  onChainAmountAtomic?: Prisma.BigIntNullableWithAggregatesFilter<"CommissionLedgerEntry"> | bigint | number | null
+  onChainStatus?: Prisma.EnumCommissionOnChainStatusWithAggregatesFilter<"CommissionLedgerEntry"> | $Enums.CommissionOnChainStatus
+  onChainTxHash?: Prisma.StringNullableWithAggregatesFilter<"CommissionLedgerEntry"> | string | null
+  onChainLedger?: Prisma.IntNullableWithAggregatesFilter<"CommissionLedgerEntry"> | number | null
+  onChainCreditedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"CommissionLedgerEntry"> | Date | string | null
+  onChainFailureCode?: Prisma.StringNullableWithAggregatesFilter<"CommissionLedgerEntry"> | string | null
+  onChainUpdatedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"CommissionLedgerEntry"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"CommissionLedgerEntry"> | Date | string
 }
 
@@ -396,6 +512,15 @@ export type CommissionLedgerEntryCreateInput = {
   payoutRequestId?: string | null
   settledAt?: Date | string | null
   reversalOfId?: string | null
+  onChainCreditId?: string | null
+  onChainBeneficiaryId?: string | null
+  onChainAmountAtomic?: bigint | number | null
+  onChainStatus?: $Enums.CommissionOnChainStatus
+  onChainTxHash?: string | null
+  onChainLedger?: number | null
+  onChainCreditedAt?: Date | string | null
+  onChainFailureCode?: string | null
+  onChainUpdatedAt?: Date | string | null
   createdAt: Date | string
 }
 
@@ -414,6 +539,15 @@ export type CommissionLedgerEntryUncheckedCreateInput = {
   payoutRequestId?: string | null
   settledAt?: Date | string | null
   reversalOfId?: string | null
+  onChainCreditId?: string | null
+  onChainBeneficiaryId?: string | null
+  onChainAmountAtomic?: bigint | number | null
+  onChainStatus?: $Enums.CommissionOnChainStatus
+  onChainTxHash?: string | null
+  onChainLedger?: number | null
+  onChainCreditedAt?: Date | string | null
+  onChainFailureCode?: string | null
+  onChainUpdatedAt?: Date | string | null
   createdAt: Date | string
 }
 
@@ -432,6 +566,15 @@ export type CommissionLedgerEntryUpdateInput = {
   payoutRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   settledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reversalOfId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onChainCreditId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onChainBeneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onChainAmountAtomic?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  onChainStatus?: Prisma.EnumCommissionOnChainStatusFieldUpdateOperationsInput | $Enums.CommissionOnChainStatus
+  onChainTxHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onChainLedger?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  onChainCreditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  onChainFailureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onChainUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -450,6 +593,15 @@ export type CommissionLedgerEntryUncheckedUpdateInput = {
   payoutRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   settledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reversalOfId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onChainCreditId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onChainBeneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onChainAmountAtomic?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  onChainStatus?: Prisma.EnumCommissionOnChainStatusFieldUpdateOperationsInput | $Enums.CommissionOnChainStatus
+  onChainTxHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onChainLedger?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  onChainCreditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  onChainFailureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onChainUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -468,6 +620,15 @@ export type CommissionLedgerEntryCreateManyInput = {
   payoutRequestId?: string | null
   settledAt?: Date | string | null
   reversalOfId?: string | null
+  onChainCreditId?: string | null
+  onChainBeneficiaryId?: string | null
+  onChainAmountAtomic?: bigint | number | null
+  onChainStatus?: $Enums.CommissionOnChainStatus
+  onChainTxHash?: string | null
+  onChainLedger?: number | null
+  onChainCreditedAt?: Date | string | null
+  onChainFailureCode?: string | null
+  onChainUpdatedAt?: Date | string | null
   createdAt: Date | string
 }
 
@@ -486,6 +647,15 @@ export type CommissionLedgerEntryUpdateManyMutationInput = {
   payoutRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   settledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reversalOfId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onChainCreditId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onChainBeneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onChainAmountAtomic?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  onChainStatus?: Prisma.EnumCommissionOnChainStatusFieldUpdateOperationsInput | $Enums.CommissionOnChainStatus
+  onChainTxHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onChainLedger?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  onChainCreditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  onChainFailureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onChainUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -504,6 +674,15 @@ export type CommissionLedgerEntryUncheckedUpdateManyInput = {
   payoutRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   settledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reversalOfId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onChainCreditId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onChainBeneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onChainAmountAtomic?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  onChainStatus?: Prisma.EnumCommissionOnChainStatusFieldUpdateOperationsInput | $Enums.CommissionOnChainStatus
+  onChainTxHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onChainLedger?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  onChainCreditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  onChainFailureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onChainUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -522,11 +701,22 @@ export type CommissionLedgerEntryCountOrderByAggregateInput = {
   payoutRequestId?: Prisma.SortOrder
   settledAt?: Prisma.SortOrder
   reversalOfId?: Prisma.SortOrder
+  onChainCreditId?: Prisma.SortOrder
+  onChainBeneficiaryId?: Prisma.SortOrder
+  onChainAmountAtomic?: Prisma.SortOrder
+  onChainStatus?: Prisma.SortOrder
+  onChainTxHash?: Prisma.SortOrder
+  onChainLedger?: Prisma.SortOrder
+  onChainCreditedAt?: Prisma.SortOrder
+  onChainFailureCode?: Prisma.SortOrder
+  onChainUpdatedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
 export type CommissionLedgerEntryAvgOrderByAggregateInput = {
   amountMinor?: Prisma.SortOrder
+  onChainAmountAtomic?: Prisma.SortOrder
+  onChainLedger?: Prisma.SortOrder
 }
 
 export type CommissionLedgerEntryMaxOrderByAggregateInput = {
@@ -544,6 +734,15 @@ export type CommissionLedgerEntryMaxOrderByAggregateInput = {
   payoutRequestId?: Prisma.SortOrder
   settledAt?: Prisma.SortOrder
   reversalOfId?: Prisma.SortOrder
+  onChainCreditId?: Prisma.SortOrder
+  onChainBeneficiaryId?: Prisma.SortOrder
+  onChainAmountAtomic?: Prisma.SortOrder
+  onChainStatus?: Prisma.SortOrder
+  onChainTxHash?: Prisma.SortOrder
+  onChainLedger?: Prisma.SortOrder
+  onChainCreditedAt?: Prisma.SortOrder
+  onChainFailureCode?: Prisma.SortOrder
+  onChainUpdatedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -562,11 +761,22 @@ export type CommissionLedgerEntryMinOrderByAggregateInput = {
   payoutRequestId?: Prisma.SortOrder
   settledAt?: Prisma.SortOrder
   reversalOfId?: Prisma.SortOrder
+  onChainCreditId?: Prisma.SortOrder
+  onChainBeneficiaryId?: Prisma.SortOrder
+  onChainAmountAtomic?: Prisma.SortOrder
+  onChainStatus?: Prisma.SortOrder
+  onChainTxHash?: Prisma.SortOrder
+  onChainLedger?: Prisma.SortOrder
+  onChainCreditedAt?: Prisma.SortOrder
+  onChainFailureCode?: Prisma.SortOrder
+  onChainUpdatedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
 export type CommissionLedgerEntrySumOrderByAggregateInput = {
   amountMinor?: Prisma.SortOrder
+  onChainAmountAtomic?: Prisma.SortOrder
+  onChainLedger?: Prisma.SortOrder
 }
 
 export type EnumCommissionEntryTypeFieldUpdateOperationsInput = {
@@ -575,6 +785,18 @@ export type EnumCommissionEntryTypeFieldUpdateOperationsInput = {
 
 export type EnumCommissionEntryStatusFieldUpdateOperationsInput = {
   set?: $Enums.CommissionEntryStatus
+}
+
+export type NullableBigIntFieldUpdateOperationsInput = {
+  set?: bigint | number | null
+  increment?: bigint | number
+  decrement?: bigint | number
+  multiply?: bigint | number
+  divide?: bigint | number
+}
+
+export type EnumCommissionOnChainStatusFieldUpdateOperationsInput = {
+  set?: $Enums.CommissionOnChainStatus
 }
 
 
@@ -594,6 +816,15 @@ export type CommissionLedgerEntrySelect<ExtArgs extends runtime.Types.Extensions
   payoutRequestId?: boolean
   settledAt?: boolean
   reversalOfId?: boolean
+  onChainCreditId?: boolean
+  onChainBeneficiaryId?: boolean
+  onChainAmountAtomic?: boolean
+  onChainStatus?: boolean
+  onChainTxHash?: boolean
+  onChainLedger?: boolean
+  onChainCreditedAt?: boolean
+  onChainFailureCode?: boolean
+  onChainUpdatedAt?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["commissionLedgerEntry"]>
 
@@ -612,6 +843,15 @@ export type CommissionLedgerEntrySelectCreateManyAndReturn<ExtArgs extends runti
   payoutRequestId?: boolean
   settledAt?: boolean
   reversalOfId?: boolean
+  onChainCreditId?: boolean
+  onChainBeneficiaryId?: boolean
+  onChainAmountAtomic?: boolean
+  onChainStatus?: boolean
+  onChainTxHash?: boolean
+  onChainLedger?: boolean
+  onChainCreditedAt?: boolean
+  onChainFailureCode?: boolean
+  onChainUpdatedAt?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["commissionLedgerEntry"]>
 
@@ -630,6 +870,15 @@ export type CommissionLedgerEntrySelectUpdateManyAndReturn<ExtArgs extends runti
   payoutRequestId?: boolean
   settledAt?: boolean
   reversalOfId?: boolean
+  onChainCreditId?: boolean
+  onChainBeneficiaryId?: boolean
+  onChainAmountAtomic?: boolean
+  onChainStatus?: boolean
+  onChainTxHash?: boolean
+  onChainLedger?: boolean
+  onChainCreditedAt?: boolean
+  onChainFailureCode?: boolean
+  onChainUpdatedAt?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["commissionLedgerEntry"]>
 
@@ -648,10 +897,19 @@ export type CommissionLedgerEntrySelectScalar = {
   payoutRequestId?: boolean
   settledAt?: boolean
   reversalOfId?: boolean
+  onChainCreditId?: boolean
+  onChainBeneficiaryId?: boolean
+  onChainAmountAtomic?: boolean
+  onChainStatus?: boolean
+  onChainTxHash?: boolean
+  onChainLedger?: boolean
+  onChainCreditedAt?: boolean
+  onChainFailureCode?: boolean
+  onChainUpdatedAt?: boolean
   createdAt?: boolean
 }
 
-export type CommissionLedgerEntryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "issuerId" | "attestationId" | "entryType" | "status" | "amountMinor" | "currency" | "source" | "occurredAt" | "availableAt" | "payoutCycleId" | "payoutRequestId" | "settledAt" | "reversalOfId" | "createdAt", ExtArgs["result"]["commissionLedgerEntry"]>
+export type CommissionLedgerEntryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "issuerId" | "attestationId" | "entryType" | "status" | "amountMinor" | "currency" | "source" | "occurredAt" | "availableAt" | "payoutCycleId" | "payoutRequestId" | "settledAt" | "reversalOfId" | "onChainCreditId" | "onChainBeneficiaryId" | "onChainAmountAtomic" | "onChainStatus" | "onChainTxHash" | "onChainLedger" | "onChainCreditedAt" | "onChainFailureCode" | "onChainUpdatedAt" | "createdAt", ExtArgs["result"]["commissionLedgerEntry"]>
 
 export type $CommissionLedgerEntryPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "CommissionLedgerEntry"
@@ -671,6 +929,15 @@ export type $CommissionLedgerEntryPayload<ExtArgs extends runtime.Types.Extensio
     payoutRequestId: string | null
     settledAt: Date | null
     reversalOfId: string | null
+    onChainCreditId: string | null
+    onChainBeneficiaryId: string | null
+    onChainAmountAtomic: bigint | null
+    onChainStatus: $Enums.CommissionOnChainStatus
+    onChainTxHash: string | null
+    onChainLedger: number | null
+    onChainCreditedAt: Date | null
+    onChainFailureCode: string | null
+    onChainUpdatedAt: Date | null
     createdAt: Date
   }, ExtArgs["result"]["commissionLedgerEntry"]>
   composites: {}
@@ -1109,6 +1376,15 @@ export interface CommissionLedgerEntryFieldRefs {
   readonly payoutRequestId: Prisma.FieldRef<"CommissionLedgerEntry", 'String'>
   readonly settledAt: Prisma.FieldRef<"CommissionLedgerEntry", 'DateTime'>
   readonly reversalOfId: Prisma.FieldRef<"CommissionLedgerEntry", 'String'>
+  readonly onChainCreditId: Prisma.FieldRef<"CommissionLedgerEntry", 'String'>
+  readonly onChainBeneficiaryId: Prisma.FieldRef<"CommissionLedgerEntry", 'String'>
+  readonly onChainAmountAtomic: Prisma.FieldRef<"CommissionLedgerEntry", 'BigInt'>
+  readonly onChainStatus: Prisma.FieldRef<"CommissionLedgerEntry", 'CommissionOnChainStatus'>
+  readonly onChainTxHash: Prisma.FieldRef<"CommissionLedgerEntry", 'String'>
+  readonly onChainLedger: Prisma.FieldRef<"CommissionLedgerEntry", 'Int'>
+  readonly onChainCreditedAt: Prisma.FieldRef<"CommissionLedgerEntry", 'DateTime'>
+  readonly onChainFailureCode: Prisma.FieldRef<"CommissionLedgerEntry", 'String'>
+  readonly onChainUpdatedAt: Prisma.FieldRef<"CommissionLedgerEntry", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"CommissionLedgerEntry", 'DateTime'>
 }
     

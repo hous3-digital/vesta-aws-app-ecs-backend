@@ -8,6 +8,7 @@ import {
   SettlementRejectedError,
 } from "@src/modules/commission/payout-settlement.gateway";
 import { WalletService } from "@src/modules/wallet/wallet.service";
+import { commissionBeneficiaryId } from "@src/modules/commission/commission-onchain-identifiers";
 
 @Injectable()
 export class PayoutProcessorService implements OnModuleInit, OnModuleDestroy {
@@ -49,6 +50,21 @@ export class PayoutProcessorService implements OnModuleInit, OnModuleDestroy {
       });
       if (claimed.count !== 1) return;
 
+      const creditsAwaitingRegistration = await this.prisma.commissionLedgerEntry.count({
+        where: {
+          payoutRequestId: candidate.id,
+          status: "ALLOCATED",
+          onChainStatus: { not: "CONFIRMED" },
+        },
+      });
+      if (creditsAwaitingRegistration > 0) {
+        await this.prisma.payoutRequest.updateMany({
+          where: { id: candidate.id, status: "PROCESSING" },
+          data: { status: "REQUESTED", processingStartedAt: null, updatedAt: new Date() },
+        });
+        return;
+      }
+
       const attemptNumber = (await this.prisma.payoutAttempt.count({ where: { payoutRequestId: candidate.id } })) + 1;
       const attempt = await this.prisma.payoutAttempt.create({
         data: {
@@ -71,6 +87,7 @@ export class PayoutProcessorService implements OnModuleInit, OnModuleDestroy {
         }
         const settled = await this.gateway.settle({
           payoutId: candidate.onChainPayoutId,
+          beneficiaryId: candidate.onChainBeneficiaryId ?? commissionBeneficiaryId(candidate.issuerId),
           destinationAddress: candidate.destinationAddress,
           amountAtomic: candidate.settlementAmountAtomic,
         });

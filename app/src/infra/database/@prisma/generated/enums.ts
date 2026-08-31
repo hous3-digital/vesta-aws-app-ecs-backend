@@ -39,6 +39,18 @@ export const CommissionEntryStatus = {
 export type CommissionEntryStatus = (typeof CommissionEntryStatus)[keyof typeof CommissionEntryStatus]
 
 
+export const CommissionOnChainStatus = {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  CONFIRMED: 'CONFIRMED',
+  UNKNOWN: 'UNKNOWN',
+  REQUIRES_REVIEW: 'REQUIRES_REVIEW',
+  NOT_APPLICABLE: 'NOT_APPLICABLE'
+} as const
+
+export type CommissionOnChainStatus = (typeof CommissionOnChainStatus)[keyof typeof CommissionOnChainStatus]
+
+
 export const PayoutCycleStatus = {
   PREVIEW: 'PREVIEW'
 } as const

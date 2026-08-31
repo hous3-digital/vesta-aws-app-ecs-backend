@@ -30,6 +30,7 @@ describe("AttestationRepository commission accrual", () => {
     const env = {
       COMMISSION_PER_VERIFICATION_BRL: 1.37,
       COMMISSION_SECURITY_MINUTES: 30,
+      STELLAR_PAYOUT_ASSET_DECIMALS: 7,
     } as EnvService;
     return { repository: new AttestationRepository(prisma, env), attestationCreate, commissionCreate, transaction };
   }
@@ -52,6 +53,10 @@ describe("AttestationRepository commission accrual", () => {
           issuerId: "issuer_a",
           amountMinor: 137,
           currency: "BRL",
+          onChainCreditId: expect.stringMatching(/^[a-f0-9]{64}$/),
+          onChainBeneficiaryId: expect.stringMatching(/^[a-f0-9]{64}$/),
+          onChainAmountAtomic: 13_700_000n,
+          onChainStatus: "PENDING",
           availableAt: new Date(confirmedAttestation.createdAt.getTime() + 30 * 60 * 1000),
         }),
       }),

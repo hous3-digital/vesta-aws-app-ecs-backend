@@ -4,6 +4,7 @@ import { PrismaService } from "@src/infra/database/@prisma/prisma.service";
 import { EnvService } from "@src/infra/env/env.service";
 import { Id } from "@src/shared/value-objects/id.value-object";
 import { WalletService } from "@src/modules/wallet/wallet.service";
+import { commissionBeneficiaryId, minorToAtomicUnits } from "@src/modules/commission/commission-onchain-identifiers";
 
 @Injectable()
 export class PayoutRequestService {
@@ -44,14 +45,37 @@ export class PayoutRequestService {
           data: { status: "AVAILABLE" },
         });
         const entries = await tx.commissionLedgerEntry.findMany({
-          where: { issuerId, status: "AVAILABLE", payoutRequestId: null, payoutCycleId: null },
+          where: {
+            issuerId,
+            status: "AVAILABLE",
+            onChainStatus: "CONFIRMED",
+            payoutRequestId: null,
+            payoutCycleId: null,
+          },
           orderBy: [{ occurredAt: "asc" }, { id: "asc" }],
         });
-        if (entries.length === 0) throw new BadRequestException("Não há comissões disponíveis para receber");
+        if (entries.length === 0) {
+          const awaitingOnChain = await tx.commissionLedgerEntry.count({
+            where: {
+              issuerId,
+              status: "AVAILABLE",
+              onChainStatus: { in: ["PENDING", "PROCESSING", "UNKNOWN"] },
+              payoutRequestId: null,
+              payoutCycleId: null,
+            },
+          });
+          if (awaitingOnChain > 0) {
+            throw new BadRequestException(
+              "As comissões disponíveis ainda estão sendo registradas na Stellar; tente novamente em instantes",
+            );
+          }
+          throw new BadRequestException("Não há comissões disponíveis para receber");
+        }
 
         const amountMinor = entries.reduce((sum, entry) => sum + BigInt(entry.amountMinor), 0n);
         const requestId = Id.create("payout").value;
         const onChainPayoutId = this.sha256(`${this.env.NODE_ENV}:${requestId}`);
+        const onChainBeneficiaryId = commissionBeneficiaryId(issuerId);
         const payout = await tx.payoutRequest.create({
           data: {
             id: requestId,
@@ -67,6 +91,7 @@ export class PayoutRequestService {
             status: "REQUESTED",
             idempotencyKeyHash,
             onChainPayoutId,
+            onChainBeneficiaryId,
             requestedAt: now,
             createdAt: now,
             updatedAt: now,
@@ -142,11 +167,11 @@ export class PayoutRequestService {
   }
 
   private toAtomicUnits(amountMinor: bigint): bigint {
-    const decimals = this.env.STELLAR_PAYOUT_ASSET_DECIMALS;
-    if (decimals >= 2) return amountMinor * 10n ** BigInt(decimals - 2);
-    const divisor = 10n ** BigInt(2 - decimals);
-    if (amountMinor % divisor !== 0n) throw new BadRequestException("Valor não representável no ativo de liquidação");
-    return amountMinor / divisor;
+    try {
+      return minorToAtomicUnits(amountMinor, this.env.STELLAR_PAYOUT_ASSET_DECIMALS);
+    } catch (cause) {
+      throw new BadRequestException(cause instanceof Error ? cause.message : "Valor de liquidação inválido");
+    }
   }
 
   private walletBlockReason(
