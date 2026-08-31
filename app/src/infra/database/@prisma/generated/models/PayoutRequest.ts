@@ -52,6 +52,7 @@ export type PayoutRequestMinAggregateOutputType = {
   status: $Enums.PayoutRequestStatus | null
   idempotencyKeyHash: string | null
   onChainPayoutId: string | null
+  onChainBeneficiaryId: string | null
   stellarTxHash: string | null
   stellarLedger: number | null
   failureCode: string | null
@@ -77,6 +78,7 @@ export type PayoutRequestMaxAggregateOutputType = {
   status: $Enums.PayoutRequestStatus | null
   idempotencyKeyHash: string | null
   onChainPayoutId: string | null
+  onChainBeneficiaryId: string | null
   stellarTxHash: string | null
   stellarLedger: number | null
   failureCode: string | null
@@ -102,6 +104,7 @@ export type PayoutRequestCountAggregateOutputType = {
   status: number
   idempotencyKeyHash: number
   onChainPayoutId: number
+  onChainBeneficiaryId: number
   stellarTxHash: number
   stellarLedger: number
   failureCode: number
@@ -141,6 +144,7 @@ export type PayoutRequestMinAggregateInputType = {
   status?: true
   idempotencyKeyHash?: true
   onChainPayoutId?: true
+  onChainBeneficiaryId?: true
   stellarTxHash?: true
   stellarLedger?: true
   failureCode?: true
@@ -166,6 +170,7 @@ export type PayoutRequestMaxAggregateInputType = {
   status?: true
   idempotencyKeyHash?: true
   onChainPayoutId?: true
+  onChainBeneficiaryId?: true
   stellarTxHash?: true
   stellarLedger?: true
   failureCode?: true
@@ -191,6 +196,7 @@ export type PayoutRequestCountAggregateInputType = {
   status?: true
   idempotencyKeyHash?: true
   onChainPayoutId?: true
+  onChainBeneficiaryId?: true
   stellarTxHash?: true
   stellarLedger?: true
   failureCode?: true
@@ -303,6 +309,7 @@ export type PayoutRequestGroupByOutputType = {
   status: $Enums.PayoutRequestStatus
   idempotencyKeyHash: string
   onChainPayoutId: string
+  onChainBeneficiaryId: string | null
   stellarTxHash: string | null
   stellarLedger: number | null
   failureCode: string | null
@@ -351,6 +358,7 @@ export type PayoutRequestWhereInput = {
   status?: Prisma.EnumPayoutRequestStatusFilter<"PayoutRequest"> | $Enums.PayoutRequestStatus
   idempotencyKeyHash?: Prisma.StringFilter<"PayoutRequest"> | string
   onChainPayoutId?: Prisma.StringFilter<"PayoutRequest"> | string
+  onChainBeneficiaryId?: Prisma.StringNullableFilter<"PayoutRequest"> | string | null
   stellarTxHash?: Prisma.StringNullableFilter<"PayoutRequest"> | string | null
   stellarLedger?: Prisma.IntNullableFilter<"PayoutRequest"> | number | null
   failureCode?: Prisma.StringNullableFilter<"PayoutRequest"> | string | null
@@ -376,6 +384,7 @@ export type PayoutRequestOrderByWithRelationInput = {
   status?: Prisma.SortOrder
   idempotencyKeyHash?: Prisma.SortOrder
   onChainPayoutId?: Prisma.SortOrder
+  onChainBeneficiaryId?: Prisma.SortOrderInput | Prisma.SortOrder
   stellarTxHash?: Prisma.SortOrderInput | Prisma.SortOrder
   stellarLedger?: Prisma.SortOrderInput | Prisma.SortOrder
   failureCode?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -406,6 +415,7 @@ export type PayoutRequestWhereUniqueInput = Prisma.AtLeast<{
   settlementAmountAtomic?: Prisma.BigIntFilter<"PayoutRequest"> | bigint | number
   status?: Prisma.EnumPayoutRequestStatusFilter<"PayoutRequest"> | $Enums.PayoutRequestStatus
   idempotencyKeyHash?: Prisma.StringFilter<"PayoutRequest"> | string
+  onChainBeneficiaryId?: Prisma.StringNullableFilter<"PayoutRequest"> | string | null
   stellarLedger?: Prisma.IntNullableFilter<"PayoutRequest"> | number | null
   failureCode?: Prisma.StringNullableFilter<"PayoutRequest"> | string | null
   requestedAt?: Prisma.DateTimeFilter<"PayoutRequest"> | Date | string
@@ -430,6 +440,7 @@ export type PayoutRequestOrderByWithAggregationInput = {
   status?: Prisma.SortOrder
   idempotencyKeyHash?: Prisma.SortOrder
   onChainPayoutId?: Prisma.SortOrder
+  onChainBeneficiaryId?: Prisma.SortOrderInput | Prisma.SortOrder
   stellarTxHash?: Prisma.SortOrderInput | Prisma.SortOrder
   stellarLedger?: Prisma.SortOrderInput | Prisma.SortOrder
   failureCode?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -463,6 +474,7 @@ export type PayoutRequestScalarWhereWithAggregatesInput = {
   status?: Prisma.EnumPayoutRequestStatusWithAggregatesFilter<"PayoutRequest"> | $Enums.PayoutRequestStatus
   idempotencyKeyHash?: Prisma.StringWithAggregatesFilter<"PayoutRequest"> | string
   onChainPayoutId?: Prisma.StringWithAggregatesFilter<"PayoutRequest"> | string
+  onChainBeneficiaryId?: Prisma.StringNullableWithAggregatesFilter<"PayoutRequest"> | string | null
   stellarTxHash?: Prisma.StringNullableWithAggregatesFilter<"PayoutRequest"> | string | null
   stellarLedger?: Prisma.IntNullableWithAggregatesFilter<"PayoutRequest"> | number | null
   failureCode?: Prisma.StringNullableWithAggregatesFilter<"PayoutRequest"> | string | null
@@ -488,6 +500,7 @@ export type PayoutRequestCreateInput = {
   status?: $Enums.PayoutRequestStatus
   idempotencyKeyHash: string
   onChainPayoutId: string
+  onChainBeneficiaryId?: string | null
   stellarTxHash?: string | null
   stellarLedger?: number | null
   failureCode?: string | null
@@ -513,6 +526,7 @@ export type PayoutRequestUncheckedCreateInput = {
   status?: $Enums.PayoutRequestStatus
   idempotencyKeyHash: string
   onChainPayoutId: string
+  onChainBeneficiaryId?: string | null
   stellarTxHash?: string | null
   stellarLedger?: number | null
   failureCode?: string | null
@@ -538,6 +552,7 @@ export type PayoutRequestUpdateInput = {
   status?: Prisma.EnumPayoutRequestStatusFieldUpdateOperationsInput | $Enums.PayoutRequestStatus
   idempotencyKeyHash?: Prisma.StringFieldUpdateOperationsInput | string
   onChainPayoutId?: Prisma.StringFieldUpdateOperationsInput | string
+  onChainBeneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stellarTxHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stellarLedger?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -563,6 +578,7 @@ export type PayoutRequestUncheckedUpdateInput = {
   status?: Prisma.EnumPayoutRequestStatusFieldUpdateOperationsInput | $Enums.PayoutRequestStatus
   idempotencyKeyHash?: Prisma.StringFieldUpdateOperationsInput | string
   onChainPayoutId?: Prisma.StringFieldUpdateOperationsInput | string
+  onChainBeneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stellarTxHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stellarLedger?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -588,6 +604,7 @@ export type PayoutRequestCreateManyInput = {
   status?: $Enums.PayoutRequestStatus
   idempotencyKeyHash: string
   onChainPayoutId: string
+  onChainBeneficiaryId?: string | null
   stellarTxHash?: string | null
   stellarLedger?: number | null
   failureCode?: string | null
@@ -613,6 +630,7 @@ export type PayoutRequestUpdateManyMutationInput = {
   status?: Prisma.EnumPayoutRequestStatusFieldUpdateOperationsInput | $Enums.PayoutRequestStatus
   idempotencyKeyHash?: Prisma.StringFieldUpdateOperationsInput | string
   onChainPayoutId?: Prisma.StringFieldUpdateOperationsInput | string
+  onChainBeneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stellarTxHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stellarLedger?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -638,6 +656,7 @@ export type PayoutRequestUncheckedUpdateManyInput = {
   status?: Prisma.EnumPayoutRequestStatusFieldUpdateOperationsInput | $Enums.PayoutRequestStatus
   idempotencyKeyHash?: Prisma.StringFieldUpdateOperationsInput | string
   onChainPayoutId?: Prisma.StringFieldUpdateOperationsInput | string
+  onChainBeneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stellarTxHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stellarLedger?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -668,6 +687,7 @@ export type PayoutRequestCountOrderByAggregateInput = {
   status?: Prisma.SortOrder
   idempotencyKeyHash?: Prisma.SortOrder
   onChainPayoutId?: Prisma.SortOrder
+  onChainBeneficiaryId?: Prisma.SortOrder
   stellarTxHash?: Prisma.SortOrder
   stellarLedger?: Prisma.SortOrder
   failureCode?: Prisma.SortOrder
@@ -699,6 +719,7 @@ export type PayoutRequestMaxOrderByAggregateInput = {
   status?: Prisma.SortOrder
   idempotencyKeyHash?: Prisma.SortOrder
   onChainPayoutId?: Prisma.SortOrder
+  onChainBeneficiaryId?: Prisma.SortOrder
   stellarTxHash?: Prisma.SortOrder
   stellarLedger?: Prisma.SortOrder
   failureCode?: Prisma.SortOrder
@@ -724,6 +745,7 @@ export type PayoutRequestMinOrderByAggregateInput = {
   status?: Prisma.SortOrder
   idempotencyKeyHash?: Prisma.SortOrder
   onChainPayoutId?: Prisma.SortOrder
+  onChainBeneficiaryId?: Prisma.SortOrder
   stellarTxHash?: Prisma.SortOrder
   stellarLedger?: Prisma.SortOrder
   failureCode?: Prisma.SortOrder
@@ -769,6 +791,7 @@ export type PayoutRequestSelect<ExtArgs extends runtime.Types.Extensions.Interna
   status?: boolean
   idempotencyKeyHash?: boolean
   onChainPayoutId?: boolean
+  onChainBeneficiaryId?: boolean
   stellarTxHash?: boolean
   stellarLedger?: boolean
   failureCode?: boolean
@@ -794,6 +817,7 @@ export type PayoutRequestSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   status?: boolean
   idempotencyKeyHash?: boolean
   onChainPayoutId?: boolean
+  onChainBeneficiaryId?: boolean
   stellarTxHash?: boolean
   stellarLedger?: boolean
   failureCode?: boolean
@@ -819,6 +843,7 @@ export type PayoutRequestSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   status?: boolean
   idempotencyKeyHash?: boolean
   onChainPayoutId?: boolean
+  onChainBeneficiaryId?: boolean
   stellarTxHash?: boolean
   stellarLedger?: boolean
   failureCode?: boolean
@@ -844,6 +869,7 @@ export type PayoutRequestSelectScalar = {
   status?: boolean
   idempotencyKeyHash?: boolean
   onChainPayoutId?: boolean
+  onChainBeneficiaryId?: boolean
   stellarTxHash?: boolean
   stellarLedger?: boolean
   failureCode?: boolean
@@ -855,7 +881,7 @@ export type PayoutRequestSelectScalar = {
   updatedAt?: boolean
 }
 
-export type PayoutRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "issuerId" | "activeIssuerId" | "walletId" | "destinationAddress" | "amountMinor" | "currency" | "settlementAssetCode" | "settlementAssetIssuer" | "settlementAmountAtomic" | "status" | "idempotencyKeyHash" | "onChainPayoutId" | "stellarTxHash" | "stellarLedger" | "failureCode" | "requestedAt" | "processingStartedAt" | "submittedAt" | "confirmedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["payoutRequest"]>
+export type PayoutRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "issuerId" | "activeIssuerId" | "walletId" | "destinationAddress" | "amountMinor" | "currency" | "settlementAssetCode" | "settlementAssetIssuer" | "settlementAmountAtomic" | "status" | "idempotencyKeyHash" | "onChainPayoutId" | "onChainBeneficiaryId" | "stellarTxHash" | "stellarLedger" | "failureCode" | "requestedAt" | "processingStartedAt" | "submittedAt" | "confirmedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["payoutRequest"]>
 
 export type $PayoutRequestPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "PayoutRequest"
@@ -874,6 +900,7 @@ export type $PayoutRequestPayload<ExtArgs extends runtime.Types.Extensions.Inter
     status: $Enums.PayoutRequestStatus
     idempotencyKeyHash: string
     onChainPayoutId: string
+    onChainBeneficiaryId: string | null
     stellarTxHash: string | null
     stellarLedger: number | null
     failureCode: string | null
@@ -1319,6 +1346,7 @@ export interface PayoutRequestFieldRefs {
   readonly status: Prisma.FieldRef<"PayoutRequest", 'PayoutRequestStatus'>
   readonly idempotencyKeyHash: Prisma.FieldRef<"PayoutRequest", 'String'>
   readonly onChainPayoutId: Prisma.FieldRef<"PayoutRequest", 'String'>
+  readonly onChainBeneficiaryId: Prisma.FieldRef<"PayoutRequest", 'String'>
   readonly stellarTxHash: Prisma.FieldRef<"PayoutRequest", 'String'>
   readonly stellarLedger: Prisma.FieldRef<"PayoutRequest", 'Int'>
   readonly failureCode: Prisma.FieldRef<"PayoutRequest", 'String'>

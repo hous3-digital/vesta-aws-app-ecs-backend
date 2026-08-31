@@ -136,4 +136,8 @@ export class EnvService {
   public get PAYOUT_PROCESSOR_INTERVAL_MS() {
     return this.configService.get("PAYOUT_PROCESSOR_INTERVAL_MS") as number;
   }
+
+  public get COMMISSION_REGISTRATION_PROCESSOR_INTERVAL_MS() {
+    return this.configService.get("COMMISSION_REGISTRATION_PROCESSOR_INTERVAL_MS") as number;
+  }
 }

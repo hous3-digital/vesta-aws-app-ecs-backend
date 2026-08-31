@@ -170,6 +170,15 @@ export const CommissionLedgerEntryScalarFieldEnum = {
   payoutRequestId: 'payoutRequestId',
   settledAt: 'settledAt',
   reversalOfId: 'reversalOfId',
+  onChainCreditId: 'onChainCreditId',
+  onChainBeneficiaryId: 'onChainBeneficiaryId',
+  onChainAmountAtomic: 'onChainAmountAtomic',
+  onChainStatus: 'onChainStatus',
+  onChainTxHash: 'onChainTxHash',
+  onChainLedger: 'onChainLedger',
+  onChainCreditedAt: 'onChainCreditedAt',
+  onChainFailureCode: 'onChainFailureCode',
+  onChainUpdatedAt: 'onChainUpdatedAt',
   createdAt: 'createdAt'
 } as const
 
@@ -190,6 +199,7 @@ export const PayoutRequestScalarFieldEnum = {
   status: 'status',
   idempotencyKeyHash: 'idempotencyKeyHash',
   onChainPayoutId: 'onChainPayoutId',
+  onChainBeneficiaryId: 'onChainBeneficiaryId',
   stellarTxHash: 'stellarTxHash',
   stellarLedger: 'stellarLedger',
   failureCode: 'failureCode',

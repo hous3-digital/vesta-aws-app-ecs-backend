@@ -67,6 +67,11 @@ const envSchema = z.object({
     .default("10000")
     .transform((v) => parseInt(v, 10))
     .pipe(z.number().int().min(1000)),
+  COMMISSION_REGISTRATION_PROCESSOR_INTERVAL_MS: z
+    .string()
+    .default("10000")
+    .transform((v) => parseInt(v, 10))
+    .pipe(z.number().int().min(1000)),
 });
 
 export const validate = { validate: envConfig };

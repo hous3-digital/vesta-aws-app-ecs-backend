@@ -10,6 +10,7 @@ export type PayoutReconciliationResult =
 
 export interface SettlePayoutParams {
   payoutId: string;
+  beneficiaryId: string;
   destinationAddress: string;
   amountAtomic: bigint;
 }
