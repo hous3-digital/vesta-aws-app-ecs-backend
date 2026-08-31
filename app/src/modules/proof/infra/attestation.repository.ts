@@ -5,6 +5,11 @@ import { Attestation } from "@src/modules/proof/domain/attestation.entity";
 import { IAttestationRepository } from "@src/modules/proof/domain/attestation.repository";
 import { AttestationMapper } from "@src/modules/proof/infra/attestation.mapper";
 import { Id } from "@src/shared/value-objects/id.value-object";
+import {
+  commissionBeneficiaryId,
+  commissionCreditId,
+  minorToAtomicUnits,
+} from "@src/modules/commission/commission-onchain-identifiers";
 
 @Injectable()
 export class AttestationRepository implements IAttestationRepository {
@@ -34,12 +39,13 @@ export class AttestationRepository implements IAttestationRepository {
     const occurredAt = attestation.createdAt;
     const availableAt = new Date(occurredAt.getTime() + this.envService.COMMISSION_SECURITY_MINUTES * 60 * 1000);
     const amountMinor = Math.round(this.envService.COMMISSION_PER_VERIFICATION_BRL * 100);
+    const entryId = Id.create("commission").value;
 
     await this.prismaService.$transaction([
       attestationCreate,
       this.prismaService.commissionLedgerEntry.create({
         data: {
-          id: Id.create("commission").value,
+          id: entryId,
           issuerId: attestation.issuerId,
           attestationId: attestation.id.value,
           entryType: "ACCRUAL",
@@ -49,6 +55,11 @@ export class AttestationRepository implements IAttestationRepository {
           source: "ATTESTATION_REUSE",
           occurredAt,
           availableAt,
+          onChainCreditId: commissionCreditId(entryId),
+          onChainBeneficiaryId: commissionBeneficiaryId(attestation.issuerId),
+          onChainAmountAtomic: minorToAtomicUnits(BigInt(amountMinor), this.envService.STELLAR_PAYOUT_ASSET_DECIMALS),
+          onChainStatus: "PENDING",
+          onChainUpdatedAt: new Date(),
           createdAt: new Date(),
         },
       }),

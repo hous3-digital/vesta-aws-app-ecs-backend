@@ -19,6 +19,7 @@ import {
 
 export const PAYOUT_VAULT_SALT = createHash("sha256").update("vesta-payout-vault:v1").digest();
 export const DEFAULT_FUNDING_BRL = "1000";
+export const PAYOUT_VAULT_VERSION = 2;
 
 interface DeploymentConfig {
   assetCode: string;
@@ -121,6 +122,7 @@ export class PayoutVaultDeployer {
     await this.ensureWasmUploaded(wasm, wasmHash);
     await this.ensureAssetContract();
     await this.ensureVaultContract(wasmHash);
+    await this.ensureVaultVersion(wasmHash);
     await this.ensureInitialized();
     const fundedAtomic = await this.ensureFunded(brlToAtomicUnits(this.config.fundingBrl));
 
@@ -158,6 +160,22 @@ export class PayoutVaultDeployer {
     );
     if (!(await this.contractExists(this.vaultContractId))) {
       throw new Error("Contrato do cofre não foi encontrado após o deployment");
+    }
+  }
+
+  private async ensureVaultVersion(wasmHash: Buffer): Promise<void> {
+    const current = await this.readVaultVersion();
+    if (current === PAYOUT_VAULT_VERSION) return;
+    if (current !== null && current > PAYOUT_VAULT_VERSION) {
+      throw new Error(`O cofre está na versão ${current}, mais nova que o deployer suporta`);
+    }
+
+    await this.sendOperation(
+      new Contract(this.vaultContractId).call("upgrade", nativeToScVal(wasmHash, { type: "bytes" })),
+    );
+    const upgraded = await this.readVaultVersion();
+    if (upgraded !== PAYOUT_VAULT_VERSION) {
+      throw new Error("O cofre não respondeu com a versão esperada após o upgrade");
     }
   }
 
@@ -217,6 +235,12 @@ export class PayoutVaultDeployer {
     const value = await this.simulateContractCall(new Contract(this.vaultContractId).call("get_config"));
     if (!value) return null;
     return scValToNative(value) as VaultConfig;
+  }
+
+  private async readVaultVersion(): Promise<number | null> {
+    const value = await this.simulateContractCall(new Contract(this.vaultContractId).call("version"));
+    if (!value) return null;
+    return Number(scValToNative(value));
   }
 
   private async readTokenBalance(address: string): Promise<bigint> {

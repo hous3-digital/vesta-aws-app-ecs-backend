@@ -55,8 +55,15 @@ export class CommissionLedgerService {
       attestationId: row.attestationId,
       payoutCycleId: row.payoutCycleId,
       payoutRequestId: row.payoutRequestId,
+      onChain: {
+        status: row.onChainStatus,
+        creditId: row.onChainCreditId,
+        txHash: row.onChainTxHash,
+        ledger: row.onChainLedger,
+        creditedAt: row.onChainCreditedAt?.toISOString() ?? null,
+      },
     }));
-    return { items, nextCursor: hasNext ? items.at(-1)?.id ?? null : null };
+    return { items, nextCursor: hasNext ? (items.at(-1)?.id ?? null) : null };
   }
 
   public async periodTotals(issuerId: string, from: Date, to: Date) {
@@ -195,11 +202,15 @@ export class CommissionLedgerService {
     });
   }
 
-  private walletBlockReason(wallet: {
-    status: string;
-    accountActivated: boolean;
-    trustlineReady: boolean;
-  } | undefined): string | null {
+  private walletBlockReason(
+    wallet:
+      | {
+          status: string;
+          accountActivated: boolean;
+          trustlineReady: boolean;
+        }
+      | undefined,
+  ): string | null {
     if (!wallet) return "WALLET_NOT_PROVISIONED";
     if (wallet.status === "SUSPENDED") return "WALLET_SUSPENDED";
     if (wallet.status !== "ACTIVE") return "WALLET_NOT_ACTIVE";

@@ -32,7 +32,7 @@ export class SorobanPayoutSettlementGateway implements PayoutSettlementGateway {
     if (contractId === "PLACEHOLDER" || !operatorSecret) {
       throw new SettlementRejectedError("SETTLEMENT_NOT_CONFIGURED", "Liquidação on-chain ainda não está configurada");
     }
-    if (!/^[a-f0-9]{64}$/i.test(params.payoutId)) {
+    if (!/^[a-f0-9]{64}$/i.test(params.payoutId) || !/^[a-f0-9]{64}$/i.test(params.beneficiaryId)) {
       throw new Error("Identificador on-chain de repasse inválido");
     }
     if (params.amountAtomic <= 0n) throw new Error("Valor de liquidação inválido");
@@ -53,6 +53,7 @@ export class SorobanPayoutSettlementGateway implements PayoutSettlementGateway {
         contract.call(
           "settle",
           nativeToScVal(Buffer.from(params.payoutId, "hex"), { type: "bytes" }),
+          nativeToScVal(Buffer.from(params.beneficiaryId, "hex"), { type: "bytes" }),
           nativeToScVal(params.destinationAddress, { type: "address" }),
           nativeToScVal(params.amountAtomic, { type: "i128" }),
         ),
