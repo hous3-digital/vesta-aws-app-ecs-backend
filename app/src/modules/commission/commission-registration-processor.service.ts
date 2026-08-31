@@ -25,6 +25,10 @@ export class CommissionRegistrationProcessorService implements OnModuleInit, OnM
   ) {}
 
   public onModuleInit(): void {
+    if (this.env.STELLAR_PAYOUT_CONTRACT_ID === "PLACEHOLDER" || !this.env.STELLAR_PAYOUT_OPERATOR_SECRET) {
+      this.logger.warn("Registro on-chain de comissões desativado: contrato ou operador não configurado");
+      return;
+    }
     this.timer = globalThis.setInterval(
       () => void this.processNext(),
       this.env.COMMISSION_REGISTRATION_PROCESSOR_INTERVAL_MS,
