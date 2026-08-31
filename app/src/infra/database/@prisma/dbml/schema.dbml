@@ -75,6 +75,15 @@ Table commission_ledger_entries {
   payoutRequestId String
   settledAt DateTime
   reversalOfId String
+  onChainCreditId String [unique]
+  onChainBeneficiaryId String
+  onChainAmountAtomic BigInt
+  onChainStatus CommissionOnChainStatus [not null, default: 'PENDING']
+  onChainTxHash String [unique]
+  onChainLedger Int
+  onChainCreditedAt DateTime
+  onChainFailureCode String
+  onChainUpdatedAt DateTime
   createdAt DateTime [not null]
 }
 
@@ -92,6 +101,7 @@ Table payout_requests {
   status PayoutRequestStatus [not null, default: 'REQUESTED']
   idempotencyKeyHash String [not null]
   onChainPayoutId String [unique, not null]
+  onChainBeneficiaryId String
   stellarTxHash String [unique]
   stellarLedger Int
   failureCode String
@@ -246,6 +256,15 @@ Enum CommissionEntryStatus {
   ALLOCATED
   SETTLED
   REVERSED
+}
+
+Enum CommissionOnChainStatus {
+  PENDING
+  PROCESSING
+  CONFIRMED
+  UNKNOWN
+  REQUIRES_REVIEW
+  NOT_APPLICABLE
 }
 
 Enum PayoutCycleStatus {

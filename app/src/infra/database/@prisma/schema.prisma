@@ -34,6 +34,15 @@ enum CommissionEntryStatus {
   REVERSED
 }
 
+enum CommissionOnChainStatus {
+  PENDING
+  PROCESSING
+  CONFIRMED
+  UNKNOWN
+  REQUIRES_REVIEW
+  NOT_APPLICABLE
+}
+
 enum PayoutCycleStatus {
   PREVIEW
 }
@@ -136,23 +145,33 @@ model Attestation {
 }
 
 model CommissionLedgerEntry {
-  id              String                @unique @map("commission_entry_id")
-  issuerId        String                @map("issuer_external_id")
-  attestationId   String?               @unique @map("attestation_id")
-  entryType       CommissionEntryType   @default(ACCRUAL) @map("entry_type")
-  status          CommissionEntryStatus @default(PENDING_SECURITY)
-  amountMinor     Int                   @map("amount_minor")
-  currency        String                @default("BRL")
-  source          String                @default("ATTESTATION_REUSE")
-  occurredAt      DateTime              @map("occurred_at")
-  availableAt     DateTime              @map("available_at")
-  payoutCycleId   String?               @map("payout_cycle_id")
-  payoutRequestId String?               @map("payout_request_id")
-  settledAt       DateTime?             @map("settled_at")
-  reversalOfId    String?               @map("reversal_of_id")
-  createdAt       DateTime              @map("created_at")
+  id                   String                  @unique @map("commission_entry_id")
+  issuerId             String                  @map("issuer_external_id")
+  attestationId        String?                 @unique @map("attestation_id")
+  entryType            CommissionEntryType     @default(ACCRUAL) @map("entry_type")
+  status               CommissionEntryStatus   @default(PENDING_SECURITY)
+  amountMinor          Int                     @map("amount_minor")
+  currency             String                  @default("BRL")
+  source               String                  @default("ATTESTATION_REUSE")
+  occurredAt           DateTime                @map("occurred_at")
+  availableAt          DateTime                @map("available_at")
+  payoutCycleId        String?                 @map("payout_cycle_id")
+  payoutRequestId      String?                 @map("payout_request_id")
+  settledAt            DateTime?               @map("settled_at")
+  reversalOfId         String?                 @map("reversal_of_id")
+  onChainCreditId      String?                 @unique @map("on_chain_credit_id")
+  onChainBeneficiaryId String?                 @map("on_chain_beneficiary_id")
+  onChainAmountAtomic  BigInt?                 @map("on_chain_amount_atomic")
+  onChainStatus        CommissionOnChainStatus @default(PENDING) @map("on_chain_status")
+  onChainTxHash        String?                 @unique @map("on_chain_tx_hash")
+  onChainLedger        Int?                    @map("on_chain_ledger")
+  onChainCreditedAt    DateTime?               @map("on_chain_credited_at")
+  onChainFailureCode   String?                 @map("on_chain_failure_code")
+  onChainUpdatedAt     DateTime?               @map("on_chain_updated_at")
+  createdAt            DateTime                @map("created_at")
 
   @@index([issuerId, status, availableAt])
+  @@index([onChainStatus, createdAt])
   @@index([payoutCycleId])
   @@index([payoutRequestId])
   @@map("commission_ledger_entries")
@@ -172,6 +191,7 @@ model PayoutRequest {
   status                 PayoutRequestStatus @default(REQUESTED)
   idempotencyKeyHash     String              @map("idempotency_key_hash")
   onChainPayoutId        String              @unique @map("on_chain_payout_id")
+  onChainBeneficiaryId   String?             @map("on_chain_beneficiary_id")
   stellarTxHash          String?             @unique @map("stellar_tx_hash")
   stellarLedger          Int?                @map("stellar_ledger")
   failureCode            String?             @map("failure_code")

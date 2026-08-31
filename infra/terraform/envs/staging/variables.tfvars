@@ -96,6 +96,10 @@ environment = [
   {
     name  = "PAYOUT_PROCESSOR_INTERVAL_MS",
     value = "10000"
+  },
+  {
+    name  = "COMMISSION_REGISTRATION_PROCESSOR_INTERVAL_MS",
+    value = "10000"
   }
 ]
 

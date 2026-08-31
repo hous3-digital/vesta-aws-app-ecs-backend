@@ -37,6 +37,7 @@ describe("PayoutRequestService", () => {
     commissionLedgerEntry: {
       updateMany: jest.fn(),
       findMany: jest.fn(),
+      count: jest.fn(),
     },
   };
   const prisma = {
@@ -61,9 +62,10 @@ describe("PayoutRequestService", () => {
     tx.organizationWallet.findUnique.mockResolvedValue(wallet);
     tx.commissionLedgerEntry.updateMany.mockResolvedValueOnce({ count: 0 }).mockResolvedValueOnce({ count: 2 });
     tx.commissionLedgerEntry.findMany.mockResolvedValue([
-      { id: "entry-1", amountMinor: 137 },
-      { id: "entry-2", amountMinor: 137 },
+      { id: "entry-1", amountMinor: 137, onChainStatus: "CONFIRMED" },
+      { id: "entry-2", amountMinor: 137, onChainStatus: "CONFIRMED" },
     ]);
+    tx.commissionLedgerEntry.count.mockResolvedValue(0);
     tx.payoutRequest.create.mockImplementation(async ({ data }) => ({ ...created, ...data }));
   });
 
@@ -76,6 +78,11 @@ describe("PayoutRequestService", () => {
       where: { id: { in: ["entry-1", "entry-2"] }, status: "AVAILABLE", payoutRequestId: null },
       data: { status: "ALLOCATED", payoutRequestId: expect.stringMatching(/^payout_/) },
     });
+    expect(tx.payoutRequest.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ onChainBeneficiaryId: expect.stringMatching(/^[a-f0-9]{64}$/) }),
+      }),
+    );
   });
 
   it("retorna a mesma solicitação quando a chave idempotente é repetida", async () => {
@@ -89,6 +96,15 @@ describe("PayoutRequestService", () => {
     tx.organizationWallet.findUnique.mockResolvedValue({ ...wallet, trustlineReady: false });
     await expect(service.requestAllAvailable("issuer-1", "request-unique-1")).rejects.toBeInstanceOf(
       BadRequestException,
+    );
+  });
+
+  it("informa quando o saldo ainda aguarda confirmação on-chain", async () => {
+    tx.commissionLedgerEntry.findMany.mockResolvedValue([]);
+    tx.commissionLedgerEntry.count.mockResolvedValue(2);
+
+    await expect(service.requestAllAvailable("issuer-1", "request-unique-1")).rejects.toThrow(
+      "ainda estão sendo registradas na Stellar",
     );
   });
 });
