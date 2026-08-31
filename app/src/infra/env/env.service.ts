@@ -29,6 +29,10 @@ export class EnvService {
     return this.configService.get("STELLAR_RPC_URL") as string;
   }
 
+  public get STELLAR_HORIZON_URL() {
+    return this.configService.get("STELLAR_HORIZON_URL") as string | undefined;
+  }
+
   public get STELLAR_NETWORK() {
     return this.configService.get("STELLAR_NETWORK") as string;
   }
@@ -81,7 +85,59 @@ export class EnvService {
     return this.configService.get("PRIVY_APP_SECRET") as string | undefined;
   }
 
+  public get PRIVY_CUSTOM_AUTH_PRIVATE_KEY() {
+    return this.configService.get("PRIVY_CUSTOM_AUTH_PRIVATE_KEY") as string | undefined;
+  }
+
+  public get PRIVY_CUSTOM_AUTH_KEY_ID() {
+    return this.configService.get("PRIVY_CUSTOM_AUTH_KEY_ID") as string | undefined;
+  }
+
+  public get PRIVY_CUSTOM_AUTH_ISSUER() {
+    return this.configService.get("PRIVY_CUSTOM_AUTH_ISSUER") as string;
+  }
+
+  public get WEBAUTHN_ALLOWED_ORIGINS() {
+    return (this.configService.get("WEBAUTHN_ALLOWED_ORIGINS") ?? this.CORS_ALLOWED_ORIGINS) as string;
+  }
+
+  public get WEBAUTHN_ALLOWED_RP_IDS() {
+    return this.configService.get("WEBAUTHN_ALLOWED_RP_IDS") as string;
+  }
+
   public get COMMISSION_PER_VERIFICATION_BRL() {
     return this.configService.get("COMMISSION_PER_VERIFICATION_BRL") as number;
+  }
+
+  public get COMMISSION_SECURITY_MINUTES() {
+    return this.configService.get("COMMISSION_SECURITY_MINUTES") as number;
+  }
+
+  public get STELLAR_PAYOUT_ASSET_CODE() {
+    return this.configService.get("STELLAR_PAYOUT_ASSET_CODE") as string;
+  }
+
+  public get STELLAR_PAYOUT_ASSET_ISSUER() {
+    return this.configService.get("STELLAR_PAYOUT_ASSET_ISSUER") as string | undefined;
+  }
+
+  public get STELLAR_PAYOUT_ASSET_DECIMALS() {
+    return this.configService.get("STELLAR_PAYOUT_ASSET_DECIMALS") as number;
+  }
+
+  public get STELLAR_PAYOUT_CONTRACT_ID() {
+    return this.configService.get("STELLAR_PAYOUT_CONTRACT_ID") as string;
+  }
+
+  public get STELLAR_PAYOUT_OPERATOR_SECRET() {
+    return this.configService.get("STELLAR_PAYOUT_OPERATOR_SECRET") as string;
+  }
+
+  public get PAYOUT_PROCESSOR_INTERVAL_MS() {
+    return this.configService.get("PAYOUT_PROCESSOR_INTERVAL_MS") as number;
+  }
+
+  public get COMMISSION_REGISTRATION_PROCESSOR_INTERVAL_MS() {
+    return this.configService.get("COMMISSION_REGISTRATION_PROCESSOR_INTERVAL_MS") as number;
   }
 }

@@ -12,7 +12,80 @@
 export const CredentialStatus = {
   ACTIVE: 'ACTIVE',
   REVOKED: 'REVOKED',
-  EXPIRED: 'EXPIRED'
+  EXPIRED: 'EXPIRED',
+  PENDING: 'PENDING',
+  REJECTED: 'REJECTED'
 } as const
 
 export type CredentialStatus = (typeof CredentialStatus)[keyof typeof CredentialStatus]
+
+
+export const CommissionEntryType = {
+  ACCRUAL: 'ACCRUAL',
+  REVERSAL: 'REVERSAL'
+} as const
+
+export type CommissionEntryType = (typeof CommissionEntryType)[keyof typeof CommissionEntryType]
+
+
+export const CommissionEntryStatus = {
+  PENDING_SECURITY: 'PENDING_SECURITY',
+  AVAILABLE: 'AVAILABLE',
+  ALLOCATED: 'ALLOCATED',
+  SETTLED: 'SETTLED',
+  REVERSED: 'REVERSED'
+} as const
+
+export type CommissionEntryStatus = (typeof CommissionEntryStatus)[keyof typeof CommissionEntryStatus]
+
+
+export const CommissionOnChainStatus = {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  CONFIRMED: 'CONFIRMED',
+  UNKNOWN: 'UNKNOWN',
+  REQUIRES_REVIEW: 'REQUIRES_REVIEW',
+  NOT_APPLICABLE: 'NOT_APPLICABLE'
+} as const
+
+export type CommissionOnChainStatus = (typeof CommissionOnChainStatus)[keyof typeof CommissionOnChainStatus]
+
+
+export const PayoutCycleStatus = {
+  PREVIEW: 'PREVIEW'
+} as const
+
+export type PayoutCycleStatus = (typeof PayoutCycleStatus)[keyof typeof PayoutCycleStatus]
+
+
+export const OrganizationWalletStatus = {
+  PENDING: 'PENDING',
+  ACTIVE: 'ACTIVE',
+  ERROR: 'ERROR',
+  SUSPENDED: 'SUSPENDED'
+} as const
+
+export type OrganizationWalletStatus = (typeof OrganizationWalletStatus)[keyof typeof OrganizationWalletStatus]
+
+
+export const PayoutRequestStatus = {
+  REQUESTED: 'REQUESTED',
+  PROCESSING: 'PROCESSING',
+  SUBMITTED: 'SUBMITTED',
+  CONFIRMED: 'CONFIRMED',
+  FAILED: 'FAILED',
+  UNKNOWN: 'UNKNOWN',
+  REQUIRES_REVIEW: 'REQUIRES_REVIEW'
+} as const
+
+export type PayoutRequestStatus = (typeof PayoutRequestStatus)[keyof typeof PayoutRequestStatus]
+
+
+export const PayoutAttemptStatus = {
+  PROCESSING: 'PROCESSING',
+  CONFIRMED: 'CONFIRMED',
+  FAILED: 'FAILED',
+  UNKNOWN: 'UNKNOWN'
+} as const
+
+export type PayoutAttemptStatus = (typeof PayoutAttemptStatus)[keyof typeof PayoutAttemptStatus]

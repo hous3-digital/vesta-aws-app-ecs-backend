@@ -24,6 +24,28 @@ Table credentials {
   expiresAt DateTime
 }
 
+Table passkey_credentials {
+  id String [unique, not null]
+  vcHash String [unique, not null]
+  issuerId String [not null]
+  subjectDid String [not null]
+  publicKey String [not null]
+  counter Int [not null, default: 0]
+  transports Json
+  deviceType String [not null]
+  backedUp Boolean [not null, default: false]
+  rpId String [not null]
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+}
+
+Table auth_challenges {
+  challengeHash String [unique, not null]
+  context Json [not null]
+  expiresAt DateTime [not null]
+  createdAt DateTime [not null]
+}
+
 Table attestation {
   id String [unique, not null]
   vcHash String [not null]
@@ -33,8 +55,133 @@ Table attestation {
   sorobanTxHash String
   sorobanLedger Int
   onChainResult Boolean [not null]
+  issuerId String
   userWalletAddress String
   createdAt DateTime [not null]
+}
+
+Table commission_ledger_entries {
+  id String [unique, not null]
+  issuerId String [not null]
+  attestationId String [unique]
+  entryType CommissionEntryType [not null, default: 'ACCRUAL']
+  status CommissionEntryStatus [not null, default: 'PENDING_SECURITY']
+  amountMinor Int [not null]
+  currency String [not null, default: 'BRL']
+  source String [not null, default: 'ATTESTATION_REUSE']
+  occurredAt DateTime [not null]
+  availableAt DateTime [not null]
+  payoutCycleId String
+  payoutRequestId String
+  settledAt DateTime
+  reversalOfId String
+  onChainCreditId String [unique]
+  onChainBeneficiaryId String
+  onChainAmountAtomic BigInt
+  onChainStatus CommissionOnChainStatus [not null, default: 'PENDING']
+  onChainTxHash String [unique]
+  onChainLedger Int
+  onChainCreditedAt DateTime
+  onChainFailureCode String
+  onChainUpdatedAt DateTime
+  createdAt DateTime [not null]
+}
+
+Table payout_requests {
+  id String [unique, not null]
+  issuerId String [not null]
+  activeIssuerId String [unique]
+  walletId String [not null]
+  destinationAddress String [not null]
+  amountMinor BigInt [not null]
+  currency String [not null, default: 'BRL']
+  settlementAssetCode String [not null]
+  settlementAssetIssuer String
+  settlementAmountAtomic BigInt [not null]
+  status PayoutRequestStatus [not null, default: 'REQUESTED']
+  idempotencyKeyHash String [not null]
+  onChainPayoutId String [unique, not null]
+  onChainBeneficiaryId String
+  stellarTxHash String [unique]
+  stellarLedger Int
+  failureCode String
+  requestedAt DateTime [not null]
+  processingStartedAt DateTime
+  submittedAt DateTime
+  confirmedAt DateTime
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+
+  indexes {
+    (issuerId, idempotencyKeyHash) [unique]
+  }
+}
+
+Table payout_attempts {
+  id String [unique, not null]
+  payoutRequestId String [not null]
+  attemptNumber Int [not null]
+  status PayoutAttemptStatus [not null, default: 'PROCESSING']
+  stellarTxHash String
+  stellarLedger Int
+  failureCode String
+  startedAt DateTime [not null]
+  completedAt DateTime
+  createdAt DateTime [not null]
+
+  indexes {
+    (payoutRequestId, attemptNumber) [unique]
+  }
+}
+
+Table payout_cycles {
+  id String [unique, not null]
+  periodStart DateTime [not null]
+  periodEnd DateTime [not null]
+  cutoffAt DateTime [not null]
+  status PayoutCycleStatus [not null, default: 'PREVIEW']
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+
+  indexes {
+    (periodStart, periodEnd, cutoffAt) [unique]
+  }
+}
+
+Table payout_cycle_items {
+  id String [unique, not null]
+  payoutCycleId String [not null]
+  issuerId String [not null]
+  amountMinor Int [not null]
+  entriesCount Int [not null]
+  entryIds Json [not null]
+  blockedReason String
+  walletAddress String
+  createdAt DateTime [not null]
+
+  indexes {
+    (payoutCycleId, issuerId) [unique]
+  }
+}
+
+Table organization_wallets {
+  id String [unique, not null]
+  issuerId String [unique, not null]
+  privyUserId String [unique]
+  privyWalletId String
+  stellarAddress String [unique]
+  network String [not null]
+  status OrganizationWalletStatus [not null, default: 'PENDING']
+  accountActivated Boolean [not null, default: false]
+  trustlineReady Boolean [not null, default: false]
+  controlVerifiedAt DateTime
+  controlVerifiedByUserId String
+  trustlineVerifiedAt DateTime
+  assetCode String [not null]
+  assetIssuer String
+  lastError String
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
 }
 
 Table issuer {
@@ -94,4 +241,56 @@ Enum CredentialStatus {
   ACTIVE
   REVOKED
   EXPIRED
+  PENDING
+  REJECTED
+}
+
+Enum CommissionEntryType {
+  ACCRUAL
+  REVERSAL
+}
+
+Enum CommissionEntryStatus {
+  PENDING_SECURITY
+  AVAILABLE
+  ALLOCATED
+  SETTLED
+  REVERSED
+}
+
+Enum CommissionOnChainStatus {
+  PENDING
+  PROCESSING
+  CONFIRMED
+  UNKNOWN
+  REQUIRES_REVIEW
+  NOT_APPLICABLE
+}
+
+Enum PayoutCycleStatus {
+  PREVIEW
+}
+
+Enum OrganizationWalletStatus {
+  PENDING
+  ACTIVE
+  ERROR
+  SUSPENDED
+}
+
+Enum PayoutRequestStatus {
+  REQUESTED
+  PROCESSING
+  SUBMITTED
+  CONFIRMED
+  FAILED
+  UNKNOWN
+  REQUIRES_REVIEW
+}
+
+Enum PayoutAttemptStatus {
+  PROCESSING
+  CONFIRMED
+  FAILED
+  UNKNOWN
 }

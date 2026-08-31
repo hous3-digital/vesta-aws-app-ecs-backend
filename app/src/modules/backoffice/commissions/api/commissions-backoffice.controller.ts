@@ -18,13 +18,17 @@ import {
   CommissionTimeseriesInput,
 } from "@src/modules/backoffice/commissions/api/inputs/commission-period.input";
 import { CurrentIssuer } from "@src/modules/backoffice/shared/current-issuer.decorator";
+import { CommissionLedgerService } from "@src/modules/commission/commission-ledger.service";
 
 @ApiTags("backoffice/commissions")
 @PublicEndpoint()
 @BackofficeAuth()
 @Controller("/backoffice/commissions")
 export class CommissionsBackofficeController {
-  public constructor(private readonly queryBus: QueryBus) {}
+  public constructor(
+    private readonly queryBus: QueryBus,
+    private readonly ledger: CommissionLedgerService,
+  ) {}
 
   @ApiOperation({ summary: "Saldo total acumulado do issuer, independente de periodo" })
   @Get("/balance")
@@ -32,6 +36,16 @@ export class CommissionsBackofficeController {
     return this.queryBus.execute<CommissionBalanceQuery, CommissionBalanceResult>(
       new CommissionBalanceQuery(issuerId),
     );
+  }
+
+  @ApiOperation({ summary: "Extrato persistido de comissões do issuer atual" })
+  @Get("/ledger")
+  public async ledgerEntries(
+    @CurrentIssuer() issuerId: string,
+    @Query("limit") limit?: string,
+    @Query("cursor") cursor?: string,
+  ) {
+    return this.ledger.listEntries(issuerId, limit ? Number(limit) : 50, cursor);
   }
 
   @ApiOperation({ summary: "Total da comissao no periodo + delta vs anterior" })
@@ -67,7 +81,7 @@ export class CommissionsBackofficeController {
     );
   }
 
-  @ApiOperation({ summary: "Repasse pendente (calculado em tempo real, sem persistencia)" })
+  @ApiOperation({ summary: "Comissões registradas no período atual" })
   @Get("/pending")
   public async pending(@CurrentIssuer() issuerId: string): Promise<CommissionPendingResult> {
     return this.queryBus.execute<CommissionPendingQuery, CommissionPendingResult>(
