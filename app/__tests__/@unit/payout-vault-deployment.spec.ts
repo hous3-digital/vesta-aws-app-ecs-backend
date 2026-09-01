@@ -1,5 +1,10 @@
 import { Networks } from "@stellar/stellar-sdk";
-import { brlToAtomicUnits, deriveCustomContractId, loadDeploymentConfig } from "@src/scripts/deploy-payout-vault";
+import {
+  brlToAtomicUnits,
+  deriveCustomContractId,
+  loadDeploymentConfig,
+  resolveNetworkPassphrase,
+} from "@src/scripts/deploy-payout-vault";
 
 describe("payout vault deployment", () => {
   const vestaAddress = "GDUFIQROJ7CMF5AW3EGGG3LSB6QP5M5ASKL62HBX5TAR4ZNQWYQQI5ZK";
@@ -20,6 +25,20 @@ describe("payout vault deployment", () => {
 
   it.each(["0", "-1", "1.001", "R$ 1"])("rejeita valor de financiamento inválido: %s", (value) => {
     expect(() => brlToAtomicUnits(value)).toThrow();
+  });
+
+  it.each([
+    ["testnet", Networks.TESTNET],
+    [Networks.TESTNET, Networks.TESTNET],
+    ["mainnet", Networks.PUBLIC],
+    ["public", Networks.PUBLIC],
+    [Networks.PUBLIC, Networks.PUBLIC],
+  ])("normaliza a rede %s para a passphrase correta", (value, expected) => {
+    expect(resolveNetworkPassphrase(value)).toBe(expected);
+  });
+
+  it("rejeita apelido de rede desconhecido antes de assinar", () => {
+    expect(() => resolveNetworkPassphrase("staging")).toThrow("STELLAR_NETWORK inválido");
   });
 
   it("carrega a configuração operacional sem embutir valores secretos no código", () => {

@@ -13,3 +13,4 @@ coverage
 
 # Rust/Soroban build output
 **/target/
+app/contract-artifacts/
