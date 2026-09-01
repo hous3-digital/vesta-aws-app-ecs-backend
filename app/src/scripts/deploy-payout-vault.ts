@@ -8,6 +8,7 @@ import {
   Contract,
   hash,
   Keypair,
+  Networks,
   nativeToScVal,
   Operation,
   scValToNative,
@@ -74,6 +75,16 @@ export function brlToAtomicUnits(value: string, decimals = 7): bigint {
   return minor * 10n ** BigInt(decimals - 2);
 }
 
+export function resolveNetworkPassphrase(value: string): string {
+  const normalized = value.trim();
+  if (normalized.toLowerCase() === "testnet") return Networks.TESTNET;
+  if (["mainnet", "public"].includes(normalized.toLowerCase())) return Networks.PUBLIC;
+  if (normalized === Networks.TESTNET || normalized === Networks.PUBLIC) return normalized;
+  throw new Error(
+    "STELLAR_NETWORK inválido: use testnet, mainnet ou a network passphrase completa",
+  );
+}
+
 export function loadDeploymentConfig(env: Record<string, string | undefined> = process.env): DeploymentConfig {
   const required = (name: string): string => {
     const value = env[name]?.trim();
@@ -85,7 +96,7 @@ export function loadDeploymentConfig(env: Record<string, string | undefined> = p
     assetIssuer: required("STELLAR_PAYOUT_ASSET_ISSUER"),
     deployerSecret: required("VESTA_DEPLOYER_SECRET"),
     fundingBrl: env.PAYOUT_VAULT_FUNDING_BRL?.trim() || DEFAULT_FUNDING_BRL,
-    networkPassphrase: required("STELLAR_NETWORK"),
+    networkPassphrase: resolveNetworkPassphrase(required("STELLAR_NETWORK")),
     rpcUrl: required("STELLAR_RPC_URL"),
     wasmPath:
       env.PAYOUT_VAULT_WASM_PATH?.trim() || join(process.cwd(), "contract-artifacts", "vesta_payout_vault.wasm"),
