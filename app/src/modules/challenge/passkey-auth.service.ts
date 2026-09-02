@@ -140,6 +140,7 @@ export class PasskeyAuthService {
     verified: true;
     vcHash: string;
     proofChallenge: string;
+    recoveryToken: string;
     privyCustomAuthToken: string | null;
     expiresAt: number | null;
   }> {
@@ -190,6 +191,12 @@ export class PasskeyAuthService {
       issuerId: params.issuerId,
       vcHash: passkey.vcHash,
     });
+    const recovery = await this.challengeService.generate({
+      kind: "credential-recovery",
+      issuerId: params.issuerId,
+      rpId: context.rpId,
+      vcHash: passkey.vcHash,
+    });
     const privyEnabled = await this.walletService.isEnabledForIssuer(params.issuerId);
     const customAuth = privyEnabled
       ? await this.walletService.issueCustomAuthToken(passkey.subjectDid)
@@ -199,6 +206,7 @@ export class PasskeyAuthService {
       verified: true,
       vcHash: passkey.vcHash,
       proofChallenge: proof.challenge,
+      recoveryToken: recovery.challenge,
       privyCustomAuthToken: customAuth?.token ?? null,
       expiresAt: customAuth?.expiresAt ?? null,
     };

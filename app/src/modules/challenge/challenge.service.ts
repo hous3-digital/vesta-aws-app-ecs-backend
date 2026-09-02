@@ -11,6 +11,7 @@ export type ChallengeContext =
   | { kind: "legacy" }
   | { kind: "passkey-registration"; issuerId: string; rpId: string; vcHash: string }
   | { kind: "passkey-authentication"; issuerId: string; rpId: string }
+  | { kind: "credential-recovery"; issuerId: string; rpId: string; vcHash: string }
   | { kind: "proof"; issuerId: string; vcHash: string }
   | {
       kind: "organization-wallet-control";
