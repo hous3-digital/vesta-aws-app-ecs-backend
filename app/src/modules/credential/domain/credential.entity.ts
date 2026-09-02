@@ -1,6 +1,7 @@
 import { BadRequestException } from "@nestjs/common";
 import { Id } from "@src/shared/value-objects/id.value-object";
 import type { KycLevel } from "@src/shared/types/vesta-vc.types";
+import type { VestaVC } from "@src/shared/types/vesta-vc.types";
 
 export enum CredentialStatus {
   Active = "ACTIVE",
@@ -13,6 +14,7 @@ export enum CredentialStatus {
 export interface CredentialProps {
   id: Id;
   vcHash: string;
+  vcDocument: VestaVC | null;
   cpfDedupKey: string | null;
   issuerDid: string;
   issuerId: string;
@@ -30,6 +32,7 @@ export interface CredentialProps {
 export class Credential {
   private readonly _id: Id;
   private readonly _vcHash: string;
+  private _vcDocument: VestaVC | null;
   private readonly _cpfDedupKey: string | null;
   private readonly _issuerDid: string;
   private readonly _issuerId: string;
@@ -46,6 +49,7 @@ export class Credential {
   private constructor(props: CredentialProps) {
     this._id = props.id;
     this._vcHash = props.vcHash;
+    this._vcDocument = props.vcDocument;
     this._cpfDedupKey = props.cpfDedupKey;
     this._issuerDid = props.issuerDid;
     this._issuerId = props.issuerId;
@@ -62,6 +66,7 @@ export class Credential {
 
   public get id(): Id { return this._id; }
   public get vcHash(): string { return this._vcHash; }
+  public get vcDocument(): VestaVC | null { return this._vcDocument; }
   public get cpfDedupKey(): string | null { return this._cpfDedupKey; }
   public get issuerDid(): string { return this._issuerDid; }
   public get issuerId(): string { return this._issuerId; }
@@ -77,6 +82,7 @@ export class Credential {
 
   public static issue(params: {
     vcHash: string;
+    vcDocument?: VestaVC | null;
     cpfDedupKey: string | null;
     issuerDid: string;
     issuerId: string;
@@ -90,6 +96,7 @@ export class Credential {
     return new Credential({
       id,
       vcHash: params.vcHash,
+      vcDocument: params.vcDocument ?? null,
       cpfDedupKey: params.cpfDedupKey,
       issuerDid: params.issuerDid,
       issuerId: params.issuerId,
@@ -112,6 +119,7 @@ export class Credential {
    */
   public static issuePending(params: {
     vcHash: string;
+    vcDocument?: VestaVC | null;
     cpfDedupKey: string | null;
     issuerDid: string;
     issuerId: string;
@@ -164,6 +172,11 @@ export class Credential {
   public attachWallet(params: { userWalletAddress: string; privyUserId: string }): void {
     this._userWalletAddress = params.userWalletAddress;
     this._privyUserId = params.privyUserId;
+    this._updatedAt = new Date();
+  }
+
+  public attachDocument(vcDocument: VestaVC): void {
+    this._vcDocument = vcDocument;
     this._updatedAt = new Date();
   }
 

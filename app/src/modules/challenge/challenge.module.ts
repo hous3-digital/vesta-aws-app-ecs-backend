@@ -6,11 +6,14 @@ import { DatabaseModule } from "@src/infra/database/database.module";
 import { CredentialModule } from "@src/modules/credential/credential.module";
 import { PasskeyAuthService } from "@src/modules/challenge/passkey-auth.service";
 import { WalletModule } from "@src/modules/wallet/wallet.module";
+import { VcModule } from "@src/modules/vc/vc.module";
+import { CredentialRecoveryController } from "@src/modules/challenge/api/public/credential-recovery.controller";
+import { CredentialRecoveryService } from "@src/modules/challenge/credential-recovery.service";
 
 @Module({
-  imports: [CredentialModule, DatabaseModule, EnvModule, WalletModule],
-  controllers: [ChallengePublicController],
-  providers: [ChallengeService, PasskeyAuthService],
+  imports: [CredentialModule, DatabaseModule, EnvModule, WalletModule, VcModule],
+  controllers: [ChallengePublicController, CredentialRecoveryController],
+  providers: [ChallengeService, PasskeyAuthService, CredentialRecoveryService],
   exports: [ChallengeService],
 })
 export class ChallengeModule {}

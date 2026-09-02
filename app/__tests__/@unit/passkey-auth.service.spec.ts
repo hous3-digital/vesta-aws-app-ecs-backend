@@ -69,7 +69,9 @@ describe("PasskeyAuthService", () => {
       issuerId: "issuer-1",
       rpId: "app.example.com",
     });
-    challengeService.generate.mockResolvedValue({ challenge: "proof-challenge", expiresAt: Date.now() + 60_000 });
+    challengeService.generate
+      .mockResolvedValueOnce({ challenge: "proof-challenge", expiresAt: Date.now() + 60_000 })
+      .mockResolvedValueOnce({ challenge: "recovery-token", expiresAt: Date.now() + 60_000 });
     prisma.passkeyCredential.findUnique.mockResolvedValue({
       id: "passkey-1",
       vcHash,
@@ -111,6 +113,7 @@ describe("PasskeyAuthService", () => {
       verified: true,
       vcHash,
       proofChallenge: "proof-challenge",
+      recoveryToken: "recovery-token",
       privyCustomAuthToken: "signed.jwt.value",
       expiresAt: 123,
     });
