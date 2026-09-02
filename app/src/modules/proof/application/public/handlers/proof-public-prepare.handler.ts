@@ -61,6 +61,10 @@ export class ProofPublicPrepareHandler implements ICommandHandler<ProofPublicPre
 
     const vcHash = this.vcService.hashVC(vc);
     const existingCredential = await this.credentialRepository.findByVcHash(vcHash);
+    if (existingCredential && !existingCredential.vcDocument) {
+      existingCredential.attachDocument(vc);
+      await this.credentialRepository.updateOrThrow(existingCredential);
+    }
 
     // Fonte da verdade para kycLevel é o banco (webhook do issuer atualiza lá,
     // mas a VC assinada no device fica cravada no nível de emissão). O `verify`
@@ -223,6 +227,7 @@ export class ProofPublicPrepareHandler implements ICommandHandler<ProofPublicPre
     const issuerId = vc.issuer.id.split(":").pop() ?? vc.issuer.name;
     const credential = Credential.issue({
       vcHash,
+      vcDocument: vc,
       cpfDedupKey: null,
       issuerDid: vc.issuer.id,
       issuerId,
