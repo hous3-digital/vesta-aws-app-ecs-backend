@@ -85,6 +85,7 @@ export class CredentialPublicIssueHandler implements ICommandHandler<CredentialP
 
     const credentialParams = {
       vcHash,
+      vcDocument: vc,
       cpfDedupKey,
       issuerDid: vc.issuer.id,
       issuerId: command.issuerId,

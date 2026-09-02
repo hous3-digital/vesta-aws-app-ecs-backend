@@ -44,6 +44,16 @@ variable "secrets" {
   }))
 }
 
+variable "privy_custom_auth_secret_names" {
+  description = "Secrets Manager names for the Privy ES256 custom-auth private key and key ID. Null disables their injection."
+  type = object({
+    private_key = string
+    key_id      = string
+  })
+  default  = null
+  nullable = true
+}
+
 variable "subnet_ids" {
   description = "List of subnet IDs where the ECS tasks will run"
   type        = list(string)

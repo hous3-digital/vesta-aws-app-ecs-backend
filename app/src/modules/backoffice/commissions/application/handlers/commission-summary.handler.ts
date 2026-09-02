@@ -1,9 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { IQueryHandler, QueryHandler } from "@nestjs/cqrs";
-import { EnvService } from "@src/infra/env/env.service";
 import { resolvePeriod } from "@src/modules/backoffice/shared/period.util";
 import { CommissionSummaryQuery } from "@src/modules/backoffice/commissions/application/queries/commission-summary.query";
-import { VerificationsBackofficeDao } from "@src/modules/backoffice/verifications/infra/verifications-backoffice.dao";
+import { CommissionLedgerService } from "@src/modules/commission/commission-ledger.service";
 
 export interface CommissionSummaryResult {
   total: number;
@@ -16,22 +15,17 @@ export interface CommissionSummaryResult {
 @Injectable()
 @QueryHandler(CommissionSummaryQuery)
 export class CommissionSummaryHandler implements IQueryHandler<CommissionSummaryQuery, CommissionSummaryResult> {
-  public constructor(
-    private readonly dao: VerificationsBackofficeDao,
-    private readonly envService: EnvService,
-  ) {}
+  public constructor(private readonly ledger: CommissionLedgerService) {}
 
   public async execute(query: CommissionSummaryQuery): Promise<CommissionSummaryResult> {
     const period = resolvePeriod({ period: query.period, from: query.from, to: query.to });
-    const rate = this.envService.COMMISSION_PER_VERIFICATION_BRL;
-
     const [current, previous] = await Promise.all([
-      this.dao.countByIssuer(query.issuerId, period.from, period.to),
-      this.dao.countByIssuer(query.issuerId, period.previousFrom, period.previousTo),
+      this.ledger.periodTotals(query.issuerId, period.from, period.to),
+      this.ledger.periodTotals(query.issuerId, period.previousFrom, period.previousTo),
     ]);
 
-    const total = current * rate;
-    const previousValue = previous * rate;
+    const total = current.amountMinor / 100;
+    const previousValue = previous.amountMinor / 100;
     const deltaPct = previousValue === 0 ? 0 : Math.round(((total - previousValue) / previousValue) * 100);
 
     return {

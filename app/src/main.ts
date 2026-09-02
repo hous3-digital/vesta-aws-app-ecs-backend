@@ -4,6 +4,7 @@ import { NestExpressApplication } from "@nestjs/platform-express";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { AppModule } from "@src/app.module";
 import { EnvService } from "@src/infra/env/env.service";
+import { CORS_ALLOWED_HEADERS } from "@src/infra/http/cors.config";
 import { ApiTransformInterceptor } from "@src/utils/interceptors/api-transform.interceptor";
 import { WinstonModule, utilities as nestWinstonModuleUtilities } from "nest-winston";
 import { join } from "path";
@@ -94,7 +95,7 @@ async function bootstrap() {
         return new RegExp("^" + escaped + "$");
       }),
       methods: ["GET", "POST", "OPTIONS"],
-      allowedHeaders: ["Authorization", "Content-Type", "X-Api-Key"],
+      allowedHeaders: [...CORS_ALLOWED_HEADERS],
       credentials: true,
     });
   } else if (!envService.IS_PRODUCTION) {
