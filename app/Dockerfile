@@ -6,9 +6,15 @@ WORKDIR /contract
 RUN rustup target add wasm32v1-none
 
 COPY contracts/vesta-payout-vault ./vesta-payout-vault
+COPY contracts/vesta-issuer-registry ./vesta-issuer-registry
 
 RUN cargo build \
     --manifest-path vesta-payout-vault/Cargo.toml \
+    --target wasm32v1-none \
+    --release
+
+RUN cargo build \
+    --manifest-path vesta-issuer-registry/Cargo.toml \
     --target wasm32v1-none \
     --release
 
@@ -55,6 +61,9 @@ COPY --from=builder /app/zk-artifacts ./zk-artifacts
 COPY --from=contract-builder \
   /contract/vesta-payout-vault/target/wasm32v1-none/release/vesta_payout_vault.wasm \
   ./contract-artifacts/vesta_payout_vault.wasm
+COPY --from=contract-builder \
+  /contract/vesta-issuer-registry/target/wasm32v1-none/release/vesta_issuer_registry.wasm \
+  ./contract-artifacts/vesta_issuer_registry.wasm
 
 RUN yarn install --production --frozen-lockfile && yarn cache clean
 
