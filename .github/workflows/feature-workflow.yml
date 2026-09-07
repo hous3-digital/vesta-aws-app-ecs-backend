@@ -25,6 +25,19 @@ jobs:
       - name: Build payout contract WASM
         run: cargo build --manifest-path app/contracts/vesta-payout-vault/Cargo.toml --target wasm32v1-none --release
 
+  issuer-registry-contract:
+    name: Issuer registry contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32v1-none
+      - name: Test issuer registry contract
+        run: cargo test --manifest-path app/contracts/vesta-issuer-registry/Cargo.toml
+      - name: Build issuer registry contract WASM
+        run: cargo build --manifest-path app/contracts/vesta-issuer-registry/Cargo.toml --target wasm32v1-none --release
+
   install:
     name: Install
     runs-on: ubuntu-latest
