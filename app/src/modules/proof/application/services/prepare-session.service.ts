@@ -10,6 +10,7 @@ export interface PrepareSessionData {
   kycLevel: string;
   verifierId: string;
   issuerId: string | null;
+  issuerDid: string | null;
   userWalletAddress: string | null;
   expectedSource: string; // Stellar address that must sign the inner tx (deployer OR user)
   innerTxHash: string;

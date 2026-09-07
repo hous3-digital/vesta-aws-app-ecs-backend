@@ -171,6 +171,7 @@ export class ProofPublicPrepareHandler implements ICommandHandler<ProofPublicPre
       kycLevel: effectiveKycLevel,
       verifierId: command.verifierId,
       issuerId: issuer?.externalId ?? null,
+      issuerDid: issuer?.did?.value ?? credential.issuerDid,
       userWalletAddress,
       expectedSource: source,
       innerTxHash: txBuild.innerTxHash,

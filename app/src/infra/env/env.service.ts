@@ -41,6 +41,10 @@ export class EnvService {
     return this.configService.get("VESTA_CONTRACT_ID") as string;
   }
 
+  public get STELLAR_ISSUER_REGISTRY_CONTRACT_ID() {
+    return this.configService.get("STELLAR_ISSUER_REGISTRY_CONTRACT_ID") as string;
+  }
+
   public get VESTA_DEPLOYER_SECRET() {
     return this.configService.get("VESTA_DEPLOYER_SECRET") as string;
   }

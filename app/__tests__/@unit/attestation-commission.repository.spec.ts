@@ -13,6 +13,7 @@ function attestation(params?: Partial<{ onChainResult: boolean; issuerId: string
     sorobanLedger: 123,
     onChainResult: params?.onChainResult ?? true,
     issuerId: params?.issuerId === undefined ? "issuer_a" : params.issuerId,
+    issuerDid: "did:pkh:stellar:testnet:GISSUER",
     userWalletAddress: "GUSER",
   });
 }
@@ -44,7 +45,11 @@ describe("AttestationRepository commission accrual", () => {
     expect(transaction).toHaveBeenCalledTimes(1);
     expect(attestationCreate).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ issuerId: "issuer_a", onChainResult: true }),
+        data: expect.objectContaining({
+          issuerId: "issuer_a",
+          issuerDid: "did:pkh:stellar:testnet:GISSUER",
+          onChainResult: true,
+        }),
       }),
     );
     expect(commissionCreate).toHaveBeenCalledWith(

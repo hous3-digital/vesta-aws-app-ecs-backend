@@ -74,4 +74,9 @@ export class AttestationRepository implements IAttestationRepository {
     });
     return records.map(AttestationMapper.toDomain);
   }
+
+  public async findById(id: string): Promise<Attestation | null> {
+    const record = await this.prismaService.attestation.findUnique({ where: { id } });
+    return record ? AttestationMapper.toDomain(record) : null;
+  }
 }
