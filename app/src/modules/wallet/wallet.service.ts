@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, Logger, OnModuleInit } from "@nestjs/common";
 import { EnvService } from "@src/infra/env/env.service";
 import { PrismaService } from "@src/infra/database/@prisma/prisma.service";
+import { IssuerDid } from "@src/modules/issuer/domain/issuer-did.value-object";
 import { IIssuerRepository } from "@src/modules/issuer/domain/issuer.repository";
 import { StellarService } from "@src/modules/stellar/stellar.service";
 // Privy server SDK — instalado via @privy-io/server-auth
@@ -208,7 +209,9 @@ export class WalletService implements OnModuleInit {
       if (!existing.accountActivated) {
         await this.stellarService.ensureAccountExists(existing.stellarAddress);
       }
-      return this.refreshOrganizationWalletReadiness(issuerId);
+      const result = await this.refreshOrganizationWalletReadiness(issuerId);
+      await this.persistIssuerDidIfAbsent(result);
+      return result;
     }
     if (existing?.status === "SUSPENDED") return this.toOrganizationWalletResult(existing);
 
@@ -263,7 +266,9 @@ export class WalletService implements OnModuleInit {
           updatedAt: new Date(),
         },
       });
-      return this.toOrganizationWalletResult(saved);
+      const result = this.toOrganizationWalletResult(saved);
+      await this.persistIssuerDidIfAbsent(result);
+      return result;
     } catch (cause) {
       const message = cause instanceof Error ? cause.message.slice(0, 500) : "Falha desconhecida ao provisionar wallet";
       const failed = await this.prisma.organizationWallet.update({
@@ -526,6 +531,25 @@ export class WalletService implements OnModuleInit {
     if (network.includes("Test SDF Network")) return "testnet";
     if (network.includes("Public Global Stellar Network")) return "mainnet";
     return "custom";
+  }
+
+  private async persistIssuerDidIfAbsent(wallet: {
+    issuerId: string;
+    address: string | null;
+    network: string;
+  }): Promise<void> {
+    if (!wallet.address || (wallet.network !== "testnet" && wallet.network !== "mainnet")) return;
+
+    try {
+      const did = IssuerDid.fromStellarAccount(wallet.address, wallet.network);
+      const result = await this.prisma.issuer.updateMany({
+        where: { issuerId: wallet.issuerId, did: null },
+        data: { did: did.value },
+      });
+      if (result.count > 0) this.logger.log(`DID atribuido ao issuer ${wallet.issuerId}`);
+    } catch (cause) {
+      this.logger.warn(`Nao foi possivel atribuir DID ao issuer ${wallet.issuerId}: ${(cause as Error).message}`);
+    }
   }
 
   private async requireOrganizationWallet(issuerId: string) {

@@ -15,4 +15,10 @@ export class IssuerRepository implements IIssuerRepository {
     if (!record) return null;
     return IssuerMapper.toDomain(record);
   }
+
+  public async findByDid(did: string): Promise<Issuer | null> {
+    const record = await this.prismaService.issuer.findUnique({ where: { did } });
+    if (!record) return null;
+    return IssuerMapper.toDomain(record);
+  }
 }

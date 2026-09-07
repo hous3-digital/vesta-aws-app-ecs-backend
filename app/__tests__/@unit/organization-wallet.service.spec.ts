@@ -3,16 +3,18 @@ import type { PrismaService } from "@src/infra/database/@prisma/prisma.service";
 import type { EnvService } from "@src/infra/env/env.service";
 import type { IIssuerRepository } from "@src/modules/issuer/domain/issuer.repository";
 import type { StellarService } from "@src/modules/stellar/stellar.service";
+import { Keypair } from "@stellar/stellar-sdk";
 
 describe("WalletService organization wallet", () => {
   it("uses an issuer-only Privy identity and persists the public Stellar address", async () => {
+    const stellarAddress = Keypair.random().publicKey();
     const importUser = jest.fn().mockResolvedValue({
       id: "privy_org",
-      linkedAccounts: [{ id: "wallet_org", type: "wallet", chainType: "stellar", address: "GORGANIZATION" }],
+      linkedAccounts: [{ id: "wallet_org", type: "wallet", chainType: "stellar", address: stellarAddress }],
     });
     const saved = {
       issuerId: "issuer_a",
-      stellarAddress: "GORGANIZATION",
+      stellarAddress,
       network: "testnet",
       status: "ACTIVE",
       accountActivated: true,
@@ -29,6 +31,9 @@ describe("WalletService organization wallet", () => {
         findUnique: jest.fn().mockResolvedValue(null),
         upsert: jest.fn().mockResolvedValue({}),
         update: jest.fn().mockResolvedValue(saved),
+      },
+      issuer: {
+        updateMany: jest.fn().mockResolvedValue({ count: 1 }),
       },
     } as unknown as PrismaService;
     const env = {
@@ -55,7 +60,11 @@ describe("WalletService organization wallet", () => {
       linkedAccounts: [{ type: "custom_auth", customUserId: "vesta:issuer:issuer_a" }],
       wallets: [{ chainType: "stellar" }],
     });
-    expect(result.address).toBe("GORGANIZATION");
+    expect(result.address).toBe(stellarAddress);
+    expect(prisma.issuer.updateMany).toHaveBeenCalledWith({
+      where: { issuerId: "issuer_a", did: null },
+      data: { did: `did:pkh:stellar:testnet:${stellarAddress}` },
+    });
     expect(JSON.stringify(importUser.mock.calls)).not.toMatch(/cpf|subjectDid/i);
   });
 
