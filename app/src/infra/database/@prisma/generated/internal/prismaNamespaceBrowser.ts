@@ -289,6 +289,10 @@ export const IssuerScalarFieldEnum = {
   status: 'status',
   publicKey: 'publicKey',
   privyEnabled: 'privyEnabled',
+  did: 'did',
+  roles: 'roles',
+  authorizedCredentialTypes: 'authorizedCredentialTypes',
+  registryStatus: 'registryStatus',
   createdAt: 'createdAt'
 } as const
 

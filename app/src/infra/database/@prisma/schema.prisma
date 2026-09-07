@@ -54,6 +54,17 @@ enum OrganizationWalletStatus {
   SUSPENDED
 }
 
+enum IssuerRole {
+  TECHNICAL
+  COMMERCIAL
+}
+
+enum IssuerRegistryStatus {
+  UNREGISTERED
+  REGISTERED
+  SUSPENDED
+}
+
 enum PayoutRequestStatus {
   REQUESTED
   PROCESSING
@@ -279,13 +290,17 @@ model OrganizationWallet {
 }
 
 model Issuer {
-  id           String   @unique @map("issuer_id")
-  issuerId     String   @unique @map("issuer_external_id")
-  name         String
-  status       String   @default("active")
-  publicKey    String?  @map("public_key")
-  privyEnabled Boolean  @default(false) @map("privy_enabled")
-  createdAt    DateTime @map("created_at")
+  id                        String               @unique @map("issuer_id")
+  issuerId                  String               @unique @map("issuer_external_id")
+  name                      String
+  status                    String               @default("active")
+  publicKey                 String?              @map("public_key")
+  privyEnabled              Boolean              @default(false) @map("privy_enabled")
+  did                       String?              @unique @map("did")
+  roles                     IssuerRole[]         @default([])
+  authorizedCredentialTypes String[]             @default([]) @map("authorized_credential_types")
+  registryStatus            IssuerRegistryStatus @default(UNREGISTERED) @map("registry_status")
+  createdAt                 DateTime             @map("created_at")
 
   @@map("issuer")
 }

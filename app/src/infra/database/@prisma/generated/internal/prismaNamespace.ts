@@ -1846,6 +1846,10 @@ export const IssuerScalarFieldEnum = {
   status: 'status',
   publicKey: 'publicKey',
   privyEnabled: 'privyEnabled',
+  did: 'did',
+  roles: 'roles',
+  authorizedCredentialTypes: 'authorizedCredentialTypes',
+  registryStatus: 'registryStatus',
   createdAt: 'createdAt'
 } as const
 
@@ -2143,14 +2147,42 @@ export type ListEnumPayoutCycleStatusFieldRefInput<$PrismaModel> = FieldRefInput
  * Reference to a field of type 'OrganizationWalletStatus'
  */
 export type EnumOrganizationWalletStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OrganizationWalletStatus'>
-    
+
 
 
 /**
  * Reference to a field of type 'OrganizationWalletStatus[]'
  */
 export type ListEnumOrganizationWalletStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OrganizationWalletStatus[]'>
-    
+
+
+
+/**
+ * Reference to a field of type 'IssuerRole[]'
+ */
+export type ListEnumIssuerRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IssuerRole[]'>
+
+
+
+/**
+ * Reference to a field of type 'IssuerRole'
+ */
+export type EnumIssuerRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IssuerRole'>
+
+
+
+/**
+ * Reference to a field of type 'IssuerRegistryStatus'
+ */
+export type EnumIssuerRegistryStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IssuerRegistryStatus'>
+
+
+
+/**
+ * Reference to a field of type 'IssuerRegistryStatus[]'
+ */
+export type ListEnumIssuerRegistryStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IssuerRegistryStatus[]'>
+
 
 
 /**
@@ -2339,4 +2371,3 @@ export type PrismaAction =
  * `PrismaClient` proxy available in interactive transactions.
  */
 export type TransactionClient = Omit<DefaultPrismaClient, runtime.ITXClientDenyList>
-

@@ -507,6 +507,23 @@ export type EnumOrganizationWalletStatusWithAggregatesFilter<$PrismaModel = neve
   _max?: Prisma.NestedEnumOrganizationWalletStatusFilter<$PrismaModel>
 }
 
+export type EnumIssuerRegistryStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.IssuerRegistryStatus | Prisma.EnumIssuerRegistryStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.IssuerRegistryStatus[] | Prisma.ListEnumIssuerRegistryStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.IssuerRegistryStatus[] | Prisma.ListEnumIssuerRegistryStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumIssuerRegistryStatusFilter<$PrismaModel> | $Enums.IssuerRegistryStatus
+}
+
+export type EnumIssuerRegistryStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.IssuerRegistryStatus | Prisma.EnumIssuerRegistryStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.IssuerRegistryStatus[] | Prisma.ListEnumIssuerRegistryStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.IssuerRegistryStatus[] | Prisma.ListEnumIssuerRegistryStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumIssuerRegistryStatusWithAggregatesFilter<$PrismaModel> | $Enums.IssuerRegistryStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumIssuerRegistryStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumIssuerRegistryStatusFilter<$PrismaModel>
+}
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -957,6 +974,23 @@ export type NestedEnumOrganizationWalletStatusWithAggregatesFilter<$PrismaModel 
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumOrganizationWalletStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumOrganizationWalletStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumIssuerRegistryStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.IssuerRegistryStatus | Prisma.EnumIssuerRegistryStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.IssuerRegistryStatus[] | Prisma.ListEnumIssuerRegistryStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.IssuerRegistryStatus[] | Prisma.ListEnumIssuerRegistryStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumIssuerRegistryStatusFilter<$PrismaModel> | $Enums.IssuerRegistryStatus
+}
+
+export type NestedEnumIssuerRegistryStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.IssuerRegistryStatus | Prisma.EnumIssuerRegistryStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.IssuerRegistryStatus[] | Prisma.ListEnumIssuerRegistryStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.IssuerRegistryStatus[] | Prisma.ListEnumIssuerRegistryStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumIssuerRegistryStatusWithAggregatesFilter<$PrismaModel> | $Enums.IssuerRegistryStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumIssuerRegistryStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumIssuerRegistryStatusFilter<$PrismaModel>
 }
 
 
