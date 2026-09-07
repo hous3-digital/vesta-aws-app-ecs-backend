@@ -1706,6 +1706,7 @@ export const AttestationScalarFieldEnum = {
   sorobanLedger: 'sorobanLedger',
   onChainResult: 'onChainResult',
   issuerId: 'issuerId',
+  issuerDid: 'issuerDid',
   userWalletAddress: 'userWalletAddress',
   createdAt: 'createdAt'
 } as const
@@ -1850,6 +1851,9 @@ export const IssuerScalarFieldEnum = {
   roles: 'roles',
   authorizedCredentialTypes: 'authorizedCredentialTypes',
   registryStatus: 'registryStatus',
+  registryTransactionHash: 'registryTransactionHash',
+  registryLedger: 'registryLedger',
+  registryConfirmedAt: 'registryConfirmedAt',
   createdAt: 'createdAt'
 } as const
 
@@ -2133,14 +2137,14 @@ export type ListEnumPayoutAttemptStatusFieldRefInput<$PrismaModel> = FieldRefInp
  * Reference to a field of type 'PayoutCycleStatus'
  */
 export type EnumPayoutCycleStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PayoutCycleStatus'>
-    
+
 
 
 /**
  * Reference to a field of type 'PayoutCycleStatus[]'
  */
 export type ListEnumPayoutCycleStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PayoutCycleStatus[]'>
-    
+
 
 
 /**
@@ -2189,7 +2193,7 @@ export type ListEnumIssuerRegistryStatusFieldRefInput<$PrismaModel> = FieldRefIn
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
-    
+
 
 
 /**

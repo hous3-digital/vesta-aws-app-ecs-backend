@@ -35,9 +35,10 @@ export interface ProofPublicSubmitSignedResult {
 
 @Injectable()
 @CommandHandler(ProofPublicSubmitSignedCommand)
-export class ProofPublicSubmitSignedHandler
-  implements ICommandHandler<ProofPublicSubmitSignedCommand, ProofPublicSubmitSignedResult>
-{
+export class ProofPublicSubmitSignedHandler implements ICommandHandler<
+  ProofPublicSubmitSignedCommand,
+  ProofPublicSubmitSignedResult
+> {
   private readonly logger = new Logger(ProofPublicSubmitSignedHandler.name);
 
   public constructor(
@@ -84,6 +85,7 @@ export class ProofPublicSubmitSignedHandler
       sorobanLedger: stellarResult.ledger,
       onChainResult: stellarResult.onChainResult,
       issuerId: session.issuerId,
+      issuerDid: session.issuerDid,
       userWalletAddress: session.userWalletAddress,
     });
 

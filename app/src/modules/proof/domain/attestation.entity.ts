@@ -10,6 +10,7 @@ export interface AttestationProps {
   sorobanLedger: number | null;
   onChainResult: boolean;
   issuerId: string | null;
+  issuerDid: string | null;
   userWalletAddress: string | null;
   createdAt: Date;
 }
@@ -24,6 +25,7 @@ export class Attestation {
   private readonly _sorobanLedger: number | null;
   private readonly _onChainResult: boolean;
   private readonly _issuerId: string | null;
+  private readonly _issuerDid: string | null;
   private readonly _userWalletAddress: string | null;
   private readonly _createdAt: Date;
 
@@ -37,21 +39,47 @@ export class Attestation {
     this._sorobanLedger = props.sorobanLedger;
     this._onChainResult = props.onChainResult;
     this._issuerId = props.issuerId;
+    this._issuerDid = props.issuerDid;
     this._userWalletAddress = props.userWalletAddress;
     this._createdAt = props.createdAt;
   }
 
-  public get id(): Id { return this._id; }
-  public get vcHash(): string { return this._vcHash; }
-  public get proofHash(): string { return this._proofHash; }
-  public get verifierId(): string { return this._verifierId; }
-  public get kycLevel(): string { return this._kycLevel; }
-  public get sorobanTxHash(): string | null { return this._sorobanTxHash; }
-  public get sorobanLedger(): number | null { return this._sorobanLedger; }
-  public get onChainResult(): boolean { return this._onChainResult; }
-  public get issuerId(): string | null { return this._issuerId; }
-  public get userWalletAddress(): string | null { return this._userWalletAddress; }
-  public get createdAt(): Date { return this._createdAt; }
+  public get id(): Id {
+    return this._id;
+  }
+  public get vcHash(): string {
+    return this._vcHash;
+  }
+  public get proofHash(): string {
+    return this._proofHash;
+  }
+  public get verifierId(): string {
+    return this._verifierId;
+  }
+  public get kycLevel(): string {
+    return this._kycLevel;
+  }
+  public get sorobanTxHash(): string | null {
+    return this._sorobanTxHash;
+  }
+  public get sorobanLedger(): number | null {
+    return this._sorobanLedger;
+  }
+  public get onChainResult(): boolean {
+    return this._onChainResult;
+  }
+  public get issuerId(): string | null {
+    return this._issuerId;
+  }
+  public get issuerDid(): string | null {
+    return this._issuerDid;
+  }
+  public get userWalletAddress(): string | null {
+    return this._userWalletAddress;
+  }
+  public get createdAt(): Date {
+    return this._createdAt;
+  }
 
   public static create(params: {
     vcHash: string;
@@ -62,11 +90,13 @@ export class Attestation {
     sorobanLedger: number | null;
     onChainResult: boolean;
     issuerId: string | null;
+    issuerDid?: string | null;
     userWalletAddress: string | null;
   }): Attestation {
     return new Attestation({
       id: Id.create("attestation"),
       ...params,
+      issuerDid: params.issuerDid ?? null,
       createdAt: new Date(),
     });
   }

@@ -16,6 +16,8 @@ import { ProofPublicSubmitSignedHandler } from "@src/modules/proof/application/p
 import { PrepareSessionService } from "@src/modules/proof/application/services/prepare-session.service";
 import { IAttestationRepository } from "@src/modules/proof/domain/attestation.repository";
 import { AttestationRepository } from "@src/modules/proof/infra/attestation.repository";
+import { AttestationPublicController } from "@src/modules/proof/api/public/attestation-public.controller";
+import { AttestationIssuerResolutionHandler } from "@src/modules/proof/application/public/handlers/attestation-issuer-resolution.handler";
 
 @Module({
   imports: [
@@ -30,11 +32,12 @@ import { AttestationRepository } from "@src/modules/proof/infra/attestation.repo
     IssuerModule,
     WalletModule,
   ],
-  controllers: [ProofPublicController],
+  controllers: [ProofPublicController, AttestationPublicController],
   providers: [
     ProofPublicPrepareHandler,
     ProofPublicSubmitSignedHandler,
     ProofPublicSubmitHandler,
+    AttestationIssuerResolutionHandler,
     PrepareSessionService,
     { provide: IAttestationRepository, useClass: AttestationRepository },
   ],

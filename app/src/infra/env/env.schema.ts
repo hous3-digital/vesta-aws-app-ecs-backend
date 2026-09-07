@@ -19,6 +19,7 @@ const envSchema = z.object({
   STELLAR_HORIZON_URL: z.string().url().optional(),
   STELLAR_NETWORK: z.string().min(1).default("Test SDF Network ; September 2015"),
   VESTA_CONTRACT_ID: z.string().min(1).default("PLACEHOLDER"),
+  STELLAR_ISSUER_REGISTRY_CONTRACT_ID: z.string().min(1).default("PLACEHOLDER"),
   VESTA_DEPLOYER_SECRET: z.string().optional().default(""),
   ZK_ARTIFACTS_DIR: z.string().min(1).default("./zk-artifacts"),
   ZK_MOCK_MODE: z

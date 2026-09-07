@@ -90,6 +90,10 @@ environment = [
     value = "CAF4HZZDURUQHYIOCW4LMDMJI4T6RKEJV62OK7FI3H64K5Z5WHBSWEWI"
   },
   {
+    name  = "STELLAR_ISSUER_REGISTRY_CONTRACT_ID",
+    value = "PLACEHOLDER"
+  },
+  {
     name  = "PAYOUT_VAULT_FUNDING_BRL",
     value = "1000"
   },
