@@ -68,6 +68,23 @@ export const OrganizationWalletStatus = {
 export type OrganizationWalletStatus = (typeof OrganizationWalletStatus)[keyof typeof OrganizationWalletStatus]
 
 
+export const IssuerRole = {
+  TECHNICAL: 'TECHNICAL',
+  COMMERCIAL: 'COMMERCIAL'
+} as const
+
+export type IssuerRole = (typeof IssuerRole)[keyof typeof IssuerRole]
+
+
+export const IssuerRegistryStatus = {
+  UNREGISTERED: 'UNREGISTERED',
+  REGISTERED: 'REGISTERED',
+  SUSPENDED: 'SUSPENDED'
+} as const
+
+export type IssuerRegistryStatus = (typeof IssuerRegistryStatus)[keyof typeof IssuerRegistryStatus]
+
+
 export const PayoutRequestStatus = {
   REQUESTED: 'REQUESTED',
   PROCESSING: 'PROCESSING',

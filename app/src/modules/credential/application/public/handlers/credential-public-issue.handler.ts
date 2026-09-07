@@ -22,7 +22,10 @@ export interface CredentialIssueResult {
 
 @Injectable()
 @CommandHandler(CredentialPublicIssueCommand)
-export class CredentialPublicIssueHandler implements ICommandHandler<CredentialPublicIssueCommand, CredentialIssueResult> {
+export class CredentialPublicIssueHandler implements ICommandHandler<
+  CredentialPublicIssueCommand,
+  CredentialIssueResult
+> {
   private readonly logger = new Logger(CredentialPublicIssueHandler.name);
 
   public constructor(
@@ -48,6 +51,10 @@ export class CredentialPublicIssueHandler implements ICommandHandler<CredentialP
       });
     }
 
+    if (!issuer.did) {
+      this.logger.warn(`Issuer ${issuer.externalId} ainda sem DID; emitindo VC pelo identificador did:web legado`);
+    }
+
     const { vc, vcHash } = await this.vcService.generateVC({
       cpf: command.cpf,
       fullName: command.fullName,
@@ -56,6 +63,8 @@ export class CredentialPublicIssueHandler implements ICommandHandler<CredentialP
       kycMethod: command.kycMethod,
       issuerId: command.issuerId,
       issuerName: issuer.name,
+      issuerDid: issuer.did?.value,
+      issuerVerificationMethod: issuer.did?.verificationMethodId,
       nationality: command.nationality,
       expirationDays: command.expirationDays,
     });
@@ -63,9 +72,7 @@ export class CredentialPublicIssueHandler implements ICommandHandler<CredentialP
     // Compute a server-side HMAC-SHA256 dedup key so we can detect duplicate
     // CPFs without storing the CPF itself. The server secret makes the key
     // brute-force-resistant even if the database is compromised.
-    const cpfDedupKey = createHmac("sha256", this.envService.CPF_HMAC_SECRET)
-      .update(command.cpf)
-      .digest("hex");
+    const cpfDedupKey = createHmac("sha256", this.envService.CPF_HMAC_SECRET).update(command.cpf).digest("hex");
 
     // Block early: CPF already has an active/pending credential on another device.
     // Return a semantic 409 so the client can show a clear message before
@@ -78,7 +85,8 @@ export class CredentialPublicIssueHandler implements ICommandHandler<CredentialP
       } else {
         throw new ConflictException({
           error: "CPF_ALREADY_REGISTERED",
-          message: "Este CPF já possui uma credencial ativa ou em análise. Use o dispositivo onde ela foi criada para autenticar.",
+          message:
+            "Este CPF já possui uma credencial ativa ou em análise. Use o dispositivo onde ela foi criada para autenticar.",
         });
       }
     }
@@ -94,9 +102,7 @@ export class CredentialPublicIssueHandler implements ICommandHandler<CredentialP
       expiresAt: new Date(vc.expiration_date),
     };
     const credential =
-      command.kycLevel === "pending"
-        ? Credential.issuePending(credentialParams)
-        : Credential.issue(credentialParams);
+      command.kycLevel === "pending" ? Credential.issuePending(credentialParams) : Credential.issue(credentialParams);
 
     await this.credentialRepository.saveOrThrow(credential);
 
