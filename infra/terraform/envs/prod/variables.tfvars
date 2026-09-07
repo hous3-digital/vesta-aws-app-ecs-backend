@@ -81,6 +81,10 @@ environment = [
     value = "PLACEHOLDER"
   },
   {
+    name  = "STELLAR_ISSUER_REGISTRY_CONTRACT_ID",
+    value = "PLACEHOLDER"
+  },
+  {
     name  = "PAYOUT_PROCESSOR_INTERVAL_MS",
     value = "10000"
   },

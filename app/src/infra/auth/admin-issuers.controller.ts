@@ -7,6 +7,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Put,
 } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import { hash } from "bcrypt";
@@ -17,6 +18,7 @@ import { PrismaService } from "@src/infra/database/@prisma/prisma.service";
 import { WalletService } from "@src/modules/wallet/wallet.service";
 import { IssuerDid } from "@src/modules/issuer/domain/issuer-did.value-object";
 import type { IssuerRole } from "@src/modules/issuer/domain/issuer.entity";
+import { IssuerRegistryService } from "@src/modules/issuer/issuer-registry.service";
 
 const ISSUER_ROLES: readonly IssuerRole[] = ["TECHNICAL", "COMMERCIAL"];
 
@@ -36,6 +38,10 @@ interface CreateBackofficeUserBody {
   password?: string;
 }
 
+interface RegisterIssuerBody {
+  commissionTerms: unknown;
+}
+
 @ApiTags("admin")
 @Controller("/admin")
 @PublicEndpoint()
@@ -46,6 +52,7 @@ export class AdminIssuersController {
   public constructor(
     private readonly prisma: PrismaService,
     private readonly walletService: WalletService,
+    private readonly issuerRegistryService: IssuerRegistryService,
   ) {}
 
   @ApiOperation({ summary: "Cria um issuer" })
@@ -112,6 +119,12 @@ export class AdminIssuersController {
   @Post("/issuers/:issuerId/wallet")
   public async provisionOrganizationWallet(@Param("issuerId") issuerId: string) {
     return this.walletService.provisionForOrganization(issuerId);
+  }
+
+  @ApiOperation({ summary: "Registra ou atualiza o issuer no registry Soroban" })
+  @Put("/issuers/:issuerId/registry")
+  public async registerIssuer(@Param("issuerId") issuerId: string, @Body() body: RegisterIssuerBody) {
+    return this.issuerRegistryService.registerOrUpdate(issuerId, body?.commissionTerms);
   }
 
   @ApiOperation({ summary: "Cria um acesso de backoffice para issuer existente" })
