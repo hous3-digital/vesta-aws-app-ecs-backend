@@ -5,6 +5,12 @@ on:
     branches:
       - staging
 
+# A newer staging merge must never race an older blue/green deployment.
+# GitHub keeps the running execution and only the newest pending execution.
+concurrency:
+  group: vesta-backend-staging
+  cancel-in-progress: false
+
 permissions:
   contents: read
 
