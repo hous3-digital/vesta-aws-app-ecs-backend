@@ -192,6 +192,10 @@ Table issuer {
   status String [not null, default: 'active']
   publicKey String
   privyEnabled Boolean [not null, default: false]
+  did String [unique]
+  roles IssuerRole[] [not null]
+  authorizedCredentialTypes String[] [not null]
+  registryStatus IssuerRegistryStatus [not null, default: 'UNREGISTERED']
   createdAt DateTime [not null]
 }
 
@@ -276,6 +280,17 @@ Enum OrganizationWalletStatus {
   PENDING
   ACTIVE
   ERROR
+  SUSPENDED
+}
+
+Enum IssuerRole {
+  TECHNICAL
+  COMMERCIAL
+}
+
+Enum IssuerRegistryStatus {
+  UNREGISTERED
+  REGISTERED
   SUSPENDED
 }
 

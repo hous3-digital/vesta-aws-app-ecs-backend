@@ -31,6 +31,8 @@ export type IssuerMinAggregateOutputType = {
   status: string | null
   publicKey: string | null
   privyEnabled: boolean | null
+  did: string | null
+  registryStatus: $Enums.IssuerRegistryStatus | null
   createdAt: Date | null
 }
 
@@ -41,6 +43,8 @@ export type IssuerMaxAggregateOutputType = {
   status: string | null
   publicKey: string | null
   privyEnabled: boolean | null
+  did: string | null
+  registryStatus: $Enums.IssuerRegistryStatus | null
   createdAt: Date | null
 }
 
@@ -51,6 +55,10 @@ export type IssuerCountAggregateOutputType = {
   status: number
   publicKey: number
   privyEnabled: number
+  did: number
+  roles: number
+  authorizedCredentialTypes: number
+  registryStatus: number
   createdAt: number
   _all: number
 }
@@ -63,6 +71,8 @@ export type IssuerMinAggregateInputType = {
   status?: true
   publicKey?: true
   privyEnabled?: true
+  did?: true
+  registryStatus?: true
   createdAt?: true
 }
 
@@ -73,6 +83,8 @@ export type IssuerMaxAggregateInputType = {
   status?: true
   publicKey?: true
   privyEnabled?: true
+  did?: true
+  registryStatus?: true
   createdAt?: true
 }
 
@@ -83,6 +95,10 @@ export type IssuerCountAggregateInputType = {
   status?: true
   publicKey?: true
   privyEnabled?: true
+  did?: true
+  roles?: true
+  authorizedCredentialTypes?: true
+  registryStatus?: true
   createdAt?: true
   _all?: true
 }
@@ -166,6 +182,10 @@ export type IssuerGroupByOutputType = {
   status: string
   publicKey: string | null
   privyEnabled: boolean
+  did: string | null
+  roles: $Enums.IssuerRole[]
+  authorizedCredentialTypes: string[]
+  registryStatus: $Enums.IssuerRegistryStatus
   createdAt: Date
   _count: IssuerCountAggregateOutputType | null
   _min: IssuerMinAggregateOutputType | null
@@ -197,6 +217,10 @@ export type IssuerWhereInput = {
   status?: Prisma.StringFilter<"Issuer"> | string
   publicKey?: Prisma.StringNullableFilter<"Issuer"> | string | null
   privyEnabled?: Prisma.BoolFilter<"Issuer"> | boolean
+  did?: Prisma.StringNullableFilter<"Issuer"> | string | null
+  roles?: Prisma.EnumIssuerRoleNullableListFilter<"Issuer">
+  authorizedCredentialTypes?: Prisma.StringNullableListFilter<"Issuer">
+  registryStatus?: Prisma.EnumIssuerRegistryStatusFilter<"Issuer"> | $Enums.IssuerRegistryStatus
   createdAt?: Prisma.DateTimeFilter<"Issuer"> | Date | string
 }
 
@@ -207,12 +231,17 @@ export type IssuerOrderByWithRelationInput = {
   status?: Prisma.SortOrder
   publicKey?: Prisma.SortOrderInput | Prisma.SortOrder
   privyEnabled?: Prisma.SortOrder
+  did?: Prisma.SortOrderInput | Prisma.SortOrder
+  roles?: Prisma.SortOrder
+  authorizedCredentialTypes?: Prisma.SortOrder
+  registryStatus?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
 export type IssuerWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   issuerId?: string
+  did?: string
   AND?: Prisma.IssuerWhereInput | Prisma.IssuerWhereInput[]
   OR?: Prisma.IssuerWhereInput[]
   NOT?: Prisma.IssuerWhereInput | Prisma.IssuerWhereInput[]
@@ -220,8 +249,11 @@ export type IssuerWhereUniqueInput = Prisma.AtLeast<{
   status?: Prisma.StringFilter<"Issuer"> | string
   publicKey?: Prisma.StringNullableFilter<"Issuer"> | string | null
   privyEnabled?: Prisma.BoolFilter<"Issuer"> | boolean
+  roles?: Prisma.EnumIssuerRoleNullableListFilter<"Issuer">
+  authorizedCredentialTypes?: Prisma.StringNullableListFilter<"Issuer">
+  registryStatus?: Prisma.EnumIssuerRegistryStatusFilter<"Issuer"> | $Enums.IssuerRegistryStatus
   createdAt?: Prisma.DateTimeFilter<"Issuer"> | Date | string
-}, "id" | "issuerId">
+}, "id" | "issuerId" | "did">
 
 export type IssuerOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -230,6 +262,10 @@ export type IssuerOrderByWithAggregationInput = {
   status?: Prisma.SortOrder
   publicKey?: Prisma.SortOrderInput | Prisma.SortOrder
   privyEnabled?: Prisma.SortOrder
+  did?: Prisma.SortOrderInput | Prisma.SortOrder
+  roles?: Prisma.SortOrder
+  authorizedCredentialTypes?: Prisma.SortOrder
+  registryStatus?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.IssuerCountOrderByAggregateInput
   _max?: Prisma.IssuerMaxOrderByAggregateInput
@@ -246,6 +282,10 @@ export type IssuerScalarWhereWithAggregatesInput = {
   status?: Prisma.StringWithAggregatesFilter<"Issuer"> | string
   publicKey?: Prisma.StringNullableWithAggregatesFilter<"Issuer"> | string | null
   privyEnabled?: Prisma.BoolWithAggregatesFilter<"Issuer"> | boolean
+  did?: Prisma.StringNullableWithAggregatesFilter<"Issuer"> | string | null
+  roles?: Prisma.EnumIssuerRoleNullableListFilter<"Issuer">
+  authorizedCredentialTypes?: Prisma.StringNullableListFilter<"Issuer">
+  registryStatus?: Prisma.EnumIssuerRegistryStatusWithAggregatesFilter<"Issuer"> | $Enums.IssuerRegistryStatus
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Issuer"> | Date | string
 }
 
@@ -256,6 +296,10 @@ export type IssuerCreateInput = {
   status?: string
   publicKey?: string | null
   privyEnabled?: boolean
+  did?: string | null
+  roles?: Prisma.IssuerCreaterolesInput | $Enums.IssuerRole[]
+  authorizedCredentialTypes?: Prisma.IssuerCreateauthorizedCredentialTypesInput | string[]
+  registryStatus?: $Enums.IssuerRegistryStatus
   createdAt: Date | string
 }
 
@@ -266,6 +310,10 @@ export type IssuerUncheckedCreateInput = {
   status?: string
   publicKey?: string | null
   privyEnabled?: boolean
+  did?: string | null
+  roles?: Prisma.IssuerCreaterolesInput | $Enums.IssuerRole[]
+  authorizedCredentialTypes?: Prisma.IssuerCreateauthorizedCredentialTypesInput | string[]
+  registryStatus?: $Enums.IssuerRegistryStatus
   createdAt: Date | string
 }
 
@@ -276,6 +324,10 @@ export type IssuerUpdateInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   publicKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   privyEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  did?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  roles?: Prisma.IssuerUpdaterolesInput | $Enums.IssuerRole[]
+  authorizedCredentialTypes?: Prisma.IssuerUpdateauthorizedCredentialTypesInput | string[]
+  registryStatus?: Prisma.EnumIssuerRegistryStatusFieldUpdateOperationsInput | $Enums.IssuerRegistryStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -286,6 +338,10 @@ export type IssuerUncheckedUpdateInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   publicKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   privyEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  did?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  roles?: Prisma.IssuerUpdaterolesInput | $Enums.IssuerRole[]
+  authorizedCredentialTypes?: Prisma.IssuerUpdateauthorizedCredentialTypesInput | string[]
+  registryStatus?: Prisma.EnumIssuerRegistryStatusFieldUpdateOperationsInput | $Enums.IssuerRegistryStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -296,6 +352,10 @@ export type IssuerCreateManyInput = {
   status?: string
   publicKey?: string | null
   privyEnabled?: boolean
+  did?: string | null
+  roles?: Prisma.IssuerCreaterolesInput | $Enums.IssuerRole[]
+  authorizedCredentialTypes?: Prisma.IssuerCreateauthorizedCredentialTypesInput | string[]
+  registryStatus?: $Enums.IssuerRegistryStatus
   createdAt: Date | string
 }
 
@@ -306,6 +366,10 @@ export type IssuerUpdateManyMutationInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   publicKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   privyEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  did?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  roles?: Prisma.IssuerUpdaterolesInput | $Enums.IssuerRole[]
+  authorizedCredentialTypes?: Prisma.IssuerUpdateauthorizedCredentialTypesInput | string[]
+  registryStatus?: Prisma.EnumIssuerRegistryStatusFieldUpdateOperationsInput | $Enums.IssuerRegistryStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -316,7 +380,27 @@ export type IssuerUncheckedUpdateManyInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   publicKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   privyEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  did?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  roles?: Prisma.IssuerUpdaterolesInput | $Enums.IssuerRole[]
+  authorizedCredentialTypes?: Prisma.IssuerUpdateauthorizedCredentialTypesInput | string[]
+  registryStatus?: Prisma.EnumIssuerRegistryStatusFieldUpdateOperationsInput | $Enums.IssuerRegistryStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type EnumIssuerRoleNullableListFilter<$PrismaModel = never> = {
+  equals?: $Enums.IssuerRole[] | Prisma.ListEnumIssuerRoleFieldRefInput<$PrismaModel> | null
+  has?: $Enums.IssuerRole | Prisma.EnumIssuerRoleFieldRefInput<$PrismaModel> | null
+  hasEvery?: $Enums.IssuerRole[] | Prisma.ListEnumIssuerRoleFieldRefInput<$PrismaModel>
+  hasSome?: $Enums.IssuerRole[] | Prisma.ListEnumIssuerRoleFieldRefInput<$PrismaModel>
+  isEmpty?: boolean
+}
+
+export type StringNullableListFilter<$PrismaModel = never> = {
+  equals?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null
+  has?: string | Prisma.StringFieldRefInput<$PrismaModel> | null
+  hasEvery?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
+  hasSome?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
+  isEmpty?: boolean
 }
 
 export type IssuerCountOrderByAggregateInput = {
@@ -326,6 +410,10 @@ export type IssuerCountOrderByAggregateInput = {
   status?: Prisma.SortOrder
   publicKey?: Prisma.SortOrder
   privyEnabled?: Prisma.SortOrder
+  did?: Prisma.SortOrder
+  roles?: Prisma.SortOrder
+  authorizedCredentialTypes?: Prisma.SortOrder
+  registryStatus?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -336,6 +424,8 @@ export type IssuerMaxOrderByAggregateInput = {
   status?: Prisma.SortOrder
   publicKey?: Prisma.SortOrder
   privyEnabled?: Prisma.SortOrder
+  did?: Prisma.SortOrder
+  registryStatus?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -346,7 +436,31 @@ export type IssuerMinOrderByAggregateInput = {
   status?: Prisma.SortOrder
   publicKey?: Prisma.SortOrder
   privyEnabled?: Prisma.SortOrder
+  did?: Prisma.SortOrder
+  registryStatus?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+}
+
+export type IssuerCreaterolesInput = {
+  set: $Enums.IssuerRole[]
+}
+
+export type IssuerCreateauthorizedCredentialTypesInput = {
+  set: string[]
+}
+
+export type IssuerUpdaterolesInput = {
+  set?: $Enums.IssuerRole[]
+  push?: $Enums.IssuerRole | $Enums.IssuerRole[]
+}
+
+export type IssuerUpdateauthorizedCredentialTypesInput = {
+  set?: string[]
+  push?: string | string[]
+}
+
+export type EnumIssuerRegistryStatusFieldUpdateOperationsInput = {
+  set?: $Enums.IssuerRegistryStatus
 }
 
 
@@ -358,6 +472,10 @@ export type IssuerSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   status?: boolean
   publicKey?: boolean
   privyEnabled?: boolean
+  did?: boolean
+  roles?: boolean
+  authorizedCredentialTypes?: boolean
+  registryStatus?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["issuer"]>
 
@@ -368,6 +486,10 @@ export type IssuerSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   status?: boolean
   publicKey?: boolean
   privyEnabled?: boolean
+  did?: boolean
+  roles?: boolean
+  authorizedCredentialTypes?: boolean
+  registryStatus?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["issuer"]>
 
@@ -378,6 +500,10 @@ export type IssuerSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   status?: boolean
   publicKey?: boolean
   privyEnabled?: boolean
+  did?: boolean
+  roles?: boolean
+  authorizedCredentialTypes?: boolean
+  registryStatus?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["issuer"]>
 
@@ -388,10 +514,14 @@ export type IssuerSelectScalar = {
   status?: boolean
   publicKey?: boolean
   privyEnabled?: boolean
+  did?: boolean
+  roles?: boolean
+  authorizedCredentialTypes?: boolean
+  registryStatus?: boolean
   createdAt?: boolean
 }
 
-export type IssuerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "issuerId" | "name" | "status" | "publicKey" | "privyEnabled" | "createdAt", ExtArgs["result"]["issuer"]>
+export type IssuerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "issuerId" | "name" | "status" | "publicKey" | "privyEnabled" | "did" | "roles" | "authorizedCredentialTypes" | "registryStatus" | "createdAt", ExtArgs["result"]["issuer"]>
 
 export type $IssuerPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Issuer"
@@ -403,6 +533,10 @@ export type $IssuerPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     status: string
     publicKey: string | null
     privyEnabled: boolean
+    did: string | null
+    roles: $Enums.IssuerRole[]
+    authorizedCredentialTypes: string[]
+    registryStatus: $Enums.IssuerRegistryStatus
     createdAt: Date
   }, ExtArgs["result"]["issuer"]>
   composites: {}
@@ -833,6 +967,10 @@ export interface IssuerFieldRefs {
   readonly status: Prisma.FieldRef<"Issuer", 'String'>
   readonly publicKey: Prisma.FieldRef<"Issuer", 'String'>
   readonly privyEnabled: Prisma.FieldRef<"Issuer", 'Boolean'>
+  readonly did: Prisma.FieldRef<"Issuer", 'String'>
+  readonly roles: Prisma.FieldRef<"Issuer", 'IssuerRole[]'>
+  readonly authorizedCredentialTypes: Prisma.FieldRef<"Issuer", 'String[]'>
+  readonly registryStatus: Prisma.FieldRef<"Issuer", 'IssuerRegistryStatus'>
   readonly createdAt: Prisma.FieldRef<"Issuer", 'DateTime'>
 }
     
