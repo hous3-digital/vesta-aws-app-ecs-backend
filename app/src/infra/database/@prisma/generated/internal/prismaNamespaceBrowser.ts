@@ -149,6 +149,7 @@ export const AttestationScalarFieldEnum = {
   sorobanLedger: 'sorobanLedger',
   onChainResult: 'onChainResult',
   issuerId: 'issuerId',
+  issuerDid: 'issuerDid',
   userWalletAddress: 'userWalletAddress',
   createdAt: 'createdAt'
 } as const
@@ -293,6 +294,9 @@ export const IssuerScalarFieldEnum = {
   roles: 'roles',
   authorizedCredentialTypes: 'authorizedCredentialTypes',
   registryStatus: 'registryStatus',
+  registryTransactionHash: 'registryTransactionHash',
+  registryLedger: 'registryLedger',
+  registryConfirmedAt: 'registryConfirmedAt',
   createdAt: 'createdAt'
 } as const
 

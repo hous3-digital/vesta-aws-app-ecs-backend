@@ -20,8 +20,18 @@ export type IssuerModel = runtime.Types.Result.DefaultSelection<Prisma.$IssuerPa
 
 export type AggregateIssuer = {
   _count: IssuerCountAggregateOutputType | null
+  _avg: IssuerAvgAggregateOutputType | null
+  _sum: IssuerSumAggregateOutputType | null
   _min: IssuerMinAggregateOutputType | null
   _max: IssuerMaxAggregateOutputType | null
+}
+
+export type IssuerAvgAggregateOutputType = {
+  registryLedger: number | null
+}
+
+export type IssuerSumAggregateOutputType = {
+  registryLedger: number | null
 }
 
 export type IssuerMinAggregateOutputType = {
@@ -33,6 +43,9 @@ export type IssuerMinAggregateOutputType = {
   privyEnabled: boolean | null
   did: string | null
   registryStatus: $Enums.IssuerRegistryStatus | null
+  registryTransactionHash: string | null
+  registryLedger: number | null
+  registryConfirmedAt: Date | null
   createdAt: Date | null
 }
 
@@ -45,6 +58,9 @@ export type IssuerMaxAggregateOutputType = {
   privyEnabled: boolean | null
   did: string | null
   registryStatus: $Enums.IssuerRegistryStatus | null
+  registryTransactionHash: string | null
+  registryLedger: number | null
+  registryConfirmedAt: Date | null
   createdAt: Date | null
 }
 
@@ -59,10 +75,21 @@ export type IssuerCountAggregateOutputType = {
   roles: number
   authorizedCredentialTypes: number
   registryStatus: number
+  registryTransactionHash: number
+  registryLedger: number
+  registryConfirmedAt: number
   createdAt: number
   _all: number
 }
 
+
+export type IssuerAvgAggregateInputType = {
+  registryLedger?: true
+}
+
+export type IssuerSumAggregateInputType = {
+  registryLedger?: true
+}
 
 export type IssuerMinAggregateInputType = {
   id?: true
@@ -73,6 +100,9 @@ export type IssuerMinAggregateInputType = {
   privyEnabled?: true
   did?: true
   registryStatus?: true
+  registryTransactionHash?: true
+  registryLedger?: true
+  registryConfirmedAt?: true
   createdAt?: true
 }
 
@@ -85,6 +115,9 @@ export type IssuerMaxAggregateInputType = {
   privyEnabled?: true
   did?: true
   registryStatus?: true
+  registryTransactionHash?: true
+  registryLedger?: true
+  registryConfirmedAt?: true
   createdAt?: true
 }
 
@@ -99,6 +132,9 @@ export type IssuerCountAggregateInputType = {
   roles?: true
   authorizedCredentialTypes?: true
   registryStatus?: true
+  registryTransactionHash?: true
+  registryLedger?: true
+  registryConfirmedAt?: true
   createdAt?: true
   _all?: true
 }
@@ -110,13 +146,13 @@ export type IssuerAggregateArgs<ExtArgs extends runtime.Types.Extensions.Interna
   where?: Prisma.IssuerWhereInput
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-   * 
+   *
    * Determine the order of Issuers to fetch.
    */
   orderBy?: Prisma.IssuerOrderByWithRelationInput | Prisma.IssuerOrderByWithRelationInput[]
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-   * 
+   *
    * Sets the start position
    */
   cursor?: Prisma.IssuerWhereUniqueInput
@@ -141,6 +177,18 @@ export type IssuerAggregateArgs<ExtArgs extends runtime.Types.Extensions.Interna
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: IssuerAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   *
+   * Select which fields to sum
+  **/
+  _sum?: IssuerSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   *
    * Select which fields to find the minimum value
   **/
   _min?: IssuerMinAggregateInputType
@@ -171,6 +219,8 @@ export type IssuerGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   take?: number
   skip?: number
   _count?: IssuerCountAggregateInputType | true
+  _avg?: IssuerAvgAggregateInputType
+  _sum?: IssuerSumAggregateInputType
   _min?: IssuerMinAggregateInputType
   _max?: IssuerMaxAggregateInputType
 }
@@ -186,8 +236,13 @@ export type IssuerGroupByOutputType = {
   roles: $Enums.IssuerRole[]
   authorizedCredentialTypes: string[]
   registryStatus: $Enums.IssuerRegistryStatus
+  registryTransactionHash: string | null
+  registryLedger: number | null
+  registryConfirmedAt: Date | null
   createdAt: Date
   _count: IssuerCountAggregateOutputType | null
+  _avg: IssuerAvgAggregateOutputType | null
+  _sum: IssuerSumAggregateOutputType | null
   _min: IssuerMinAggregateOutputType | null
   _max: IssuerMaxAggregateOutputType | null
 }
@@ -221,6 +276,9 @@ export type IssuerWhereInput = {
   roles?: Prisma.EnumIssuerRoleNullableListFilter<"Issuer">
   authorizedCredentialTypes?: Prisma.StringNullableListFilter<"Issuer">
   registryStatus?: Prisma.EnumIssuerRegistryStatusFilter<"Issuer"> | $Enums.IssuerRegistryStatus
+  registryTransactionHash?: Prisma.StringNullableFilter<"Issuer"> | string | null
+  registryLedger?: Prisma.IntNullableFilter<"Issuer"> | number | null
+  registryConfirmedAt?: Prisma.DateTimeNullableFilter<"Issuer"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Issuer"> | Date | string
 }
 
@@ -235,6 +293,9 @@ export type IssuerOrderByWithRelationInput = {
   roles?: Prisma.SortOrder
   authorizedCredentialTypes?: Prisma.SortOrder
   registryStatus?: Prisma.SortOrder
+  registryTransactionHash?: Prisma.SortOrderInput | Prisma.SortOrder
+  registryLedger?: Prisma.SortOrderInput | Prisma.SortOrder
+  registryConfirmedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -252,6 +313,9 @@ export type IssuerWhereUniqueInput = Prisma.AtLeast<{
   roles?: Prisma.EnumIssuerRoleNullableListFilter<"Issuer">
   authorizedCredentialTypes?: Prisma.StringNullableListFilter<"Issuer">
   registryStatus?: Prisma.EnumIssuerRegistryStatusFilter<"Issuer"> | $Enums.IssuerRegistryStatus
+  registryTransactionHash?: Prisma.StringNullableFilter<"Issuer"> | string | null
+  registryLedger?: Prisma.IntNullableFilter<"Issuer"> | number | null
+  registryConfirmedAt?: Prisma.DateTimeNullableFilter<"Issuer"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Issuer"> | Date | string
 }, "id" | "issuerId" | "did">
 
@@ -266,10 +330,15 @@ export type IssuerOrderByWithAggregationInput = {
   roles?: Prisma.SortOrder
   authorizedCredentialTypes?: Prisma.SortOrder
   registryStatus?: Prisma.SortOrder
+  registryTransactionHash?: Prisma.SortOrderInput | Prisma.SortOrder
+  registryLedger?: Prisma.SortOrderInput | Prisma.SortOrder
+  registryConfirmedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.IssuerCountOrderByAggregateInput
+  _avg?: Prisma.IssuerAvgOrderByAggregateInput
   _max?: Prisma.IssuerMaxOrderByAggregateInput
   _min?: Prisma.IssuerMinOrderByAggregateInput
+  _sum?: Prisma.IssuerSumOrderByAggregateInput
 }
 
 export type IssuerScalarWhereWithAggregatesInput = {
@@ -286,6 +355,9 @@ export type IssuerScalarWhereWithAggregatesInput = {
   roles?: Prisma.EnumIssuerRoleNullableListFilter<"Issuer">
   authorizedCredentialTypes?: Prisma.StringNullableListFilter<"Issuer">
   registryStatus?: Prisma.EnumIssuerRegistryStatusWithAggregatesFilter<"Issuer"> | $Enums.IssuerRegistryStatus
+  registryTransactionHash?: Prisma.StringNullableWithAggregatesFilter<"Issuer"> | string | null
+  registryLedger?: Prisma.IntNullableWithAggregatesFilter<"Issuer"> | number | null
+  registryConfirmedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Issuer"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Issuer"> | Date | string
 }
 
@@ -300,6 +372,9 @@ export type IssuerCreateInput = {
   roles?: Prisma.IssuerCreaterolesInput | $Enums.IssuerRole[]
   authorizedCredentialTypes?: Prisma.IssuerCreateauthorizedCredentialTypesInput | string[]
   registryStatus?: $Enums.IssuerRegistryStatus
+  registryTransactionHash?: string | null
+  registryLedger?: number | null
+  registryConfirmedAt?: Date | string | null
   createdAt: Date | string
 }
 
@@ -314,6 +389,9 @@ export type IssuerUncheckedCreateInput = {
   roles?: Prisma.IssuerCreaterolesInput | $Enums.IssuerRole[]
   authorizedCredentialTypes?: Prisma.IssuerCreateauthorizedCredentialTypesInput | string[]
   registryStatus?: $Enums.IssuerRegistryStatus
+  registryTransactionHash?: string | null
+  registryLedger?: number | null
+  registryConfirmedAt?: Date | string | null
   createdAt: Date | string
 }
 
@@ -328,6 +406,9 @@ export type IssuerUpdateInput = {
   roles?: Prisma.IssuerUpdaterolesInput | $Enums.IssuerRole[]
   authorizedCredentialTypes?: Prisma.IssuerUpdateauthorizedCredentialTypesInput | string[]
   registryStatus?: Prisma.EnumIssuerRegistryStatusFieldUpdateOperationsInput | $Enums.IssuerRegistryStatus
+  registryTransactionHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registryLedger?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  registryConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -342,6 +423,9 @@ export type IssuerUncheckedUpdateInput = {
   roles?: Prisma.IssuerUpdaterolesInput | $Enums.IssuerRole[]
   authorizedCredentialTypes?: Prisma.IssuerUpdateauthorizedCredentialTypesInput | string[]
   registryStatus?: Prisma.EnumIssuerRegistryStatusFieldUpdateOperationsInput | $Enums.IssuerRegistryStatus
+  registryTransactionHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registryLedger?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  registryConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -356,6 +440,9 @@ export type IssuerCreateManyInput = {
   roles?: Prisma.IssuerCreaterolesInput | $Enums.IssuerRole[]
   authorizedCredentialTypes?: Prisma.IssuerCreateauthorizedCredentialTypesInput | string[]
   registryStatus?: $Enums.IssuerRegistryStatus
+  registryTransactionHash?: string | null
+  registryLedger?: number | null
+  registryConfirmedAt?: Date | string | null
   createdAt: Date | string
 }
 
@@ -370,6 +457,9 @@ export type IssuerUpdateManyMutationInput = {
   roles?: Prisma.IssuerUpdaterolesInput | $Enums.IssuerRole[]
   authorizedCredentialTypes?: Prisma.IssuerUpdateauthorizedCredentialTypesInput | string[]
   registryStatus?: Prisma.EnumIssuerRegistryStatusFieldUpdateOperationsInput | $Enums.IssuerRegistryStatus
+  registryTransactionHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registryLedger?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  registryConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -384,6 +474,9 @@ export type IssuerUncheckedUpdateManyInput = {
   roles?: Prisma.IssuerUpdaterolesInput | $Enums.IssuerRole[]
   authorizedCredentialTypes?: Prisma.IssuerUpdateauthorizedCredentialTypesInput | string[]
   registryStatus?: Prisma.EnumIssuerRegistryStatusFieldUpdateOperationsInput | $Enums.IssuerRegistryStatus
+  registryTransactionHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registryLedger?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  registryConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -414,7 +507,14 @@ export type IssuerCountOrderByAggregateInput = {
   roles?: Prisma.SortOrder
   authorizedCredentialTypes?: Prisma.SortOrder
   registryStatus?: Prisma.SortOrder
+  registryTransactionHash?: Prisma.SortOrder
+  registryLedger?: Prisma.SortOrder
+  registryConfirmedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+}
+
+export type IssuerAvgOrderByAggregateInput = {
+  registryLedger?: Prisma.SortOrder
 }
 
 export type IssuerMaxOrderByAggregateInput = {
@@ -426,6 +526,9 @@ export type IssuerMaxOrderByAggregateInput = {
   privyEnabled?: Prisma.SortOrder
   did?: Prisma.SortOrder
   registryStatus?: Prisma.SortOrder
+  registryTransactionHash?: Prisma.SortOrder
+  registryLedger?: Prisma.SortOrder
+  registryConfirmedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -438,7 +541,14 @@ export type IssuerMinOrderByAggregateInput = {
   privyEnabled?: Prisma.SortOrder
   did?: Prisma.SortOrder
   registryStatus?: Prisma.SortOrder
+  registryTransactionHash?: Prisma.SortOrder
+  registryLedger?: Prisma.SortOrder
+  registryConfirmedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+}
+
+export type IssuerSumOrderByAggregateInput = {
+  registryLedger?: Prisma.SortOrder
 }
 
 export type IssuerCreaterolesInput = {
@@ -476,6 +586,9 @@ export type IssuerSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   roles?: boolean
   authorizedCredentialTypes?: boolean
   registryStatus?: boolean
+  registryTransactionHash?: boolean
+  registryLedger?: boolean
+  registryConfirmedAt?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["issuer"]>
 
@@ -490,6 +603,9 @@ export type IssuerSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   roles?: boolean
   authorizedCredentialTypes?: boolean
   registryStatus?: boolean
+  registryTransactionHash?: boolean
+  registryLedger?: boolean
+  registryConfirmedAt?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["issuer"]>
 
@@ -504,6 +620,9 @@ export type IssuerSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   roles?: boolean
   authorizedCredentialTypes?: boolean
   registryStatus?: boolean
+  registryTransactionHash?: boolean
+  registryLedger?: boolean
+  registryConfirmedAt?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["issuer"]>
 
@@ -518,10 +637,13 @@ export type IssuerSelectScalar = {
   roles?: boolean
   authorizedCredentialTypes?: boolean
   registryStatus?: boolean
+  registryTransactionHash?: boolean
+  registryLedger?: boolean
+  registryConfirmedAt?: boolean
   createdAt?: boolean
 }
 
-export type IssuerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "issuerId" | "name" | "status" | "publicKey" | "privyEnabled" | "did" | "roles" | "authorizedCredentialTypes" | "registryStatus" | "createdAt", ExtArgs["result"]["issuer"]>
+export type IssuerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "issuerId" | "name" | "status" | "publicKey" | "privyEnabled" | "did" | "roles" | "authorizedCredentialTypes" | "registryStatus" | "registryTransactionHash" | "registryLedger" | "registryConfirmedAt" | "createdAt", ExtArgs["result"]["issuer"]>
 
 export type $IssuerPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Issuer"
@@ -537,6 +659,9 @@ export type $IssuerPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     roles: $Enums.IssuerRole[]
     authorizedCredentialTypes: string[]
     registryStatus: $Enums.IssuerRegistryStatus
+    registryTransactionHash: string | null
+    registryLedger: number | null
+    registryConfirmedAt: Date | null
     createdAt: Date
   }, ExtArgs["result"]["issuer"]>
   composites: {}
@@ -971,6 +1096,9 @@ export interface IssuerFieldRefs {
   readonly roles: Prisma.FieldRef<"Issuer", 'IssuerRole[]'>
   readonly authorizedCredentialTypes: Prisma.FieldRef<"Issuer", 'String[]'>
   readonly registryStatus: Prisma.FieldRef<"Issuer", 'IssuerRegistryStatus'>
+  readonly registryTransactionHash: Prisma.FieldRef<"Issuer", 'String'>
+  readonly registryLedger: Prisma.FieldRef<"Issuer", 'Int'>
+  readonly registryConfirmedAt: Prisma.FieldRef<"Issuer", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"Issuer", 'DateTime'>
 }
     

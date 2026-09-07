@@ -148,11 +148,13 @@ model Attestation {
   sorobanLedger     Int?     @map("soroban_ledger")
   onChainResult     Boolean  @map("on_chain_result")
   issuerId          String?  @map("issuer_external_id")
+  issuerDid         String?  @map("issuer_did")
   userWalletAddress String?  @map("user_wallet_address")
   createdAt         DateTime @map("created_at")
 
   @@index([vcHash])
   @@index([issuerId])
+  @@index([issuerDid])
   @@map("attestation")
 }
 
@@ -300,6 +302,9 @@ model Issuer {
   roles                     IssuerRole[]         @default([])
   authorizedCredentialTypes String[]             @default([]) @map("authorized_credential_types")
   registryStatus            IssuerRegistryStatus @default(UNREGISTERED) @map("registry_status")
+  registryTransactionHash   String?              @map("registry_transaction_hash")
+  registryLedger            Int?                 @map("registry_ledger")
+  registryConfirmedAt       DateTime?            @map("registry_confirmed_at")
   createdAt                 DateTime             @map("created_at")
 
   @@map("issuer")

@@ -57,6 +57,7 @@ Table attestation {
   sorobanLedger Int
   onChainResult Boolean [not null]
   issuerId String
+  issuerDid String
   userWalletAddress String
   createdAt DateTime [not null]
 }
@@ -196,6 +197,9 @@ Table issuer {
   roles IssuerRole[] [not null]
   authorizedCredentialTypes String[] [not null]
   registryStatus IssuerRegistryStatus [not null, default: 'UNREGISTERED']
+  registryTransactionHash String
+  registryLedger Int
+  registryConfirmedAt DateTime
   createdAt DateTime [not null]
 }
 

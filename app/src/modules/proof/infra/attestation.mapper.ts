@@ -14,6 +14,7 @@ export class AttestationMapper {
       sorobanLedger: prisma.sorobanLedger,
       onChainResult: prisma.onChainResult,
       issuerId: prisma.issuerId ?? null,
+      issuerDid: prisma.issuerDid ?? null,
       userWalletAddress: prisma.userWalletAddress ?? null,
       createdAt: prisma.createdAt,
     });
@@ -30,6 +31,7 @@ export class AttestationMapper {
       sorobanLedger: domain.sorobanLedger,
       onChainResult: domain.onChainResult,
       issuerId: domain.issuerId,
+      issuerDid: domain.issuerDid,
       userWalletAddress: domain.userWalletAddress,
       createdAt: domain.createdAt,
     };

@@ -6,6 +6,7 @@ import { IssuerDid } from "@src/modules/issuer/domain/issuer-did.value-object";
 import { Issuer } from "@src/modules/issuer/domain/issuer.entity";
 import { VcService } from "@src/modules/vc/vc.service";
 import type { WalletService } from "@src/modules/wallet/wallet.service";
+import type { IssuerRegistryService } from "@src/modules/issuer/issuer-registry.service";
 
 describe("issuer identity", () => {
   const stellarAccount = Keypair.random().publicKey();
@@ -129,7 +130,7 @@ describe("admin issuer identity", () => {
         status: "ACTIVE",
       }),
     } as unknown as WalletService;
-    const controller = new AdminIssuersController(prisma, wallet);
+    const controller = new AdminIssuersController(prisma, wallet, {} as IssuerRegistryService);
 
     await expect(controller.createIssuer({ name: "Issuer sem papel", roles: [] })).rejects.toBeInstanceOf(
       BadRequestException,
