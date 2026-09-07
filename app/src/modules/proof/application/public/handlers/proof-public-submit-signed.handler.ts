@@ -35,9 +35,10 @@ export interface ProofPublicSubmitSignedResult {
 
 @Injectable()
 @CommandHandler(ProofPublicSubmitSignedCommand)
-export class ProofPublicSubmitSignedHandler
-  implements ICommandHandler<ProofPublicSubmitSignedCommand, ProofPublicSubmitSignedResult>
-{
+export class ProofPublicSubmitSignedHandler implements ICommandHandler<
+  ProofPublicSubmitSignedCommand,
+  ProofPublicSubmitSignedResult
+> {
   private readonly logger = new Logger(ProofPublicSubmitSignedHandler.name);
 
   public constructor(
@@ -63,12 +64,12 @@ export class ProofPublicSubmitSignedHandler
           "privyIdentityToken é obrigatório quando a sessão prepare requer assinatura do usuário.",
         );
       }
-      const claims = await this.walletService.verifyIdentityToken(command.privyIdentityToken);
+      const claims = await this.walletService.verifyAccessToken(command.privyIdentityToken);
       if (claims.walletAddress !== session.expectedSource) {
         this.logger.error(
           `Wallet address mismatch — token=${claims.walletAddress.slice(0, 8)}..., expected=${session.expectedSource.slice(0, 8)}...`,
         );
-        throw new UnauthorizedException("Wallet do identity token diferente da esperada para esta sessão.");
+        throw new UnauthorizedException("Wallet do access token diferente da esperada para esta sessão.");
       }
     }
 
@@ -83,6 +84,8 @@ export class ProofPublicSubmitSignedHandler
       sorobanTxHash: stellarResult.txHash,
       sorobanLedger: stellarResult.ledger,
       onChainResult: stellarResult.onChainResult,
+      issuerId: session.issuerId,
+      issuerDid: session.issuerDid,
       userWalletAddress: session.userWalletAddress,
     });
 
