@@ -3,6 +3,9 @@ import { CqrsModule } from "@nestjs/cqrs";
 import { DatabaseModule } from "@src/infra/database/database.module";
 import { EnvModule } from "@src/infra/env/env.module";
 import { IssuerModule } from "@src/modules/issuer/issuer.module";
+import { CommissionModule } from "@src/modules/commission/commission.module";
+import { WalletModule } from "@src/modules/wallet/wallet.module";
+import { ChallengeModule } from "@src/modules/challenge/challenge.module";
 
 import { CommissionsBackofficeController } from "@src/modules/backoffice/commissions/api/commissions-backoffice.controller";
 import { CommissionBalanceHandler } from "@src/modules/backoffice/commissions/application/handlers/commission-balance.handler";
@@ -33,7 +36,7 @@ import { BackofficeProfileHandler } from "@src/modules/backoffice/profile/applic
 import { ApiKeysBackofficeController } from "@src/modules/backoffice/api-keys/api/api-keys-backoffice.controller";
 
 @Module({
-  imports: [DatabaseModule, EnvModule, IssuerModule, CqrsModule],
+  imports: [DatabaseModule, EnvModule, IssuerModule, CommissionModule, WalletModule, ChallengeModule, CqrsModule],
   controllers: [
     ApiKeysBackofficeController,
     BackofficeProfileController,

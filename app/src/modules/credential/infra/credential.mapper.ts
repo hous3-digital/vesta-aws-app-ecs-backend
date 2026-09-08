@@ -1,4 +1,4 @@
-import type { Prisma } from "@src/infra/database/@prisma/generated/client";
+import { Prisma } from "@src/infra/database/@prisma/generated/client";
 import { Credential as CredentialPrisma } from "@src/infra/database/@prisma/generated/client";
 import { Credential, CredentialStatus } from "@src/modules/credential/domain/credential.entity";
 import { Id } from "@src/shared/value-objects/id.value-object";
@@ -9,6 +9,7 @@ export class CredentialMapper {
     return Credential.restore({
       id: Id.restore(prisma.id),
       vcHash: prisma.vcHash,
+      vcDocument: prisma.vcDocument as unknown as Credential["vcDocument"],
       cpfDedupKey: prisma.cpfDedupKey ?? null,
       issuerDid: prisma.issuerDid,
       issuerId: prisma.issuerId,
@@ -28,6 +29,9 @@ export class CredentialMapper {
     return {
       id: domain.id.value,
       vcHash: domain.vcHash,
+      vcDocument: domain.vcDocument === null
+        ? Prisma.DbNull
+        : domain.vcDocument as unknown as Prisma.InputJsonValue,
       cpfDedupKey: domain.cpfDedupKey,
       issuerDid: domain.issuerDid,
       issuerId: domain.issuerId,
@@ -45,6 +49,9 @@ export class CredentialMapper {
 
   public static toUpdateInput(domain: Credential): Prisma.CredentialUpdateInput {
     return {
+      vcDocument: domain.vcDocument === null
+        ? Prisma.DbNull
+        : domain.vcDocument as unknown as Prisma.InputJsonValue,
       kycLevel: domain.kycLevel as KycLevel,
       status: domain.status as unknown as Prisma.CredentialUpdateInput["status"],
       sorobanTxHash: domain.sorobanTxHash,
