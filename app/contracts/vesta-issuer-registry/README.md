@@ -37,6 +37,19 @@ implement multisignature governance, parse DID methods, or integrate directly
 with the NestJS backend. Backend registration and resolution are a separate
 delivery.
 
+## Staging deployment
+
+The Release 3 registry is deployed and initialized on Stellar Testnet:
+
+- contract: `CCMM5MZXJ6C3WLHDCYQFOS32L2F6YNACCLVEWGTKFJTSYZX5PT5YXIWP`;
+- version: `1`;
+- admin: `GDUFIQROJ7CMF5AW3EGGG3LSB6QP5M5ASKL62HBX5TAR4ZNQWYQQI5ZK`;
+- deployment salt: SHA-256 of `vesta-issuer-registry:r3:testnet:v1`.
+
+The salt makes the staging deployment address deterministic for this admin.
+The private admin seed remains in Secrets Manager as `VESTA_DEPLOYER_SECRET`
+and must never be committed or printed.
+
 ## Validation
 
 ```bash
