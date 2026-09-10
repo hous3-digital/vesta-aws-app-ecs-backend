@@ -22,6 +22,11 @@ import { ICredentialRepository } from "@src/modules/credential/domain/credential
 import { WalletService } from "@src/modules/wallet/wallet.service";
 import { createHash } from "crypto";
 
+// O browser recebe timeout de 60s. O servidor mantém uma margem adicional
+// para que latência de rede/serialização após a biometria não invalide uma
+// ceremony que o autenticador concluiu dentro do prazo.
+const WEBAUTHN_SERVER_CHALLENGE_TTL_SECONDS = 120;
+
 @Injectable()
 export class PasskeyAuthService {
   public constructor(
@@ -47,12 +52,15 @@ export class PasskeyAuthService {
         "Esta credencial já possui um Passkey registrado; recuperação exige um fluxo autenticado separado",
       );
     }
-    const stored = await this.challengeService.generate({
-      kind: "passkey-registration",
-      issuerId,
-      rpId,
-      vcHash,
-    });
+    const stored = await this.challengeService.generate(
+      {
+        kind: "passkey-registration",
+        issuerId,
+        rpId,
+        vcHash,
+      },
+      WEBAUTHN_SERVER_CHALLENGE_TTL_SECONDS,
+    );
     return generateRegistrationOptions({
       rpName: "Vesta Digital Passport",
       rpID: rpId,
@@ -119,11 +127,14 @@ export class PasskeyAuthService {
 
   public async authenticationOptions(issuerId: string, rpId: string) {
     this.assertAllowedRpId(rpId);
-    const stored = await this.challengeService.generate({
-      kind: "passkey-authentication",
-      issuerId,
-      rpId,
-    });
+    const stored = await this.challengeService.generate(
+      {
+        kind: "passkey-authentication",
+        issuerId,
+        rpId,
+      },
+      WEBAUTHN_SERVER_CHALLENGE_TTL_SECONDS,
+    );
     return generateAuthenticationOptions({
       rpID: rpId,
       challenge: stored.challenge,

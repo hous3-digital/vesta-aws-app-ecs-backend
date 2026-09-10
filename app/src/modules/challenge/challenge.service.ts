@@ -4,7 +4,7 @@ import { createHash, randomBytes } from "crypto";
 import Redis from "ioredis";
 import { PrismaService } from "@src/infra/database/@prisma/prisma.service";
 
-const CHALLENGE_TTL_SECONDS = 60;
+const DEFAULT_CHALLENGE_TTL_SECONDS = 60;
 const CHALLENGE_PREFIX = "challenge:";
 
 export type ChallengeContext =
@@ -61,15 +61,16 @@ export class ChallengeService implements OnModuleInit, OnModuleDestroy {
 
   public async generate(
     context: ChallengeContext = { kind: "legacy" },
+    ttlSeconds = DEFAULT_CHALLENGE_TTL_SECONDS,
   ): Promise<{ challenge: string; expiresAt: number }> {
     // Mantém o formato hexadecimal do endpoint legado. Hex também é uma
     // string base64url canônica, portanto funciona nas options WebAuthn JSON.
     const challenge = randomBytes(32).toString("hex");
-    const expiresAt = Date.now() + CHALLENGE_TTL_SECONDS * 1000;
+    const expiresAt = Date.now() + ttlSeconds * 1000;
     const stored: StoredChallenge = { expiresAt, context };
 
     if (this.redis) {
-      await this.redis.set(`${CHALLENGE_PREFIX}${challenge}`, JSON.stringify(stored), "EX", CHALLENGE_TTL_SECONDS);
+      await this.redis.set(`${CHALLENGE_PREFIX}${challenge}`, JSON.stringify(stored), "EX", ttlSeconds);
     } else {
       await this.prisma.authChallenge.create({
         data: {

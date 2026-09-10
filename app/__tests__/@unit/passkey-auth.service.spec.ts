@@ -1,5 +1,5 @@
 import { ConflictException } from "@nestjs/common";
-import { verifyAuthenticationResponse } from "@simplewebauthn/server";
+import { generateRegistrationOptions, verifyAuthenticationResponse } from "@simplewebauthn/server";
 import { PasskeyAuthService } from "@src/modules/challenge/passkey-auth.service";
 import { Credential } from "@src/modules/credential/domain/credential.entity";
 
@@ -61,6 +61,29 @@ describe("PasskeyAuthService", () => {
       service.registrationOptions("issuer-1", vcHash, "app.example.com"),
     ).rejects.toBeInstanceOf(ConflictException);
     expect(challengeService.generate).not.toHaveBeenCalled();
+  });
+
+  it("mantém margem no servidor para concluir ou reiniciar o registro WebAuthn", async () => {
+    prisma.passkeyCredential.findUnique.mockResolvedValue(null);
+    challengeService.generate.mockResolvedValue({
+      challenge: "registration-challenge",
+      expiresAt: Date.now() + 120_000,
+    });
+
+    await service.registrationOptions("issuer-1", vcHash, "app.example.com");
+
+    expect(challengeService.generate).toHaveBeenCalledWith(
+      {
+        kind: "passkey-registration",
+        issuerId: "issuer-1",
+        rpId: "app.example.com",
+        vcHash,
+      },
+      120,
+    );
+    expect(generateRegistrationOptions).toHaveBeenCalledWith(
+      expect.objectContaining({ challenge: "registration-challenge", timeout: 60_000 }),
+    );
   });
 
   it("só emite token Privy e proof challenge depois de verificar assertion e atualizar counter", async () => {
