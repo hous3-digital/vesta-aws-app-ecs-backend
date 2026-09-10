@@ -50,12 +50,7 @@ export class VcService implements OnModuleInit {
   }
 
   public normalizeFullName(fullName: string): string {
-    return fullName
-      .toUpperCase()
-      .trim()
-      .normalize("NFD")
-      .replace(/[̀-ͯ]/g, "")
-      .replace(/\s+/g, " ");
+    return fullName.toUpperCase().trim().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\s+/g, " ");
   }
 
   public hashVC(vc: VestaVC): string {
@@ -71,6 +66,8 @@ export class VcService implements OnModuleInit {
     kycMethod: string;
     issuerId: string;
     issuerName: string;
+    issuerDid?: string;
+    issuerVerificationMethod?: string;
     nationality: string;
     expirationDays?: number;
   }): Promise<{ vc: VestaVC; vcHash: string }> {
@@ -84,12 +81,15 @@ export class VcService implements OnModuleInit {
     const expiresAt = new Date(now);
     expiresAt.setDate(expiresAt.getDate() + (params.expirationDays ?? 365));
 
+    const issuerDid = params.issuerDid ?? `did:web:vesta.id:issuers:${params.issuerId}`;
+    const issuerVerificationMethod = params.issuerVerificationMethod ?? `${issuerDid}#key-1`;
+
     const vc: VestaVC = {
       "@context": ["https://www.w3.org/2018/credentials/v1", "https://vesta.id/credentials/kyc/v1"],
       id: `urn:uuid:${uuidv4()}`,
       type: ["VerifiableCredential", "VestaKYCCredential"],
       issuer: {
-        id: `did:web:vesta.id:issuers:${params.issuerId}`,
+        id: issuerDid,
         name: params.issuerName,
       },
       issuance_date: now.toISOString(),
@@ -107,7 +107,7 @@ export class VcService implements OnModuleInit {
       proof: {
         type: "PoseidonSignature2024",
         created: now.toISOString(),
-        verificationMethod: `did:web:vesta.id:issuers:${params.issuerId}#key-1`,
+        verificationMethod: issuerVerificationMethod,
         proofPurpose: "assertionMethod",
         proofValue: `z${createHash("sha256").update(`${params.issuerId}:${cpfHash}`).digest("base64url")}`,
       },

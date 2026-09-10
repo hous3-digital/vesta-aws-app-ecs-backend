@@ -11,7 +11,7 @@ export class ProofPublicSubmitSignedInput {
   public signedTxXdr!: string;
 
   @ApiProperty({
-    description: "Privy identity token (required only when prepare returned requiresUserSignature=true)",
+    description: "Privy access token; field name is retained for wire compatibility",
     required: false,
   })
   @IsOptional()

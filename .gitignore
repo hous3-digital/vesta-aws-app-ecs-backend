@@ -10,3 +10,7 @@ dist
 .terraform.lock.*
 
 coverage
+
+# Rust/Soroban build output
+**/target/
+**/test_snapshots/

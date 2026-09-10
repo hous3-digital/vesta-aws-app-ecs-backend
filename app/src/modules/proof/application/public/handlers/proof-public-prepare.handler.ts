@@ -19,6 +19,7 @@ export interface ProofPublicPrepareResult {
   unsignedTxXdr: string;
   requiresUserSignature: boolean;
   userWalletAddress: string | null;
+  stellarNetworkPassphrase: string;
   zkProof: {
     protocol: string;
     curve: string;
@@ -47,8 +48,8 @@ export class ProofPublicPrepareHandler implements ICommandHandler<ProofPublicPre
   public async execute(command: ProofPublicPrepareCommand): Promise<ProofPublicPrepareResult> {
     const vc = command.vc as VestaVC;
 
-    const challengeValid = await this.challengeService.consume(command.challenge);
-    if (!challengeValid) {
+    const challengeContext = await this.challengeService.consumeContext(command.challenge);
+    if (!challengeContext) {
       throw new BadRequestException(
         "Challenge inválido, expirado ou já utilizado. Solicite um novo via GET /public/auth/challenge.",
       );
@@ -60,6 +61,10 @@ export class ProofPublicPrepareHandler implements ICommandHandler<ProofPublicPre
 
     const vcHash = this.vcService.hashVC(vc);
     const existingCredential = await this.credentialRepository.findByVcHash(vcHash);
+    if (existingCredential && !existingCredential.vcDocument) {
+      existingCredential.attachDocument(vc);
+      await this.credentialRepository.updateOrThrow(existingCredential);
+    }
 
     // Fonte da verdade para kycLevel é o banco (webhook do issuer atualiza lá,
     // mas a VC assinada no device fica cravada no nível de emissão). O `verify`
@@ -104,6 +109,17 @@ export class ProofPublicPrepareHandler implements ICommandHandler<ProofPublicPre
     const issuer = await this.issuerRepository.findByExternalId(credential.issuerId);
     const privyEnabled = !!issuer?.privyEnabled;
 
+    if (
+      privyEnabled &&
+      (challengeContext.kind !== "proof" ||
+        challengeContext.vcHash !== vcHash ||
+        challengeContext.issuerId !== credential.issuerId)
+    ) {
+      throw new BadRequestException(
+        "A prova para uma credencial Privy exige uma assertion Passkey verificada pelo servidor.",
+      );
+    }
+
     let userWalletAddress = credential.userWalletAddress;
     if (privyEnabled && !userWalletAddress) {
       this.logger.log(`Lazy retroativo: criando wallet Privy para credencial ${credential.id.value}`);
@@ -131,7 +147,9 @@ export class ProofPublicPrepareHandler implements ICommandHandler<ProofPublicPre
       encodedVk = this.zkService.loadVerificationKey();
     } catch {
       if (!this.zkService.isMockMode()) {
-        throw new BadRequestException("verification_key.json não encontrado. Configure ZK_ARTIFACTS_DIR ou ative ZK_MOCK_MODE=true.");
+        throw new BadRequestException(
+          "verification_key.json não encontrado. Configure ZK_ARTIFACTS_DIR ou ative ZK_MOCK_MODE=true.",
+        );
       }
       encodedVk = this.buildMockVk();
     }
@@ -152,6 +170,8 @@ export class ProofPublicPrepareHandler implements ICommandHandler<ProofPublicPre
       proofHash: zkResult.proofHash,
       kycLevel: effectiveKycLevel,
       verifierId: command.verifierId,
+      issuerId: issuer?.externalId ?? null,
+      issuerDid: issuer?.did?.value ?? credential.issuerDid,
       userWalletAddress,
       expectedSource: source,
       innerTxHash: txBuild.innerTxHash,
@@ -170,6 +190,7 @@ export class ProofPublicPrepareHandler implements ICommandHandler<ProofPublicPre
       unsignedTxXdr: txBuild.unsignedXdr,
       requiresUserSignature,
       userWalletAddress,
+      stellarNetworkPassphrase: this.stellarService.getNetworkPassphrase(),
       zkProof: {
         protocol: zkResult.proof.protocol,
         curve: zkResult.proof.curve,
@@ -189,7 +210,13 @@ export class ProofPublicPrepareHandler implements ICommandHandler<ProofPublicPre
       }
       const vk = JSON.parse(fs.readFileSync(vkPath, "utf-8")) as Record<string, unknown>;
       const snarkjs = await import("snarkjs");
-      const valid: boolean = await (snarkjs as unknown as { groth16: { verify: (vk: Record<string, unknown>, publicSignals: string[], proof: unknown) => Promise<boolean> } }).groth16.verify(vk, zkResult.publicSignals, zkResult.proof);
+      const valid: boolean = await (
+        snarkjs as unknown as {
+          groth16: {
+            verify: (vk: Record<string, unknown>, publicSignals: string[], proof: unknown) => Promise<boolean>;
+          };
+        }
+      ).groth16.verify(vk, zkResult.publicSignals, zkResult.proof);
       if (!valid) {
         throw new UnprocessableEntityException(
           "Prova ZK inválida (verificação local falhou). Artefatos inconsistentes — rebuilde o circuito.",
@@ -206,9 +233,13 @@ export class ProofPublicPrepareHandler implements ICommandHandler<ProofPublicPre
     const existing = await this.credentialRepository.findByVcHash(vcHash);
     if (existing) return existing;
 
-    const issuerId = vc.issuer.id.split(":").pop() ?? vc.issuer.name;
+    const issuerByDid = await this.issuerRepository.findByDid(vc.issuer.id);
+    // Legacy did:web credentials encoded the internal issuer ID in the last
+    // segment. New did:pkh values must be resolved from the persisted DID.
+    const issuerId = issuerByDid?.externalId ?? vc.issuer.id.split(":").pop() ?? vc.issuer.name;
     const credential = Credential.issue({
       vcHash,
+      vcDocument: vc,
       cpfDedupKey: null,
       issuerDid: vc.issuer.id,
       issuerId,
@@ -241,7 +272,9 @@ export class ProofPublicPrepareHandler implements ICommandHandler<ProofPublicPre
       this.logger.error(
         `fullName mismatch — hash calculado: ${fullNameHash}, hash na VC: ${vc.credential_subject.full_name_hash}`,
       );
-      errors.push("fullName não corresponde ao hash registrado na VC (verifique espaços extras, acentos ou codificação)");
+      errors.push(
+        "fullName não corresponde ao hash registrado na VC (verifique espaços extras, acentos ou codificação)",
+      );
     }
 
     if (errors.length > 0) {

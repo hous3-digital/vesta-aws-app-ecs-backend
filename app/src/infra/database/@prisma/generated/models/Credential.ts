@@ -76,6 +76,7 @@ export type CredentialCountAggregateOutputType = {
   kycApproved: number
   issuedAt: number
   vcHash: number
+  vcDocument: number
   cpfDedupKey: number
   issuerDid: number
   issuerId: number
@@ -144,6 +145,7 @@ export type CredentialCountAggregateInputType = {
   kycApproved?: true
   issuedAt?: true
   vcHash?: true
+  vcDocument?: true
   cpfDedupKey?: true
   issuerDid?: true
   issuerId?: true
@@ -239,6 +241,7 @@ export type CredentialGroupByOutputType = {
   kycApproved: boolean | null
   issuedAt: Date | null
   vcHash: string
+  vcDocument: runtime.JsonValue | null
   cpfDedupKey: string | null
   issuerDid: string
   issuerId: string
@@ -282,6 +285,7 @@ export type CredentialWhereInput = {
   kycApproved?: Prisma.BoolNullableFilter<"Credential"> | boolean | null
   issuedAt?: Prisma.DateTimeNullableFilter<"Credential"> | Date | string | null
   vcHash?: Prisma.StringFilter<"Credential"> | string
+  vcDocument?: Prisma.JsonNullableFilter<"Credential">
   cpfDedupKey?: Prisma.StringNullableFilter<"Credential"> | string | null
   issuerDid?: Prisma.StringFilter<"Credential"> | string
   issuerId?: Prisma.StringFilter<"Credential"> | string
@@ -304,6 +308,7 @@ export type CredentialOrderByWithRelationInput = {
   kycApproved?: Prisma.SortOrderInput | Prisma.SortOrder
   issuedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   vcHash?: Prisma.SortOrder
+  vcDocument?: Prisma.SortOrderInput | Prisma.SortOrder
   cpfDedupKey?: Prisma.SortOrderInput | Prisma.SortOrder
   issuerDid?: Prisma.SortOrder
   issuerId?: Prisma.SortOrder
@@ -330,6 +335,7 @@ export type CredentialWhereUniqueInput = Prisma.AtLeast<{
   kycProvider?: Prisma.StringNullableFilter<"Credential"> | string | null
   kycApproved?: Prisma.BoolNullableFilter<"Credential"> | boolean | null
   issuedAt?: Prisma.DateTimeNullableFilter<"Credential"> | Date | string | null
+  vcDocument?: Prisma.JsonNullableFilter<"Credential">
   issuerDid?: Prisma.StringFilter<"Credential"> | string
   issuerId?: Prisma.StringFilter<"Credential"> | string
   subjectDid?: Prisma.StringFilter<"Credential"> | string
@@ -351,6 +357,7 @@ export type CredentialOrderByWithAggregationInput = {
   kycApproved?: Prisma.SortOrderInput | Prisma.SortOrder
   issuedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   vcHash?: Prisma.SortOrder
+  vcDocument?: Prisma.SortOrderInput | Prisma.SortOrder
   cpfDedupKey?: Prisma.SortOrderInput | Prisma.SortOrder
   issuerDid?: Prisma.SortOrder
   issuerId?: Prisma.SortOrder
@@ -379,6 +386,7 @@ export type CredentialScalarWhereWithAggregatesInput = {
   kycApproved?: Prisma.BoolNullableWithAggregatesFilter<"Credential"> | boolean | null
   issuedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Credential"> | Date | string | null
   vcHash?: Prisma.StringWithAggregatesFilter<"Credential"> | string
+  vcDocument?: Prisma.JsonNullableWithAggregatesFilter<"Credential">
   cpfDedupKey?: Prisma.StringNullableWithAggregatesFilter<"Credential"> | string | null
   issuerDid?: Prisma.StringWithAggregatesFilter<"Credential"> | string
   issuerId?: Prisma.StringWithAggregatesFilter<"Credential"> | string
@@ -401,6 +409,7 @@ export type CredentialCreateInput = {
   kycApproved?: boolean | null
   issuedAt?: Date | string | null
   vcHash: string
+  vcDocument?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   cpfDedupKey?: string | null
   issuerDid: string
   issuerId: string
@@ -423,6 +432,7 @@ export type CredentialUncheckedCreateInput = {
   kycApproved?: boolean | null
   issuedAt?: Date | string | null
   vcHash: string
+  vcDocument?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   cpfDedupKey?: string | null
   issuerDid: string
   issuerId: string
@@ -445,6 +455,7 @@ export type CredentialUpdateInput = {
   kycApproved?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   issuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   vcHash?: Prisma.StringFieldUpdateOperationsInput | string
+  vcDocument?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   cpfDedupKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   issuerDid?: Prisma.StringFieldUpdateOperationsInput | string
   issuerId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -467,6 +478,7 @@ export type CredentialUncheckedUpdateInput = {
   kycApproved?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   issuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   vcHash?: Prisma.StringFieldUpdateOperationsInput | string
+  vcDocument?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   cpfDedupKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   issuerDid?: Prisma.StringFieldUpdateOperationsInput | string
   issuerId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -489,6 +501,7 @@ export type CredentialCreateManyInput = {
   kycApproved?: boolean | null
   issuedAt?: Date | string | null
   vcHash: string
+  vcDocument?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   cpfDedupKey?: string | null
   issuerDid: string
   issuerId: string
@@ -511,6 +524,7 @@ export type CredentialUpdateManyMutationInput = {
   kycApproved?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   issuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   vcHash?: Prisma.StringFieldUpdateOperationsInput | string
+  vcDocument?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   cpfDedupKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   issuerDid?: Prisma.StringFieldUpdateOperationsInput | string
   issuerId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -533,6 +547,7 @@ export type CredentialUncheckedUpdateManyInput = {
   kycApproved?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   issuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   vcHash?: Prisma.StringFieldUpdateOperationsInput | string
+  vcDocument?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   cpfDedupKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   issuerDid?: Prisma.StringFieldUpdateOperationsInput | string
   issuerId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -555,6 +570,7 @@ export type CredentialCountOrderByAggregateInput = {
   kycApproved?: Prisma.SortOrder
   issuedAt?: Prisma.SortOrder
   vcHash?: Prisma.SortOrder
+  vcDocument?: Prisma.SortOrder
   cpfDedupKey?: Prisma.SortOrder
   issuerDid?: Prisma.SortOrder
   issuerId?: Prisma.SortOrder
@@ -647,6 +663,7 @@ export type CredentialSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   kycApproved?: boolean
   issuedAt?: boolean
   vcHash?: boolean
+  vcDocument?: boolean
   cpfDedupKey?: boolean
   issuerDid?: boolean
   issuerId?: boolean
@@ -669,6 +686,7 @@ export type CredentialSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   kycApproved?: boolean
   issuedAt?: boolean
   vcHash?: boolean
+  vcDocument?: boolean
   cpfDedupKey?: boolean
   issuerDid?: boolean
   issuerId?: boolean
@@ -691,6 +709,7 @@ export type CredentialSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   kycApproved?: boolean
   issuedAt?: boolean
   vcHash?: boolean
+  vcDocument?: boolean
   cpfDedupKey?: boolean
   issuerDid?: boolean
   issuerId?: boolean
@@ -713,6 +732,7 @@ export type CredentialSelectScalar = {
   kycApproved?: boolean
   issuedAt?: boolean
   vcHash?: boolean
+  vcDocument?: boolean
   cpfDedupKey?: boolean
   issuerDid?: boolean
   issuerId?: boolean
@@ -727,7 +747,7 @@ export type CredentialSelectScalar = {
   expiresAt?: boolean
 }
 
-export type CredentialOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nullifier" | "issuer" | "kycProvider" | "kycApproved" | "issuedAt" | "vcHash" | "cpfDedupKey" | "issuerDid" | "issuerId" | "subjectDid" | "kycLevel" | "status" | "sorobanTxHash" | "userWalletAddress" | "privyUserId" | "createdAt" | "updatedAt" | "expiresAt", ExtArgs["result"]["credential"]>
+export type CredentialOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nullifier" | "issuer" | "kycProvider" | "kycApproved" | "issuedAt" | "vcHash" | "vcDocument" | "cpfDedupKey" | "issuerDid" | "issuerId" | "subjectDid" | "kycLevel" | "status" | "sorobanTxHash" | "userWalletAddress" | "privyUserId" | "createdAt" | "updatedAt" | "expiresAt", ExtArgs["result"]["credential"]>
 
 export type $CredentialPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Credential"
@@ -740,6 +760,7 @@ export type $CredentialPayload<ExtArgs extends runtime.Types.Extensions.Internal
     kycApproved: boolean | null
     issuedAt: Date | null
     vcHash: string
+    vcDocument: runtime.JsonValue | null
     cpfDedupKey: string | null
     issuerDid: string
     issuerId: string
@@ -1182,6 +1203,7 @@ export interface CredentialFieldRefs {
   readonly kycApproved: Prisma.FieldRef<"Credential", 'Boolean'>
   readonly issuedAt: Prisma.FieldRef<"Credential", 'DateTime'>
   readonly vcHash: Prisma.FieldRef<"Credential", 'String'>
+  readonly vcDocument: Prisma.FieldRef<"Credential", 'Json'>
   readonly cpfDedupKey: Prisma.FieldRef<"Credential", 'String'>
   readonly issuerDid: Prisma.FieldRef<"Credential", 'String'>
   readonly issuerId: Prisma.FieldRef<"Credential", 'String'>
@@ -1370,11 +1392,6 @@ export type CredentialFindManyArgs<ExtArgs extends runtime.Types.Extensions.Inte
    * Skip the first `n` Credentials.
    */
   skip?: number
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-   * 
-   * Filter by unique combinations of Credentials.
-   */
   distinct?: Prisma.CredentialScalarFieldEnum | Prisma.CredentialScalarFieldEnum[]
 }
 
