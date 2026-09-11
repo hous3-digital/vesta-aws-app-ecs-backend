@@ -52,22 +52,12 @@ export class PasskeyAuthService {
         "Esta credencial já possui um Passkey registrado; recuperação exige um fluxo autenticado separado",
       );
     }
-    const stored = await this.challengeService.generate(
-      {
-        kind: "passkey-registration",
-        issuerId,
-        rpId,
-        vcHash,
-      },
-      WEBAUTHN_SERVER_CHALLENGE_TTL_SECONDS,
-    );
-    return generateRegistrationOptions({
+    const options = await generateRegistrationOptions({
       rpName: "Vesta Digital Passport",
       rpID: rpId,
       userName: "Vesta credential holder",
       userDisplayName: "Vesta KYC Credential",
       userID: createHash("sha256").update(credential.subjectDid).digest(),
-      challenge: stored.challenge,
       timeout: 60_000,
       attestationType: "none",
       excludeCredentials: [],
@@ -78,6 +68,17 @@ export class PasskeyAuthService {
       },
       supportedAlgorithmIDs: [-7, -257],
     });
+    await this.challengeService.store(
+      options.challenge,
+      {
+        kind: "passkey-registration",
+        issuerId,
+        rpId,
+        vcHash,
+      },
+      WEBAUTHN_SERVER_CHALLENGE_TTL_SECONDS,
+    );
+    return options;
   }
 
   public async verifyRegistration(params: {
@@ -127,7 +128,13 @@ export class PasskeyAuthService {
 
   public async authenticationOptions(issuerId: string, rpId: string) {
     this.assertAllowedRpId(rpId);
-    const stored = await this.challengeService.generate(
+    const options = await generateAuthenticationOptions({
+      rpID: rpId,
+      timeout: 60_000,
+      userVerification: "required",
+    });
+    await this.challengeService.store(
+      options.challenge,
       {
         kind: "passkey-authentication",
         issuerId,
@@ -135,12 +142,7 @@ export class PasskeyAuthService {
       },
       WEBAUTHN_SERVER_CHALLENGE_TTL_SECONDS,
     );
-    return generateAuthenticationOptions({
-      rpID: rpId,
-      challenge: stored.challenge,
-      timeout: 60_000,
-      userVerification: "required",
-    });
+    return options;
   }
 
   public async verifyAuthentication(params: {
