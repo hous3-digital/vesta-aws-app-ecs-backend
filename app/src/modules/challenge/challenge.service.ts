@@ -63,9 +63,23 @@ export class ChallengeService implements OnModuleInit, OnModuleDestroy {
     context: ChallengeContext = { kind: "legacy" },
     ttlSeconds = DEFAULT_CHALLENGE_TTL_SECONDS,
   ): Promise<{ challenge: string; expiresAt: number }> {
-    // Mantém o formato hexadecimal do endpoint legado. Hex também é uma
-    // string base64url canônica, portanto funciona nas options WebAuthn JSON.
+    // Mantém o formato hexadecimal exposto pelo endpoint legado. WebAuthn
+    // persiste separadamente o Base64URL produzido pela biblioteca.
     const challenge = randomBytes(32).toString("hex");
+    return this.store(challenge, context, ttlSeconds);
+  }
+
+  /**
+   * Persiste um challenge produzido por outro protocolo sem alterar sua
+   * representação. WebAuthn usa este caminho porque o SimpleWebAuthn devolve
+   * o challenge em Base64URL; o valor armazenado deve ser exatamente o mesmo
+   * que o navegador devolverá na etapa de verificação.
+   */
+  public async store(
+    challenge: string,
+    context: ChallengeContext,
+    ttlSeconds = DEFAULT_CHALLENGE_TTL_SECONDS,
+  ): Promise<{ challenge: string; expiresAt: number }> {
     const expiresAt = Date.now() + ttlSeconds * 1000;
     const stored: StoredChallenge = { expiresAt, context };
 
