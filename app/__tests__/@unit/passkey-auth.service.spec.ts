@@ -1,14 +1,22 @@
 import { ConflictException } from "@nestjs/common";
-import { generateRegistrationOptions, verifyAuthenticationResponse } from "@simplewebauthn/server";
+import {
+  generateAuthenticationOptions,
+  generateRegistrationOptions,
+  verifyAuthenticationResponse,
+} from "@simplewebauthn/server";
 import { PasskeyAuthService } from "@src/modules/challenge/passkey-auth.service";
 import { Credential } from "@src/modules/credential/domain/credential.entity";
 
-jest.mock("@simplewebauthn/server", () => ({
-  generateAuthenticationOptions: jest.fn(async (options) => ({ ...options })),
-  generateRegistrationOptions: jest.fn(async (options) => ({ ...options })),
-  verifyAuthenticationResponse: jest.fn(),
-  verifyRegistrationResponse: jest.fn(),
-}));
+jest.mock("@simplewebauthn/server", () => {
+  const actual = jest.requireActual("@simplewebauthn/server");
+  return {
+    ...actual,
+    generateAuthenticationOptions: jest.fn(actual.generateAuthenticationOptions),
+    generateRegistrationOptions: jest.fn(actual.generateRegistrationOptions),
+    verifyAuthenticationResponse: jest.fn(),
+    verifyRegistrationResponse: jest.fn(),
+  };
+});
 
 const vcHash = "ab".repeat(32);
 const credential = Credential.issue({
@@ -24,6 +32,7 @@ const credential = Credential.issue({
 describe("PasskeyAuthService", () => {
   const challengeService = {
     generate: jest.fn(),
+    store: jest.fn(),
     consumeContext: jest.fn(),
   };
   const credentialRepository = { findByVcHash: jest.fn() };
@@ -61,18 +70,16 @@ describe("PasskeyAuthService", () => {
       service.registrationOptions("issuer-1", vcHash, "app.example.com"),
     ).rejects.toBeInstanceOf(ConflictException);
     expect(challengeService.generate).not.toHaveBeenCalled();
+    expect(challengeService.store).not.toHaveBeenCalled();
   });
 
-  it("mantém margem no servidor para concluir ou reiniciar o registro WebAuthn", async () => {
+  it("persiste sem alteração o challenge Base64URL enviado no registro WebAuthn", async () => {
     prisma.passkeyCredential.findUnique.mockResolvedValue(null);
-    challengeService.generate.mockResolvedValue({
-      challenge: "registration-challenge",
-      expiresAt: Date.now() + 120_000,
-    });
 
-    await service.registrationOptions("issuer-1", vcHash, "app.example.com");
+    const options = await service.registrationOptions("issuer-1", vcHash, "app.example.com");
 
-    expect(challengeService.generate).toHaveBeenCalledWith(
+    expect(challengeService.store).toHaveBeenCalledWith(
+      options.challenge,
       {
         kind: "passkey-registration",
         issuerId: "issuer-1",
@@ -82,8 +89,29 @@ describe("PasskeyAuthService", () => {
       120,
     );
     expect(generateRegistrationOptions).toHaveBeenCalledWith(
-      expect.objectContaining({ challenge: "registration-challenge", timeout: 60_000 }),
+      expect.objectContaining({ timeout: 60_000 }),
     );
+    expect((generateRegistrationOptions as jest.Mock).mock.calls[0][0]).not.toHaveProperty("challenge");
+    expect(options.challenge).toMatch(/^[A-Za-z0-9_-]+$/);
+  });
+
+  it("persiste sem alteração o challenge Base64URL enviado na autenticação WebAuthn", async () => {
+    const options = await service.authenticationOptions("issuer-1", "app.example.com");
+
+    expect(challengeService.store).toHaveBeenCalledWith(
+      options.challenge,
+      {
+        kind: "passkey-authentication",
+        issuerId: "issuer-1",
+        rpId: "app.example.com",
+      },
+      120,
+    );
+    expect(generateAuthenticationOptions).toHaveBeenCalledWith(
+      expect.objectContaining({ timeout: 60_000 }),
+    );
+    expect((generateAuthenticationOptions as jest.Mock).mock.calls[0][0]).not.toHaveProperty("challenge");
+    expect(options.challenge).toMatch(/^[A-Za-z0-9_-]+$/);
   });
 
   it("só emite token Privy e proof challenge depois de verificar assertion e atualizar counter", async () => {
