@@ -1,0 +1,351 @@
+# Decisões e pendências técnicas — Vesta backend
+
+> Parte de produto (tese, mercado, por que o cliente compra) vive fora do repo: `~/hous3/notes/vesta/tese-produto.md` (Victor) e nos docs da Ana no Track.
+
+Registro vivo. **Toda decisão tomada e toda pendência aberta entra aqui**, com data. Quando uma decisão vira ADR, o ADR é a fonte e esta linha aponta para ele.
+
+Documentos irmãos: `PLANO-RETOMADA.md` (sequência de fases), `CONTEXTO-ESTUDO.md` (mapa do código), `ARQUITETURA-V2.md` (alvo). Registro de QA: `internal/qa-manual-tests-hous3/clients/vesta/` (board `documentation/board-execucao.md`, Regression Run #363, bugs #354–#362). Tasks: Track, projeto `project_01kxran3grfqes6tzwqysaykzs`, release R4.
+
+---
+
+## 1. Decisões tomadas
+
+| Data | Decisão | Por quê | Onde está registrado |
+|---|---|---|---|
+| 2026-09-18 | Suíte de QA da Vesta segue o padrão do repo `qa-manual-tests-hous3`: CTs versionados, `board-execucao.md` em texto puro, execução = Issue "Regression Run", bugs = Issues `bug_report.yml` com label `client:vesta` | Mesmo processo dos outros clientes; ponte por ID `CT-VESTA-<MÓDULO>-NNN` para automação | PR #353, Issues #354–#363 |
+| 2026-09-18 | **Existe cliente em produção** usando o SDK e `/public/*`. Toda mudança é classificada antes de entrar: **aditiva** (entra) · **comportamental** (checar uso em prod) · **quebra de contrato** (versão nova ou flag) | Não quebrar quem paga | Este doc; memória do agente |
+| 2026-09-18 | Fase 0 do plano (§0.2) fechada: 72 CTs executados, 60 OK / 9 BUG / 3 N/A | — | Regression Run #363 |
+| 2026-09-19 | Harness de agentes será agnóstico (Cursor **e** Claude Code), canônico em `.cursor/`, espelho em `.claude/`; fluxo spec-driven (PRD → Tech Spec → tasks → exec); skills enxutas ao projeto | Uma fonte por artefato; não manter duas cópias | Task `[HARNESS]` no Track (backlog) |
+| 2026-09-21 | Remover "sessão em memória / ambiente local" do material da reunião de rumo — segue como pendência técnica, não como argumento | Pedido do Victor | Artifact "Vesta Rumo" v2 |
+| 2026-09-21 | Material da reunião de rumo: artifact "Vesta Pendências" (29 itens, 6 blocos, sem prazo) + "Vesta Rumo" (cenários). Mensagem ao Vini enviada convidando para a reunião das 15h | Prioridade (SCF × clientes × ambos) é decisão dele | https://claude.ai/artifact/3pLr5G4RLncGRMGgbDfF1h · https://claude.ai/artifact/Bhcc4f39SsXy4DaNLcvLiw |
+| 2026-09-21 | **Vini: montar com a Ana uma release de 10 dias para arrumar a base.** Proposta "R4.5 — Base segura" em §3.6 | Decisão do Vini | Este doc §3.6 |
+| 2026-09-21 | **Pivot de tese (reunião com Vini/Ana/Pedro, 21/09):** de "protocolo com provedores de KYC" para "camada de segurança/prova de continuidade de identidade": a própria plataforma emite a credencial com as regras dela; Vesta garante imutabilidade + que quem transaciona é quem cadastrou (Passkey + credencial cifrada + ZK); taxa por verificação paga pela plataforma; sem background check. Fluxo IdCerberus continua como um tipo de provedor. Grants viram secundário. **Não é decisão fechada:** seguir analisando possibilidades até a reunião interna de quarta (23/09), que tem também o Mileto. Ana escreve proposta até lá | Time-to-value; não depender de provedores | Este doc D11 |
+| 2026-09-22 | Criada e iniciada no Track a task `[DOCS] Pesquisar o novo enquadramento do produto Vesta + spike técnico` (`task_01m34h4w3qfk3s3aqv3p52tnz7`, R4, feature do saque, EP 5, Victor, sem revisor). Entregável: documento de pesquisa com 3 alternativas comparadas para a reunião de 23/09 | A decisão é da reunião; a task levanta evidência | Track |
+| 2026-09-23 | **Foco muda para arrumar a casa** do cliente em produção. Comissionamento on-chain, R5/R6 descontinuadas; módulos de agente ficam com produto. Release "Casa arrumada" (§3.14) até 02/10–05/10, criada pela Ana no Track | Decisão do Victor | Este doc §3.14 |
+| 2026-09-21 | **Miguel saiu do projeto.** Time de engenharia = Victor + agentes. Planos passam a ser sequenciais, uma frente | Fato | Este doc §3.5 |
+
+## 2. Decisões pendentes (precisam de dono e data)
+
+| # | Decisão | Opções | Bloqueia | Quem decide |
+|---|---|---|---|---|
+| D1 | **Fronteira on-chain / off-chain** — o que vai para Soroban e o que fica no Postgres | Proposta em `ARQUITETURA-V2.md` §1 (commitment, revogação, registry, attestation, créditos on-chain; PII, VC, KYC pendente, auth off-chain) | Tudo da Fase 2; resposta ao SCF | Victor |
+| D2 | **ADR-000 compatibilidade** — como mudar o que o cliente vê | (a) rota `/v2` · (b) flag por issuer (como `privyEnabled`) · (c) aviso com prazo. Proposta: contratos v2 **ao lado**, flag por issuer, SDK versionado | Qualquer fix comportamental; verifier v2; settlement | Victor, após D6 (mapa de uso) |
+| D3 | **SCF é prioridade, cliente é prioridade, ou meio-termo** — define o conteúdo da R5 | Cenários A / B / C no artifact "Vesta Rumo" | R5 | Reunião de rumo 22/09 |
+| D4 | Verifier: catálogo **global** ou **por issuer** (BO-006 #355) | global → só admin edita · por issuer → migration `issuer_id` | Fix do #355 | Produto |
+| D5 | Rota legada `POST /public/proof/submit` (PROOF-008 #362) | manter e corrigir status · depreciar com prazo · remover | Fix do #362 | Depende de D6 |
+| D6 | **Mapa de uso do cliente em produção** — não é decisão, é fato que falta (rotas, versão do SDK, Passkey/Privy, rota legada, revokes) | **`ingress`/`egress` estão vazias em todo ambiente** (loggers existem, ninguém chama). Fonte possível: logs do ALB/ECS (CloudWatch), tabelas `credentials`/`attestation`/`api_keys` de prod (contagem por issuer, `created_at`), `passkey_credentials` | D2, D5, ordem dos fixes | Pedro/infra dá o acesso; Victor levanta |
+| D7 | Quem assina pela **wallet organizacional** | só browser (hoje) · chave de serviço · Privy server-side | 3 CTs N/A; automação do saque | Produto + Victor |
+| D8 | O cliente em produção **pode ser nomeado** no SCF? | sim / não | Resposta ao pedido de adoção | Comercial |
+| D10 | **Reescrever do zero vs evoluir no lugar** | (a) rewrite v2 do backend · (b) strangler: módulos novos no padrão v2 ao lado, migrar um por vez quando tocado · (c) só protocolo (circuito + verifier + settlement) do zero, backend por strangler. **Recomendação: (c)** — 10,7k linhas TS, 16 tabelas, bugs localizados, cliente em prod impede dois sistemas em paridade | Tudo | Reunião de rumo 22/09 |
+| D11 | **Como a tese nova entra no roadmap** | Recomendação: manter R4.5 (base segura) quase igual; R5 vira "credencial da plataforma": schema livre, cifragem no cliente com WebAuthn PRF, circuito de continuidade (commitment + nullifier, estilo Semaphore), verifier v2, piloto Rise. Split técnico/comercial deixa de ser prioridade. **Spike de 2–3 dias antes:** PRF + passkey sincronizada nos dispositivos da Rise. Pontos de precisão no pitch: "Passkey seu" = passkey sincronizável + PRF + recovery (passkey não sai do device); "não armazenamos nada" exige cifrar no cliente (hoje `vc_document` está em claro) | R5; narrativa; SCF/Ripple | Vini + Ana + Victor — reunião interna 23/09 (com Mileto) |
+| D9 | **Arquitetura orientada a eventos** — adotar? | Proposta em §5: (1) outbox · (2) eventos de domínio no `EventBus` já instalado · (3) indexer de eventos Soroban. Incremental, não é event sourcing | Fase 3; ledger como projeção | Victor |
+
+## 3. Pendências técnicas (o que fazer)
+
+Legenda: `[ ]` aberto · `[~]` em andamento · `[x]` feito. Classificação de impacto no cliente: **A** aditivo · **C** comportamental · **Q** quebra contrato.
+
+### 3.1 Casa arrumada (pré-requisito de tudo, ~2 semanas)
+
+- [ ] **A** SEC-002 #356 — CORS: adicionar DELETE/PUT/PATCH (`main.ts:97`)
+- [ ] **A** PASS-004 #361 — try/catch nas chamadas `verify*Response`; counter regressivo → 4xx + log de segurança (`passkey-auth.service.ts:174-187`)
+- [ ] **A** SURF-002 #360 — validar PEM de `PRIVY_CUSTOM_AUTH_PRIVATE_KEY` no boot; corrigir `.env.example` (`wallet.service.ts:439,466`)
+- [ ] **A** Sessão de prepare em memória → Redis obrigatório em staging/prod (`prepare-session.service.ts:34-41`)
+- [ ] **A** COMM-001 — mover `releaseSecurityPeriod` do GET de balance para o processor
+- [ ] **C** CRED-011 #354 — revoke compara `issuerId` da key → 404 (`credential-public-revoke.handler.ts:19-25`). *Depende de D6.*
+- [ ] **C** SEC-005 #358 — boot falha sem artefato ZK fora de `local`/`test` (`zk.service.ts:37-41`). *Confirmar artefatos em prod antes.*
+- [ ] **C** ADMIN-009 #359 — 401 → 400/404 em `/admin/api-keys` e `/backoffice/api-keys`. *Depende de D6 (cliente trata 401 como chave inválida?).*
+- [ ] **Q** SEC-004 #357 — API key hasheada (sha256 + `timingSafeEqual`) com **dupla leitura** até o cliente rotacionar (`api-key.service.ts:13,29`). *Depende de D2.*
+- [ ] **C** BO-006 #355 — verifiers. *Depende de D4.*
+- [ ] **A/Q** PROOF-008 #362 — verificar prova local antes da simulação; 422 em vez de 503. Remoção da rota *depende de D5.*
+- [ ] Ambiente local reproduzível (PLANO §0.1): `docker-compose.yml`, `.env.local` mock sem Privy, `.env.example` com PEM em uma linha, `make dev` / `make smoke`
+- [ ] `BACKOFFICE_JWT_EXPIRES_IN=never` no `.env` de staging — confirmar se é intencional; JWT sem `exp`
+- [ ] `PUT /admin/issuers/:id/registry` — checar diff antes de enviar tx (evita transação paga à toa)
+- [ ] **`IngressLogger`/`EgressLogger` nunca são chamados** — ligar como interceptor global (com redação de PII: CPF, chaves, tokens) **ou** remover módulos e tabelas. Sem isso não há trilha de auditoria HTTP em prod
+
+### 3.2 Protocolo (Fase 2 — depende de D1, D2, D3)
+
+- [ ] **Q** Verifier v2: VK gravada no contrato (`instance` storage), `verify_proof` sem parâmetros `vk_*`; circuito v2 com `vc_commitment`, `nonce`, `verifier_id` nos sinais públicos; nonce em `temporary` storage; prova inválida = `panic` (hoje grava attestation com `kyc_valid: false` e incrementa contador); evento por verificação (hoje sobrescreve `Attestation(vc_hash)`). Deploy **ao lado** do v1. Ref. `ARQUITETURA-V2.md` §2.3 e §3
+- [ ] **Q** Settlement: `accrue(credential, technical, commercial, bps)`, hold on-chain, `reverse_for_credential`, guardião para disputa. Ledger do Postgres vira projeção. Ref. §2.4
+- [ ] VC v2 com assinatura EdDSA real do issuer (hoje `proofValue` é SHA-256 de `issuerId:cpfHash`). **Q** — muda o formato guardado no device
+- [ ] `docs/protocol/on-off-chain.md` (versão curta de `ARQUITETURA-V2` §1) — resposta direta ao SCF
+- [ ] `docs/protocol/threat-model.md` — replay, conluio no split, custódia Privy (estrutura em §7)
+- [ ] Instalar skills oficiais Stellar (`stellar/stellar-dev-skill`, commit pinado) **antes** de escrever Rust; validar storage/custo contra a doc atual
+- [ ] Painel público de adoção lendo eventos do RPC
+- [ ] CTs novos `CT-VESTA-CHAIN-NNN`: replay on-chain, VK como parâmetro, `vc_hash` solto, prepare com VC REVOKED sem Privy, split inexistente (PLANO §0.2)
+
+### 3.3 QA e harness
+
+- [x] Suíte de 72 CTs + board + README — PR #353 (aguardando merge)
+- [x] 9 Issues de bug #354–#362; label `client:vesta`
+- [x] Regression Run #363 + link no board
+- [ ] Merge do PR #353 (Gui / Pedro / Maria Luísa). Revisado contra o padrão do repo em 2026-09-21: 72 CTs/índice/board/template consistentes, sem segredo; 3 ajustes commitados em `b742e98` (smoke checklist no `regression-template.md`, nº da Issue em cada linha BUG do board, README). **Falta pedir reviewer no GitHub.** Ponto a decidir com QA: CTs-hipótese (CRED-011, BO-006, SEC-002, SEC-004, SEC-005) têm título descrevendo o comportamento atual — renomear para o esperado quando o fix entrar (ID não muda)
+- [ ] Task `[HARNESS]` no Track — AGENTS.md, rules, skills, hooks, comandos spec-driven, agnóstico Cursor/Claude
+- [ ] Suítes de QA para **SDK** (~20–25 CTs, 4 fluxos) e **backoffice web** (~15–20 CTs) e E2E de integração (3–4 CTs). SDK primeiro (é o cliente em produção)
+- [ ] Automação Playwright API: `E2E-001` + negativos confirmados em `qa-automation-e2e-hous3/clients/vesta/`; authenticator WebAuthn virtual (`vauth.js`, tiny-cbor + crypto) vira fixture — **hoje só existe no scratchpad de uma sessão, não versionado**
+- [ ] Diagramas as-is em `docs/as-is/*.md` (PLANO §0.3) — conteúdo já existe nos artifacts "Vesta As-Is" e "Vesta Board"; falta gerar Markdown/mermaid no repo
+- [ ] Commitar `relatorio-auditoria-vesta-backend.md`, `CONTEXTO-ESTUDO.md`, `PLANO-RETOMADA.md`, `ARQUITETURA-V2.md` e este arquivo (hoje só no disco do Victor)
+
+### 3.4 Segurança — inventário do que está e não está coberto
+
+Coberto pela regression (backend HTTP): autenticação de borda (API key, admin secret, JWT), isolamento por issuer no painel e no ledger, whitelist de campos, throttle, PII fora do banco, one-time de challenge/sessão/token de recovery, Passkey (RP ID, origin, UV, counter).
+
+**Não coberto ainda:**
+- [ ] Contratos Soroban: sem auditoria; sem `cargo scout-audit`; sem testes de negativo (replay, VK errada, issuer suspenso). Verifier: os furos de §3.2
+- [ ] SDK: nenhum teste; superfície pública de 15 métodos sem revisão de segurança (armazenamento da VC no device, tratamento de token)
+- [ ] Front-backoffice: nenhum teste; CORS hoje bloqueia parte das ações; sessão JWT sem expiração em staging
+- [ ] Privy: sem plano de saída se o provedor cair; assinatura só no browser (bom), mas não documentado
+- [ ] Segredos: `.env` de staging commitado no repo com contratos reais e chave Privy; deployer = operator (mesma chave assina prova e liquida vault — relatório S-07)
+- [ ] Webhook de KYC: sem assinatura, sem retry, sem idempotency-key explícita (é idempotente por estado, não por requisição)
+- [ ] Dependências: `audit-ci` existe no `package.json`; confirmar se roda no CI
+- [ ] Audit Bank do SCF: chegar sem os 5 bugs de segurança abertos
+
+---
+
+## 3.5 Proposta: plano de 5 semanas, uma pessoa + agentes (resposta a D3 + D10) — 2026-09-21
+
+**Restrição:** Miguel saiu do projeto. Só Victor + agentes de IA. Sem frentes paralelas; tudo sequencial, ordenado por "o que mais muda a conversa por semana". Nada que só é feio é tocado.
+
+| Semana | O quê | Papel do agente | Entregável visível |
+|---|---|---|---|
+| 1 | 9 bugs; Redis obrigatório; `.env.local` + compose; `IngressLogger` ligado com redação de PII; instalar skills Stellar; regression re-executada | Alto — mecânico, guardado por CT | 0 BUG |
+| 2 | **Verifier v2**: circuito com `vc_commitment`/`nonce`/`verifier_id`, setup single-party (testnet), contrato com VK no deploy + nonce + panic em prova inválida; testes de negativo; `scout-audit`; deploy ao lado do v1 | Agente escreve sob skill Stellar; **Victor revisa e roda os testes** — item de maior risco | Demo 1: replay recusado on-chain |
+| 3 | Backend: flag `protocolVersion` por issuer, provider v2, outbox só em `commission`, `proof` publica evento; SDK v2 | Alto | Cliente atual em v1 intocado; issuer de teste em v2 |
+| 4 | `docs/protocol/on-off-chain.md` + `threat-model.md` escritos do código; painel de adoção (eventos do RPC); suíte de QA do SDK | Alto — docs saem do código | 3 dos 4 pedidos do SCF respondidos com link |
+| 5 | **Settlement MVP**: `accrue` com split 2 beneficiários, reversão simples; testes; `deployments/testnet.json`; material de resubmissão | Alto na escrita; revisão humana | Demo 2: 60/40 no explorer; SCF resubmetido |
+
+**Versão de 3 semanas:** semanas 1–3 → bugs zerados, replay recusado, cliente protegido. SCF recebe "verifier v2 no ar; split com código em andamento e data". **Versão de 2 semanas:** só 1–2.
+
+**Fora:** refatorar `wallet`/`issuer`/`backoffice`; eventos nos demais módulos; disputa/guardião; VC EdDSA; proving no cliente; cerimônia multi-party do trusted setup (só para mainnet).
+
+**Riscos a dizer em voz alta:** (1) uma pessoa = qualquer imprevisto desloca tudo; (2) Rust/Soroban escrito por agente precisa de revisão que hoje ninguém no time faz — Audit Bank do SCF cobre parte, mas depois; (3) trusted setup do circuito; (4) acesso a prod (D6) na semana 1. **Decisão 2026-09-21:** não há dev Rust; Victor assume os contratos (Rust básico) com o agente escrevendo sob a skill oficial Stellar e Victor revisando. Semana 2 é o ponto crítico; mitigação: instalar `stellar-dev-skill` na semana 1, começar pelo teste de negativo (replay) antes do contrato, `scout-audit` e Audit Bank como segunda revisão.
+
+## 3.6 Proposta de release: R4.5 — Base segura (10 dias) — 2026-09-21, recorte final
+
+Objetivo: fechar segurança entre clientes, tornar o sistema operável/testável, fundação de eventos e do protocolo v2 — sem o cliente atual perceber. Regra: nada de feature nova; só aditivo e comportamental de baixo risco; tudo com CT. **Pré-requisito do dia 1 (não é task):** toolchain Rust/Stellar, acesso read-only a prod.
+
+Correções sobre a versão anterior: `.env` **não** está no repo (ignorado, nunca commitado) — task "segredos fora do repo" cai; docker-compose fora; Ana não participa da regra de compatibilidade — é decisão do Victor após olhar prod.
+
+| Feature | Tasks (EP) | Total |
+|---|---|---|
+| A · Segurança entre clientes | CRED-011 (1) · BO-006 escopado por issuer (2) · SEC-004 hash + dupla leitura (3) · SEC-005 (1) · PASS-004 (1) · deployer ≠ operator (1) | 9 |
+| B · Operação confiável | Redis obrigatório + sessão no Redis (1) · COMM-001 (1) · Ingress/Egress ligados com máscara de PII (2) · SURF-002 (1) · SEC-002 (1) · ADMIN-009 (1) · PROOF-008 (1) | 8 |
+| C · Eventos — fundação | `outbox_events` + 3 side effects via outbox + processors com lock/retry; estado final igual ao de hoje (3) | 3 |
+| D · Harness completo | AGENTS.md + rules `standard-*` + `vesta-protocol` + hooks + skills (dev + Stellar oficiais) + comandos spec-driven, agnóstico Cursor/Claude (5) · `.env.local` mock + `make smoke` (1) | 6 |
+| E · Protocolo v2 — fundação | testes de negativo do verifier que hoje falham (2) · `on-off-chain.md` (1) · `threat-model.md` (2) | 5 |
+| F · Verificação | mapa de uso do cliente em prod (1) · regression completa + Regression Run (2) | 3 |
+| **Total** | | **34** |
+
+Decisão fora das tasks: regra de compatibilidade (D2) — Victor, após o mapa de uso.
+
+Ordem: D1 harness + `.env.local` + mapa de uso → D2 fixes aditivos → D3 comportamentais + D2 decidida → D4–5 SEC-004 → D6 outbox → D7 Ingress/Egress + testes do verifier → D8 docs → D9 regression → D10 buffer.
+
+Fora (→ R5): verifier v2 + circuito, settlement, revogação/commitment on-chain, VC EdDSA, eventos de domínio + indexer, suítes SDK/painel, painel de adoção, automação.
+
+## 3.7 Tese nova × código atual (2026-09-22)
+
+| Módulo | Hoje | Tese nova | Reuso |
+|---|---|---|---|
+| `challenge` (Passkey/recovery) | OK nos testes | centro do produto | inteiro; ganha PRF |
+| `stellar`, registry, vault | funcionam | idem | sim; verifier v2 já era necessário |
+| `issuer`, API key, backoffice | issuer = banco | issuer = plataforma | renomear; tirar roles regulados |
+| `commission` | R$ 1,37/reuso | taxa/verificação | mesma tabela |
+| `credential`, `vc` | schema fixo, assinatura fake, `vc_document` em claro | schema da plataforma, cifrada no cliente | **refazer modelo/formato** |
+| `zk` + circuito | "conheço cpf/data/nome" | "sou o mesmo que cadastrou" (commitment + nullifier) | **circuito novo** (já previsto na v2) |
+| KYC webhook | central | opcional (provider IdCerberus) | mantém para o cliente atual |
+| `wallet` (Privy) | titular + org | Passkey assina direto (passkey-kit Stellar) — desejo do Vini | substituível, não urgente |
+
+~60–70 % do backend serve. **Não reescrever do zero.** Estudo prioritário: NIST 800-63-4 (IAL/AAL), W3C VC 2.0 + SD-JWT, WebAuthn L3 (PRF, largeBlob, sync), Semaphore, Stellar passkey-kit + host functions, OpenID4VC, LGPD, Lei 14.478/2022 + regulação VASP (confirmar), EAS/eIDAS 2.0 como referência de desenho. Mercado: proof of personhood (World ID, Human Passport), SSI (Privado ID, SpruceID, Holonym), attestations (EAS, Verax), passkey wallets (Turnkey, Privy, passkey-kit).
+
+Guia de estudo completo (10 temas, referências, ordem de 2 semanas): https://claude.ai/artifact/5nxzL6CwyFzFraGtyqyKcC · Onde ZK vale (predicado privado, reuso entre plataformas sem confiar na Vesta, não-correlação via nullifier, privacidade on-chain) e onde é exagero ("mesma pessoa" dentro de uma plataforma — passkey basta). `vc_document` hoje em claro → cifrar no cliente com PRF; backend guarda só ciphertext.
+
+## 3.14 Release "Casa arrumada" (2026-09-23) · substitui a §3.6 · para a Ana criar no Track
+
+**Decisão do Victor (23/09):** arrumar a casa para o cliente em produção antes de qualquer módulo novo. Comissionamento on-chain, split, settlement, verifier v2 e R5/R6 saem do roadmap (descontinuadas). Módulos para o mercado de agentes ficam com produto; esta release só prepara a arquitetura. Prazo: 02/10 (meta) a 05/10 (limite). Time: Victor + agentes, sequencial.
+
+**Regras da release:** nada de feature nova · toda mudança classificada **A** (aditiva) / **C** (comportamental, checar uso em prod) / **Q** (quebra de contrato, versão ou flag) · todo RF com CT · o cliente atual não pode perceber nada sem aviso prévio.
+
+**Pré-requisitos do dia 1 (não são tasks):** acesso read-only a banco/logs de prod (Pedro/infra) · toolchain Rust/Stellar local · PR #353 mergeado no repo de QA.
+
+### Prioridade 1 · tem que entrar até 02/10
+
+**F1 · Ambiente local e harness de agentes**
+| RF | O quê | Origem | Classe | EP |
+|---|---|---|---|---|
+| RF-001 | Ambiente local reproduzível: `docker-compose` (Postgres + Redis), fixtures, `.env.local` mock sem Privy, `make dev`/`make smoke`, modo ZK do smoke documentado | PLANO §0.1 / A-07 | A | 2 |
+| RF-002 | SDK aceita `apiUrl`/ambiente `LOCAL` (hoje só staging e produção; JSDoc documenta opção que não existe) | A-08 | A | 1 |
+| RF-003 | Isolamento de ambientes: app Privy Developer próprio, contratos próprios na testnet, `CPF_HMAC_SECRET` próprio, tudo documentado no README | S-10 / D-03 | A | 2 |
+| RF-004 | Harness agnóstico Cursor/Claude: `AGENTS.md`, rules `standard-*` (Block) + `vesta-protocol`, hooks (`guard-secrets`, `guard-shell`, `format-on-edit`), skills (dev + Stellar oficiais com commit pinado), comandos spec-driven (PRD → Tech Spec → tasks); smoke de harness nos dois agentes | Task `[HARNESS]` / PLANO §0.4–0.5 | A | 4 |
+
+**F2 · Cliente em produção protegido** (mapa de uso, regra de compatibilidade, regressão)
+| RF | O quê | Origem | Classe | EP |
+|---|---|---|---|---|
+| RF-001 | Mapa de uso do cliente em prod: rotas chamadas, versão do SDK, Passkey ou Privy, rota legada, revokes, volume por issuer (fonte: RDS read-only, CloudWatch/ALB) | D6 | doc | 1 |
+| RF-002 | ADR de compatibilidade: como entram mudanças C e Q (flag por issuer, SDK versionado, prazo de depreciação) e comunicação ao cliente das que exigem ação dele (rotação de API key) | D2 | doc | 1 |
+| RF-003 | Regression completa (72 CTs + CTs novos dos fixes, CTs-hipótese renomeados para o comportamento esperado) com Regression Run publicado e 0 BUG | §3.3 | QA | 2 |
+
+**F3 · Segurança entre clientes** (9 bugs de QA + achados críticos da auditoria)
+| RF | O quê | Origem | Classe | EP |
+|---|---|---|---|---|
+| RF-001 | Revogação só pelo issuer dono da credencial; key de outro issuer recebe 404/403; CT cruzando duas keys | CRED-011 #354 / S-09 | C | 1 |
+| RF-002 | API keys guardadas com hash (sha256 + comparação constant-time); leitura dupla (hash e texto) até o cliente rotacionar; plano de rotação comunicado ao cliente | SEC-004 #357 / S-01 / S-05 | Q | 3 |
+| RF-003 | Segredos obrigatórios em produção (`ADMIN_SECRET`, `BACKOFFICE_JWT_SECRET`, `PRIVY_APP_SECRET`); JWT do backoffice não cai para `ADMIN_SECRET`; `JwtService` por injeção; JWT com expiração (hoje `never` em staging) | S-03 / S-04 / S-06 / §3.1 | A | 1 |
+| RF-004 | Passkey: falha de `verify*Response` tratada (try/catch), counter regressivo devolve 4xx e gera log de segurança | PASS-004 #361 | A | 1 |
+| RF-005 | Boot falha se `ZK_MOCK_MODE=false` e faltar artefato (fora de `local`/`test`); confirmar artefatos em prod antes de subir | SEC-005 #358 / S-08 | C | 1 |
+| RF-006 | Catálogo de verifiers escopado por issuer (ou global só para admin, conforme D4) | BO-006 #355 | C | 2 |
+
+**F4 · Operação confiável** (correções que hoje quebram uso real)
+| RF | O quê | Origem | Classe | EP |
+|---|---|---|---|---|
+| RF-001 | CORS aceita DELETE/PUT/PATCH (hoje bloqueia ações do backoffice) | SEC-002 #356 | A | 1 |
+| RF-002 | Sessão de prepare no Redis; Redis obrigatório em staging/prod (hoje em memória, quebra com 2 instâncias ECS) | §3.1 | A | 1 |
+| RF-003 | Chave PEM da Privy validada no boot; `.env.example` corrigido (PEM em uma linha) | SURF-002 #360 | A | 1 |
+| RF-004 | `/admin/api-keys` e `/backoffice/api-keys` devolvem 400/404 em vez de 401 | ADMIN-009 #359 | C | 1 |
+| RF-005 | Prova verificada localmente antes da simulação; 422 em vez de 503; rota legada `POST /public/proof/submit` mantida ou depreciada com prazo (D5, depois do mapa de uso) | PROOF-008 #362 | A/Q | 1 |
+| RF-006 | `releaseSecurityPeriod` sai do GET de balance e vai para o processor (leitura sem efeito colateral) | COMM-001 | A | 1 |
+| RF-007 | Trilha de auditoria HTTP: `IngressLogger`/`EgressLogger` ligados como interceptor global com máscara de PII (CPF, chaves, tokens), ou módulos e tabelas removidos | §3.1 / §5 | A | 2 |
+| RF-008 | Webhook do IdCerberus: idempotência por requisição, retry e validação de origem (assinatura, se o provedor suportar) | §3.4 | A | 2 |
+
+**F5 · Higiene do repositório**
+| RF | O quê | Origem | Classe | EP |
+|---|---|---|---|---|
+| RF-001 | Binários e gerados fora do Git (1.116 arquivos de `target/`, Prisma generated); `.gitignore` corrigido; política para o `.zkey` (LFS ou release asset) | S-02 | A | 1 |
+| RF-002 | Código morto e resíduos removidos: `example.spec`, `PayoutPreviewController` (não registrado), resíduos de template, `console.log` → logger; `deployments`/artefatos de comissão on-chain que não serão usados ficam marcados como descontinuados | A-06 / D-02 / T-01 | A | 2 |
+| RF-003 | README e docs de setup sincronizados com o código (local, Privy, ambientes, como rodar o smoke); docs de estudo (`PLANO-RETOMADA`, `ARQUITETURA-V2`, relatório de auditoria, este arquivo) commitados em `docs/` | D-01 / D-03 / §3.3 | A | 1 |
+
+**F6 · Arquitetura preparada para os próximos módulos** (pedido da Ana na reunião de 23/09; só fundação, nenhum módulo novo)
+| RF | O quê | Origem | Classe | EP |
+|---|---|---|---|---|
+| RF-001 | ADR de arquitetura alvo: padrão único (DDD/CQRS, ports/providers); regra "módulo novo nasce no padrão, antigo migra quando tocado" (D10 c); eventos de domínio e outbox/indexer como próximos degraus; onde entra a política de requisitos por plataforma ("menu") e o módulo de agente; escolhas que não são agnósticas (contratos Rust, passkey-kit) | A-01 / A-02 / D1 / D9 / D10 | doc | 2 |
+| RF-002 | Provedor de KYC agnóstico: hoje o cliente chama `POST /public/credential/kyc-status` e não há integração direta com provedor; normalizar o contrato (provedor, status, referência da evidência) para IdCerberus, Legitimuz e ShieldID, sem mudar o comportamento do cliente atual | reunião 23/09 | A | 2 |
+| RF-003 | Porta de blockchain (`ChainPort`: ancorar hash, verificar prova, resolver emissor, consultar eventos, submeter tx) com Stellar como único adapter; hoje `@stellar/stellar-sdk` é importado em 7 arquivos, 4 fora do módulo `stellar` (`commission` ×2, `issuer` ×2, `wallet`); regra no harness: nenhum módulo importa SDK de chain fora do adapter. Payload on-chain continua neutro (hashes, commitments, Groth16/BN254) | reunião 23/09 / PLANO §0.4 | A | 2 |
+| RF-004 | Eventos de domínio emitidos no `EventBus` já instalado (`CredentialIssued`, `ProofVerified`, `CredentialRevoked`, `KycStatusReceived`), sem consumidor; hoje 0 usos | §5 | A | 1 |
+
+### Prioridade 2 · entra até 05/10 se a 1 fechar; senão vira a release seguinte
+
+**F7 · Testes do SDK, backoffice e integração**
+| RF | O quê | Origem | EP |
+|---|---|---|---|
+| RF-001 | Suíte de QA manual do SDK no padrão `qa-manual-tests-hous3` (~20–25 CTs, 4 fluxos: emissão, prova, revogação, passkey/recovery), executada contra staging; SDK já tem 52 testes unitários, falta a funcional | §3.3 | 3 |
+| RF-002 | Revisão de segurança da superfície pública do SDK (15 métodos): armazenamento da VC no device, tratamento de token, erros que vazam detalhe | §3.4 | 2 |
+| RF-003 | Suíte de QA do backoffice web (~15–20 CTs), executada; hoje só 3 testes unitários de hooks | §3.3 | 2 |
+| RF-004 | E2E de integração SDK → backend → chain (3–4 CTs) e automação Playwright API (`E2E-001` + negativos) versionada em `qa-automation-e2e-hous3/clients/vesta/`, com o authenticator WebAuthn virtual como fixture (hoje só existe fora do repo) | §3.3 | 3 |
+
+**F8 · Testes automatizados e pipeline (CI) (dívida da auditoria, entra se sobrar)**
+CI = pipeline do GitHub Actions (`main-workflow.yml`): roda em todo PR/merge, compila e testa contratos, `audit-ci`, `yarn test:cov`, deploy. Hoje sem cobertura mínima e sem o `vesta-verifier`.
+| RF | O quê | Origem | EP |
+|---|---|---|---|
+| RF-001 | `coverageThreshold` no CI, pastas `integration`/`e2e` que os scripts já esperam, testes dos handlers de credential, proof, revoke e passkey | T-01 | 3 |
+| RF-002 | Testes de negativo do verifier documentando os furos conhecidos (replay, VK como parâmetro) sem alterar o contrato; `docs/protocol/threat-model.md` do que existe | §3.2 / §3.4 / S-07 | 3 |
+
+Backlog nomeado (fora da release): TypeScript `strict` + ESLint type-aware (A-04/A-05) · outbox e indexer de eventos (§5 degraus 1 e 3) · eventos com consumidor.
+
+**Totais (revisão 23/09 pós-reunião, features numeradas na ordem de execução):** Prioridade 1 = 47 EP (F1 harness 9 · F2 cliente 4 · F3 segurança 9 · F4 operação 10 · F5 higiene 4 · F6 arquitetura 7) · Prioridade 2 = 16 EP (F7 SDK/backoffice 10 · F8 CI 6). Não cabe folgado em 7 dias úteis; corte sugerido: F1-004 harness reduzido a `AGENTS.md` + hooks + rules (4 → 2 EP), skills e comandos depois.
+
+**Ordem de execução:** D1 mapa de uso + ambiente local + harness mínimo (`AGENTS.md`, hooks) → D2–3 F3/F4 aditivos → D4 decisões D2/D4/D5 e fixes comportamentais → D5 SEC-004 hash com dupla leitura → D6 higiene (F5) → D7 regression → D8 buffer/prioridade 2 (F7 antes de F8).
+
+**Fora desta release (descontinuado ou adiado):** split/settlement on-chain, vault v3, verifier v2 e circuito, VC EdDSA, indexer de eventos, painel de adoção, stablecoin/off-ramp, identidade visual, deployer ≠ operator (só se o vault continuar em uso), qualquer módulo de agente ou de credencial da plataforma.
+
+**Registrado da reunião de 23/09 (Ana, Pedro Caldeira, Victor):** Ana remove as releases do SCF do Track · release de arrumar a casa "do lado do IdCerberus" · modelo atual (KYC via provedor) vira um módulo do "menu" de requisitos por plataforma, provedor agnóstico (IdCerberus, Legitimuz, ShieldID) · discovery do mercado de agentes (Bido, Tom/Automated Finance, WebMCP) é de produto: Ana + Pedro, Victor entra nas conversas · Edi (IdCerberus) abrir a Vesta de graça para todos os clientes: **não agora** (Victor) · tudo no Track a partir de 24/09 (Thiago avalia uso) · Pedro sugeriu classificador probabilístico ("JEPA"/"Jev") para confiança de prova de vida: ideia, sem task.
+
+**Decisões que a release precisa (dono Victor, após o mapa de uso):** D2 compatibilidade · D4 verifiers global ou por issuer · D5 rota legada.
+
+### 3.14.1 Quebra em tasks (2026-09-23) · **criadas no Track em 23/09** na `release_01m1feb76ye8mvg4vseke2b7s3` ("R4 — Arrumar a casa", 22/09 → 02/10, QA até 01/10)
+
+**Criadas (28 tasks, 108 EP, responsável Victor, sem revisor).** Victor pediu +2 EP em todas (escala do Track: 1→3, 2→5, 3→5). Ana criou as 6 features da prioridade 1 com os mesmos RFs (F7/F8 não criadas). Task antiga de harness `task_01m2vd0a9xeh2scb9e3c2wcz1y` cancelada (replanejada) e recriada com escopo cortado em "Ambiente local". As 4 features herdadas da R4 antiga (registry, smart wallets, backoffice UX, saque) continuam na release com as tasks já existentes.
+
+| Feature (Track) | Tasks |
+|---|---|
+| Isolamento entre issuers `feature_01m37qasbne4fr7pfvhhkpbk9z` | `task_01m37yf3hbesj9535vyn11hnpe` CRED-011 · `task_01m37yf3j4esj953630bp08rby` SEC-004 · `task_01m37yf3jresj9536byana8w0e` segredos/JWT · `task_01m37yf3k9esj9536m34qf9dtr` PASS-004 · `task_01m37yf3ksesj9536x84xhfva4` SEC-005 · `task_01m37yf3maesj953734p5d17yk` BO-006 |
+| Operação confiável `feature_01m37qasbne4fr7pg4b1g1bw06` | `task_01m37yg054esj9537djmp89ah9` CORS · `task_01m37yg05nesj9537mapk5sa4h` Redis · `task_01m37yg066esj9537xc9vtmbya` PEM · `task_01m37yg06resj95380qa1yb825` ADMIN-009 · `task_01m37yg079esj9538ehaqnbshz` PROOF-008 · `task_01m37yg07tesj9538k930f48at` COMM-001 · `task_01m37yg08besj9538zx488t5yx` Ingress/Egress · `task_01m37yg08yesj95396998mb1an` webhook KYC |
+| Quem usa o quê `feature_01m37qasbne4fr7pgbq8jk03ev` | `task_01m37ygbm6esj9539df8gf358h` mapa de uso · `task_01m37ygbmqesj9539jc59wp362` ADR-000 · `task_01m37ygbn7esj9539z2gqkwsq5` regression |
+| Repositório limpo `feature_01m37qasbne4fr7pgpjxe5w3vb` | `task_01m37ygqxdesj953a7nky8xc80` binários · `task_01m37ygqy2esj953aav7hex5xj` código morto · `task_01m37ygqypesj953ahejgqz7d7` README/docs |
+| Arquitetura declarada `feature_01m37qasbne4fr7pgwa9m6fy8f` | `task_01m37yhannesj953az5skfc8fg` ADR-001 · `task_01m37yhap6esj953b3egeabcrq` KYC agnóstico · `task_01m37yhapqesj953b9m3erqzk5` ChainPort · `task_01m37yhaq8esj953bqv03h2av1` eventos |
+| Ambiente local `feature_01m37qasbne4fr7ph7ayeandpq` | `task_01m37yhxa7esj953bwaq5mchs4` compose · `task_01m37yhxb6esj953c7rf2pp8dq` SDK localhost · `task_01m37yhxchesj953c8t5hg068z` isolamento · `task_01m37yhxe0esj953cpggknvbgk` harness |
+
+Descrições originais abaixo (EP antes do +2):
+
+Formato: `[TIPO] Título` · EP · depende de · descrição (o que contempla; pontos em aberto ficam dentro da task).
+
+**F1 · Ambiente local e harness**
+
+1. `[INFRA] Ambiente local reproduzível (compose + fixtures + make smoke)` · 2 EP · nada. `docker-compose.yml` com Postgres e Redis (hoje `yarn docker:up` aponta para nada); `local-fixtures.sql` sobe issuer `local_bank`, API key e user de backoffice (já existe, confirmar); `.env.local` sem Privy (`privyEnabled=false`, challenge `legacy`, `source=deployer`); `make dev` sobe tudo e `make smoke` roda os CTs de fumaça; README de setup. **Aberto:** smoke usa `ZK_MOCK_MODE=true` + contrato mock ou artefatos reais (`vesta_kyc.wasm` + `.zkey` hoje não estão no workspace). Decidir e documentar dentro da task.
+2. `[SDK] Apontar o SDK para localhost (apiUrl / ambiente LOCAL)` · 1 EP · nada. `http/client.ts` `resolveBaseUrl` ignora override; `types.ts` documenta `apiUrl` que não existe na interface. Adicionar `apiUrl?: string` e/ou `VestaEnvironment.LOCAL`; default continua staging (compatível); teste unitário; publicar 2.6.2. Aditivo.
+3. `[INFRA] Isolamento de ambientes (Privy dev, contratos próprios, HMAC próprio)` · 2 EP · nada. App Privy Developer separado com PEM público colado no dashboard (sem ngrok); `contracts:deploy:local` compila e deploya os 3 contratos em testnet própria e grava ids em `.env.local`; `CPF_HMAC_SECRET` próprio; schema Zod avisa se `NODE_ENV=local` aponta para RDS/contratos de staging; README. **Aberto:** quem cria o app Privy (acesso ao dashboard).
+4. `[HARNESS] AGENTS.md, rules e hooks (Cursor + Claude)` · 2 EP · nada. `AGENTS.md` na raiz (fase atual, como rodar smoke, regras invioláveis: SDK de chain só no adapter, Postgres é projeção); `CLAUDE.md = @AGENTS.md`; rules `standard-*` da Block adaptadas + `vesta-protocol.mdc`; hooks `guard-secrets`, `guard-shell`, `format-on-edit` com `.cursor/hooks.json` e `.claude/settings.json` nos mesmos scripts; `.cursor` canônico, `.claude` espelho (symlink); teste: `cat .env` bloqueado nos dois agentes.
+5. `[HARNESS] Skills e comandos spec-driven` · 2 EP · task 4 · **prioridade 2 / backlog**. Skills da Block (`adr-writing`, `tdd`, `unit-testing`, `security-best-practices`...), skills oficiais Stellar com commit pinado, comandos PRD → Tech Spec → tasks; smoke de harness ("qual a fase atual e como rodo o smoke?" responde igual nos dois).
+
+**F2 · Cliente em produção protegido**
+
+6. `[DOCS] Mapa de uso do cliente em produção` · 1 EP · acesso read-only (Pedro). Contagens por issuer em `credentials`, `attestation`, `api_keys`, `passkey_credentials` (`created_at`); logs ALB/CloudWatch por rota (`/public/*`, rota legada `proof/submit`, revokes); versão do SDK (user-agent); Passkey vs Privy; `ingress`/`egress` estão vazias, não servem. Saída: `docs/as-is/uso-prod.md`. É o que libera as decisões D2/D4/D5.
+7. `[DOCS] ADR-000 compatibilidade com o cliente em produção` · 1 EP · task 6. Decide D2 (flag por issuer / contrato v2 ao lado / aviso com prazo), D4 (verifiers global ou por issuer) e D5 (rota legada) no mesmo ADR; classifica cada task da release em A/C/Q; texto da comunicação ao cliente para o que exige ação dele (rotação de API key). **Aberto:** as três decisões, tomadas dentro da task.
+8. `[QA] Regression run final da release` · 2 EP · todas as tasks de F3/F4. Reexecutar os 72 CTs + CTs novos dos fixes; renomear CTs-hipótese (CRED-011, BO-006, SEC-002, SEC-004, SEC-005) para o comportamento esperado; Issue Regression Run com link no board; meta 0 BUG.
+
+**F3 · Segurança entre clientes**
+
+9. `[BUG] CRED-011 #354 · Revogação só pelo issuer dono` · 1 EP · task 7 (C). `credential-public-revoke.handler.ts:19-25` busca por `vcHash` e revoga sem comparar `credential.issuerId` com o issuer da API key. Comparar e recusar; teste unitário cruzando duas keys; CT atualizado. **Aberto:** 404 (não revela existência) ou 403; sugestão 404.
+10. `[SEC] SEC-004 #357 · API keys com hash e leitura dupla` · 3 EP · task 7 (Q). `api-key.service.ts:13,29` guarda e compara em texto. Migration `key_hash`; lookup por hash com `timingSafeEqual`; fallback para texto enquanto o cliente não rotacionar; rotina de rotação (gera nova, mantém antiga por prazo); comunicação ao cliente; task futura para apagar a coluna em texto. **Aberto:** prefixo visível para identificação (`vesta_live_xxxx…`); prazo de convivência.
+11. `[SEC] Segredos obrigatórios em produção, sem fallback, JWT com expiração` · 1 EP · nada (A). `env.schema.ts:36-41` torna `ADMIN_SECRET`, `BACKOFFICE_JWT_SECRET`, `PRIVY_APP_SECRET` obrigatórios quando `NODE_ENV=production`; `backoffice-auth.service.ts:107` remove o `?? ADMIN_SECRET`; `JwtService` por injeção (S-06); `BACKOFFICE_JWT_EXPIRES_IN` não aceita `never` fora de local. **Aberto:** expiração (sugestão 8h) e se staging precisa de ajuste de `.env` antes do deploy.
+12. `[BUG] PASS-004 #361 · Falhas de verificação da passkey tratadas` · 1 EP · nada (A). `passkey-auth.service.ts:174-187`: try/catch em `verify*Response`; counter regressivo → 4xx e log de segurança (hoje estoura 500). Teste unitário.
+13. `[BUG] SEC-005 #358 · Boot falha sem artefato ZK` · 1 EP · nada (C). `zk.service.ts:37-41` força mock e só loga. Falhar o boot se `ZK_MOCK_MODE=false` e faltar wasm/zkey, exceto `local`/`test`. **Pré-check obrigatório:** confirmar que a imagem de prod tem os artefatos antes do deploy.
+14. `[BUG] BO-006 #355 · Catálogo de verifiers escopado` · 2 EP · task 7 (C). Depende de D4. Se por issuer: migration `issuer_id` em `verifiers`, filtro em todas as queries do backoffice, seed. Se global: só admin cria/edita, issuer só lê. Descrever os dois caminhos; executar o decidido.
+
+**F4 · Operação confiável**
+
+15. `[BUG] SEC-002 #356 · CORS aceita DELETE/PUT/PATCH` · 1 EP · nada (A). `main.ts:97`. Teste unitário existente `cors.config.spec.ts` atualizado.
+16. `[INFRA] Redis obrigatório e sessão de prepare no Redis` · 1 EP · nada (A). `prepare-session.service.ts:34-41` guarda em memória; com 2 instâncias ECS a sessão some. Persistir no Redis com TTL; `REDIS_URL` obrigatório fora de local/test. **Aberto:** existe ElastiCache em staging/prod ou precisa provisionar (infra).
+17. `[BUG] SURF-002 #360 · Validar PEM da Privy no boot` · 1 EP · nada (A). `wallet.service.ts:439,466`; `.env.example` com PEM em uma linha (`\n` escapado).
+18. `[BUG] ADMIN-009 #359 · Códigos HTTP corretos em api-keys` · 1 EP · task 7 (C). 401 → 400/404 em `/admin/api-keys` e `/backoffice/api-keys`. **Aberto:** o cliente trata 401 como "chave inválida"? Responde no mapa de uso.
+19. `[BUG] PROOF-008 #362 · Verificar prova local antes da simulação` · 1 EP · task 7 (A/Q). Verificar Groth16 localmente antes de simular; prova inválida → 422 (hoje 503). Rota legada `POST /public/proof/submit`: manter/depreciar/remover conforme D5.
+20. `[BUG] COMM-001 · Liberação do período de segurança fora do GET de saldo` · 1 EP · nada (A). `releaseSecurityPeriod` roda no GET de balance; mover para o processor agendado. Leitura sem efeito colateral.
+21. `[FEAT] Trilha de auditoria HTTP (Ingress/Egress) com máscara de PII` · 2 EP · nada (A). `IngressLogger`/`EgressLogger` existem no `AppModule` e ninguém chama. Interceptor global gravando rota, issuer, status, latência, corpo com redação (CPF, chaves, tokens, PEM); retenção por job. Alternativa dentro da task: remover módulos e tabelas. **Recomendação:** ligar. **Aberto:** retenção (sugestão 90 dias) e volume esperado.
+22. `[FEAT] Webhook de status de KYC: idempotência, retry e origem` · 2 EP · task 25 (A). `credential-public-kyc-status`: header `Idempotency-Key` opcional com dedupe; registro de cada recebimento; validação de origem (assinatura HMAC por issuer, opcional). **Aberto:** IdCerberus assina webhook? Fazer junto com a task 25 (mesmo contrato).
+
+**F5 · Higiene do repositório**
+
+23. `[CHORE] Binários e gerados fora do Git` · 1 EP · nada. `git rm -r --cached app/contracts/**/target app/src/infra/database/@prisma/generated` (1.116 arquivos); corrigir path no `.gitignore`; `.zkey` como release asset com hash no README (ou LFS). **Aberto:** LFS vs release asset; sugestão release asset.
+24. `[CHORE] Código morto, resíduos e console.log` · 2 EP · nada. Remover `example.spec`, `PayoutPreviewController` (não registrado), resíduos de template (A-06); 30 `console.log` → Winston; marcar `commission`/`vault`/scripts de deploy como descontinuados no README do módulo (sem remover código em uso pelo ledger). Sem mudança de comportamento.
+25. `[DOCS] README e docs sincronizados; docs de estudo no repo` · 1 EP · tasks 1 e 3. README com setup local fiel, Privy, ambientes, smoke; `PLANO-RETOMADA`, `ARQUITETURA-V2`, relatório de auditoria, `DECISOES-E-PENDENCIAS` e `TRACK-RELEASES` em `docs/`.
+
+**F6 · Arquitetura preparada**
+
+26. `[DOCS] ADR-001 arquitetura alvo` · 2 EP · nada. Padrão único (DDD/CQRS, ports/providers); regra "módulo novo nasce no padrão, antigo migra quando tocado"; fronteira on/off-chain do que existe; eventos de domínio → outbox → indexer como degraus futuros; onde entram o menu de política por plataforma e o módulo de agente; o que não é agnóstico (contratos Rust são Soroban; passkey-kit é Stellar; Privy multi-chain).
+27. `[FEAT] Contrato de KYC agnóstico ao provedor` · 2 EP · nada (A). Input de `kyc-status` ganha `provider` (`idcerberus` default, `legitimuz`, `shieldid`, `other`), `status` normalizado (`approved`/`rejected`/`pending`/`review`), `rawStatus`, `evidenceRef`; persistir em `credential`; backoffice exibe provedor; mapeamento por provedor em um lugar só. Cliente atual continua funcionando sem mudar nada. **Aberto:** confirmar com a Ana se é só isso (normalizar o contrato) ou integração direta com Legitimuz/ShieldID (outra escala, fora da release).
+28. `[FEAT] ChainPort com Stellar como único adapter` · 2 EP · task 26 (A). Interface neutra (ancorar hash, verificar prova, resolver emissor, consultar eventos, submeter tx assinada) em `infra/gateways/chain`; adapter Stellar envolve `stellar.service.ts`; os 4 usos fora do módulo `stellar` (`commission` ×2 gateways, `issuer` registry gateway, `wallet`) passam a depender da porta; regra no harness (task 4). Sem mudança de comportamento; specs existentes passam. **Aberto:** `issuer-did.value-object.ts` (`did:stellar`) é domínio; decidir se a porta expõe o formato de DID.
+29. `[FEAT] Eventos de domínio no EventBus` · 1 EP · task 26 (A). `CredentialIssued`, `ProofVerified`, `CredentialRevoked`, `KycStatusReceived` publicados nos handlers; nenhum consumidor; teste que o evento é publicado. Hoje `EventBus` tem 0 usos.
+
+**Totais:** 28 tasks na prioridade 1 = 41 EP (task 5 vai para backlog, 2 EP). F7/F8 ficam só como RFs até a prioridade 1 fechar.
+
+**Antes de criar no Track:** confirmar se `release_01m1feb76ye8mvg4vseke2b7s3` (id da R4) foi renomeada ou é nova; as 5 features antigas da R4 precisam sair/fechar; pegar os ids das 8 features novas via `get_release_planning_context`.
+
+## 4. Histórico de execução
+
+### 2026-09-23 · task `[INFRA] Ambiente local reproduzível` (branch `chore/local-env`)
+
+- Entregue: `app/docker-compose.yml` (Postgres 16 + Redis 7), `app/.env.local.example` (ZK real + Stellar mock, sem Privy), `Makefile` (`env/up/db/dev/smoke/down`), `app/scripts/smoke.mjs` (8 passos, sai 1 em falha), `yarn start:local`/`db:local`/`smoke`, `ENV_FILE` no `EnvModule`, README de setup reescrito.
+- Smoke validado nesta máquina contra Postgres nativo (sem Docker instalado aqui): 8/8 OK, prova Groth16 real em ~0,6 s, `submit-signed` com `stellarMock=true`. O compose foi validado só sintaticamente; falta rodar em máquina com Docker.
+- Achados no caminho: (1) repo é **Yarn 1**; Yarn 4 global reescrevia o `yarn.lock` inteiro; fixado `packageManager: yarn@1.22.22` (corepack passa a usar 1.22). (2) `tsconfig.json` sem `include` + `allowJs` fazia o watch do Nest compilar e **reiniciar a API ao editar qualquer .js/.mjs fora de `src/`** (foi o que derrubou o primeiro smoke no meio do `prepare`); `scripts/` excluído do tsc e do watcher. (3) `test:e2e` referencia `.env.test` e `docker-compose-test.yaml` que não existem (fica para a task de CI, F8). (4) `prisma generate` reescreve `@prisma/generated` versionado, sujando o working tree a cada `make db` (sai do Git na task de binários). (5) Toda resposta da API vem envelopada em `{ data }` pelo `ApiTransformInterceptor`.
+- Fora desta task: decisão do smoke usar ZK real (não mock) tomada: artefatos estão versionados e o caminho real é o que o cliente usa.
+
+| Data | O quê | Resultado |
+|---|---|---|
+| 2026-09-18 | CT-VESTA-E2E-001 em mock local | 8/8 OK |
+| 2026-09-18 | 72 CTs contra staging (Privy + testnet, ZK real) com banco local | 60 OK / 9 BUG / 3 N/A — #363 |
+| 2026-09-21 | Revisão do PR #353 contra o padrão do `qa-manual-tests-hous3` (PTaaS/Track) | Consistente; 3 ajustes menores aplicados localmente |
+
+---
+
+## 5. Análise: arquitetura orientada a eventos (D9) — 2026-09-21
+
+**Faz sentido?** Sim, por três motivos concretos: (1) a chain já é um fluxo de eventos e o backend não escuta nenhum — grava no Postgres o que *acha* que aconteceu; (2) os side effects são frágeis — comissão no mesmo INSERT da attestation, `setInterval` de 10 s varrendo tabelas, sem fila/retry/lock, duas instâncias disputam a mesma linha; (3) multi-tenant com split precisa de trilha de auditoria — `ingress`/`egress` existem, estão no `AppModule`, e **nenhum interceptor ou serviço chama `IngressLogger`/`EgressLogger`**: tabelas vazias em todo ambiente.
+
+**O projeto comporta hoje?** Parcialmente. Existe: `@nestjs/cqrs` (8 command handlers, 14 query handlers), `@nestjs/schedule`, `ioredis`, transação Prisma na attestation. Falta: **0 event handlers, 0 eventos de domínio, `EventBus` nunca usado**, nenhuma fila, nenhuma tabela de outbox, nenhum consumidor de `getEvents` da chain. A base está instalada; a camada de eventos não existe. Não é reescrever, é adicionar.
+
+**Como fazer, em degraus (todos aditivos para o cliente):**
+
+| Degrau | O quê | Esforço | Pré-requisito |
+|---|---|---|---|
+| 1 · Outbox | Tabela `outbox_events`; nos 3 side effects (attestation→comissão, comissão→vault, saque→settle) gravar o evento na mesma transação; processors leem o outbox com lock e retry. Estado final idêntico ao de hoje | ~1 semana | Redis obrigatório em staging/prod |
+| 2 · Eventos de domínio | `CredentialIssued`, `ProofVerified`, `CommissionAccrued`, `CredentialRevoked` no `EventBus`; efeitos viram `@EventsHandler`. Destrava "revogou → reverte comissão" sem `proof` escrever na tabela de `commission` | 1–2 semanas | Degrau 1 |
+| 3 · Indexer | Worker lendo `getEvents` do RPC e projetando no Postgres; ledger vira projeção (`ARQUITETURA-V2` §6.1) | ~2 semanas | Settlement v2 (senão não há evento de comissão on-chain para ler) |
+
+**Onde ser crítico:** não é event sourcing (não reconstruir estado de eventos — desnecessário); não antes da casa arrumada (outbox não corrige replay nem VK); Redis vira dependência (entra no compose e no ECS); custo escondido é operacional — worker a mais, outbox que acumula, reconciliação chain×banco (§5.4 do V2).
