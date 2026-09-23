@@ -67,70 +67,42 @@ module/
 
 ## Pre-requisitos
 
-- **Node.js** >= 22
-- **Yarn** 1.x
-- **PostgreSQL** 14+
-- **Docker** (opcional, para banco local)
+- **Node.js** >= 22 (com `corepack enable`; o `packageManager` do `app/package.json` fixa o Yarn 1.22)
+- **Docker** com Compose v2 (Postgres e Redis locais) ou um PostgreSQL 14+ nativo
+- **make**
 
 ---
 
 ## Setup local
 
-### 1. Clonar e instalar
+O ambiente local roda **sem Privy e sem contratos reais**: ZK real (artefatos versionados em `app/zk-artifacts`) e Stellar em modo mock (`VESTA_CONTRACT_ID=PLACEHOLDER`). Nenhuma transacao sai da maquina e nada de staging e usado.
 
 ```bash
 git clone git@github.com:hous3-digital/vesta-aws-app-ecs-backend.git
-cd vesta-aws-app-ecs-backend/app
-yarn install
+cd vesta-aws-app-ecs-backend
+(cd app && yarn install)
+
+make env    # cria app/.env.local a partir de app/.env.local.example
+make up     # Postgres + Redis via app/docker-compose.yml
+make db     # prisma generate + migrations + seeds (fixtures locais)
+make dev    # API em watch lendo app/.env.local
+make smoke  # em outro terminal: fluxo completo emissao -> prova -> attestation
 ```
 
-### 2. Configurar variaveis de ambiente
+Sem Docker: aponte `DATABASE_URL` do `app/.env.local` para o seu Postgres (usuario `postgres`, banco `vesta_local`) e comente `REDIS_URL` (o challenge cai para Postgres e a sessao de prepare fica em memoria).
 
-```bash
-cp .env.example .env
-```
+Fixtures criadas pelo `make db` (`app/src/infra/database/seeds/local-fixtures.sql`):
 
-Edite o `.env`:
+| O que | Valor |
+|---|---|
+| Issuer | `local_bank` (`privy_enabled=false`) |
+| API key do SDK | `vesta_live_local_dev_do_not_use_in_production` |
+| Backoffice | `dev@localhost` / `vesta_local` |
+| Verifier | `verifier_local` |
 
-```env
-NODE_ENV="local"
-PORT=3000
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/vesta_db?schema=public&connect_timeout=300"
+`make smoke` roda `app/scripts/smoke.mjs`: health, login do backoffice, emissao de credencial, verify, challenge, `prepare` (prova Groth16 real) e `submit-signed` (Stellar mock). Sai com codigo 1 se algum passo falhar.
 
-# Stellar (testnet)
-STELLAR_RPC_URL="https://soroban-testnet.stellar.org"
-STELLAR_NETWORK="Test SDF Network ; September 2015"
-VESTA_CONTRACT_ID="PLACEHOLDER"
-VESTA_DEPLOYER_SECRET=""
-
-# ZK Proofs
-ZK_ARTIFACTS_DIR="./zk-artifacts"
-ZK_MOCK_MODE="true"
-
-# CPF dedup — gerar com: openssl rand -hex 32
-CPF_HMAC_SECRET="cole-aqui-o-resultado-do-openssl-rand-hex-32"
-```
-
-### 3. Subir o banco
-
-```bash
-yarn docker:up
-```
-
-Ou conecte a um PostgreSQL existente atualizando o `DATABASE_URL`.
-
-### 4. Migrations e Prisma Client
-
-```bash
-yarn prisma:gen       # Gerar Prisma Client
-yarn prisma:migrate   # Criar e aplicar migrations
-```
-
-### 5. Iniciar o servidor
-
-```bash
-yarn start:dev
-```
+O `.env` continua sendo o arquivo de staging/producao e nunca deve ser copiado para o `.env.local`. A API le outro arquivo quando `ENV_FILE` esta definido (e o que `yarn start:local` faz).
 
 - API: `http://localhost:3000`
 - Swagger: `http://localhost:3000/docs`
