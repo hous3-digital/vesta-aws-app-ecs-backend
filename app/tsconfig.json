@@ -27,7 +27,7 @@
       "@prisma/client": ["infra/database/@prisma/generated/client"]
     }
   },
-  "exclude": ["node_modules", "dist", "*.config.js", "eslint.config.js"],
+  "exclude": ["node_modules", "dist", "*.config.js", "eslint.config.js", "scripts"],
   "watchOptions": {
     "watchFile": "fixedPollingInterval"
   }

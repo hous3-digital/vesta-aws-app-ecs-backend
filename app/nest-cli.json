@@ -14,7 +14,8 @@
         "**/dist/**",
         "**/*.spec.ts",
         "**/test/**",
-        "constructor-args-*.js"
+        "constructor-args-*.js",
+        "**/scripts/**"
       ]
     }
   }
