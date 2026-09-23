@@ -1,0 +1,2 @@
+-- Kept for compatibility with the previous runner.
+-- Actual fixtures: local-fixtures.sql
