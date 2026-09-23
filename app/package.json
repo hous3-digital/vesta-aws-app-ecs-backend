@@ -5,6 +5,7 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "packageManager": "yarn@1.22.22",
   "scripts": {
     "build": "nest build",
     "prebuild:clear": "npx rimraf dist",
@@ -16,6 +17,9 @@
     "start:dev": "npm run build && nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/src/main",
+    "start:local": "dotenv -v ENV_FILE=.env.local -e .env.local -- nest start --watch",
+    "db:local": "dotenv -e .env.local -- npx prisma migrate deploy --config src/infra/database/@prisma/prisma.config.ts && dotenv -e .env.local -- npx prisma db seed --config src/infra/database/@prisma/prisma.config.ts",
+    "smoke": "node scripts/smoke.mjs",
     "prisma:deploy": "npx prisma migrate deploy --config src/infra/database/@prisma/prisma.config.ts",
     "prisma:gen": "npx prisma generate --config src/infra/database/@prisma/prisma.config.ts",
     "prisma:reset": "npx prisma migrate reset --config src/infra/database/@prisma/prisma.config.ts && npx prisma db seed --config src/infra/database/@prisma/prisma.config.ts",
