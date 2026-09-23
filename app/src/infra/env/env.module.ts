@@ -5,7 +5,8 @@ import { EnvService } from "@src/infra/env/env.service";
 
 @Global()
 @Module({
-  imports: [ConfigModule.forRoot(validate)],
+  // ENV_FILE selects another dotenv file (e.g. .env.local) without touching .env
+  imports: [ConfigModule.forRoot({ ...validate, envFilePath: process.env.ENV_FILE ?? ".env" })],
   providers: [EnvService],
   exports: [EnvService],
 })
