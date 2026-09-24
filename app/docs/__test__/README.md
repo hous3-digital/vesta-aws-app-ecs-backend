@@ -1,6 +1,6 @@
 # Estratégia de Testes
 
-Como decidir entre unit, integration e E2E, e padrões de implementação.
+Como decidir entre unit, integration e E2E, e padrões de implementação. A árvore, as convenções e o que cada camada pode testar estão na rule `.cursor/rules/standard-test.mdc`. O que precisa estar testado, caso a caso, está em `cenarios.md`.
 
 ## Separação por tipo
 
