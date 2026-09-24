@@ -20,7 +20,7 @@ Regras do registro:
 
 O alvo é o que as rules em `.cursor/rules/` descrevem. Medido em 2026-09-24: `credential` e `proof` estão no formato, `issuer` e `challenge` a poucos arquivos, o resto é legado. As frentes abaixo são o que falta, na ordem em que uma destrava a outra. Cada frente vira uma ou mais tasks no Track quando entrar em release; tocar um módulo por outro motivo segue a regra de "move só o que a task muda", nunca puxa a frente inteira.
 
-### F1 · Harness
+### F1 · Harness · Track: rules e skills `task_01m3ass0p1f6btcfzgqs3g9v9z`, chain `task_01m3ass0s0f6btcg0nyyq9nkpq`, segurança `task_01m3ass0skf6btcg0xaa460ah7`, code-reviewer `task_01m3ass0t4f6btcg17581j9wd1`, commands `task_01m3ass0tnf6btcg1cg2xsbx03`, sensor de testes `task_01m3ass0v9f6btcg1qyzz835ze`, prisma-migration `task_01m3ass0w0f6btcg1xrfc32wkd`
 
 - Rules restantes: `standard-code`, `standard-test`, `standard-chain`, `standard-security`.
 - Skills: `new-module`, `unit-testing`, `integration-testing`, `chain-gateway`, `prisma-migration`.
@@ -30,7 +30,7 @@ O alvo é o que as rules em `.cursor/rules/` descrevem. Medido em 2026-09-24: `c
 - Agent `code-reviewer` com checklist mapeado rule por rule.
 - Commands do fluxo spec-driven (`create-prd`, `create-tech-spec`, `create-task`, `exec-task`) e templates.
 
-### F2 · Testes · Track `task_01m37yhxe0esj953cpggknvbgk` (item 4) e as tasks `[BUG]` da R4, uma por CT vermelho
+### F2 · Testes · Track: camadas e catálogo `task_01m3ass0q2f6btcfztyft7q7z1`, e2e de prova `task_01m3ass0wjf6btcg23v070dbe5`, cobrir catálogo `task_01m3ass0x4f6btcg2cwdav33ks`, style `task_01m3ass0xpf6btcg2mv123mqgp`, e as tasks `[BUG]` da R4, uma por CT vermelho
 
 - ~~Árvore de testes por camada~~ feito em 2026-09-24.
 - Um `mockXRepository()` e um `mockXGateway()` por token abstrato.
