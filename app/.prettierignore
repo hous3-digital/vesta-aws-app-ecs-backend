@@ -1,0 +1,7 @@
+node_modules
+dist
+coverage
+src/infra/database/@prisma/generated
+contracts/**/target
+zk-artifacts
+yarn.lock

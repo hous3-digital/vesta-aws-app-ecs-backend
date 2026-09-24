@@ -5,3 +5,4 @@ Este documento descreve o design de infraestrutura e os padrões de CI/CD integr
 Guias por tema:
 
 - [Padrão de Infraestrutura e CI/CD Integrado](cloud-design.md#padrão-de-infraestrutura-e-cicd-integrado)
+- [Pedidos de mudança no CI/CD](ci-pipeline-requests.md): o que precisa mudar nos workflows, por quê e a evidência, para o time de infra
