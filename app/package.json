@@ -21,6 +21,7 @@
     "start:prod": "node dist/src/main",
     "start:local": "dotenv -v ENV_FILE=.env.local -e .env.local -- nest start --watch",
     "db:local": "dotenv -e .env.local -- npx prisma migrate deploy --config src/infra/database/@prisma/prisma.config.ts && dotenv -e .env.local -- npx prisma db seed --config src/infra/database/@prisma/prisma.config.ts",
+    "db:reset:local": "dotenv -e .env.local -- npx prisma migrate reset --force --config src/infra/database/@prisma/prisma.config.ts",
     "smoke": "node scripts/smoke.mjs",
     "prisma:deploy": "npx prisma migrate deploy --config src/infra/database/@prisma/prisma.config.ts",
     "prisma:gen": "npx prisma generate --config src/infra/database/@prisma/prisma.config.ts",
