@@ -300,7 +300,7 @@ Push na branch `staging` dispara automaticamente:
 DATABASE_URL="postgresql://..." yarn prisma:deploy
 ```
 
-> O pipeline NAO roda migrations automaticamente. Execute manualmente antes de deployar mudancas de schema.
+> O `staging-workflow` aplica as migrations automaticamente (job `migrate-database`, antes do build da imagem). O `main-workflow` NAO aplica: em producao execute manualmente antes de deployar mudancas de schema.
 
 ### Docker local
 
