@@ -1,8 +1,8 @@
 ---
 description: Test layers, folder tree, what each layer may test, mocks and helpers convention, and how specs link to the QA scenario catalog. Applies to everything under app/__tests__.
-globs: __tests__/**/*.ts
+globs: app/__tests__/**/*.ts
 paths:
-  - "__tests__/**/*.ts"
+  - "app/__tests__/**/*.ts"
 alwaysApply: false
 ---
 
@@ -24,6 +24,7 @@ __tests__/
 │   ├── handlers/             # {module}-{context}-{action}.handler.spec.ts
 │   ├── services/             # {name}.service.spec.ts
 │   ├── controllers/          # only for logic that lives in a controller (legacy)
+│   ├── repositories/         # only for a rule that lives in a repository (legacy, see legacy map); never a round-trip
 │   └── http/                 # filters, guards, interceptors
 ├── @e2e/                     # HTTP against the app with the compose Postgres, Stellar mocked, real ZK
 │   ├── {context}-{module}.spec.ts   # public-credential.spec.ts, admin-issuers.spec.ts
