@@ -1,0 +1,45 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./app/.env)",
+      "Read(./app/.env.local)",
+      "Read(./app/.env.test)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR:-.}/.cursor/hooks/guard-shell.js\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR:-.}/.cursor/hooks/guard-secrets.js\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR:-.}/.cursor/hooks/format-on-edit.js\"",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  }
+}
