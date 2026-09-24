@@ -4,8 +4,9 @@
 #   make db     applies migrations and seeds to the local database
 #   make dev    starts the API in watch mode reading app/.env.local
 #   make smoke  runs the smoke flow against http://localhost:3000
+#   make db-reset drops and recreates the LOCAL database, then reseeds (only reads app/.env.local)
 #   make down   stops the containers
-.PHONY: env up down db dev smoke logs
+.PHONY: env up down db db-reset dev smoke logs
 
 APP := app
 
@@ -23,6 +24,9 @@ logs:
 
 db: env
 	cd $(APP) && yarn prisma:gen && yarn db:local
+
+db-reset: env
+	cd $(APP) && yarn db:reset:local
 
 dev: env
 	cd $(APP) && yarn start:local
