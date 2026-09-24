@@ -1,8 +1,8 @@
 ---
 description: Target folder tree, naming and dependency rules for every module under src/modules. Applies to new code and to any legacy module a task touches.
-globs: src/modules/**/*.ts
+globs: app/src/modules/**/*.ts
 paths:
-  - "src/modules/**/*.ts"
+  - "app/src/modules/**/*.ts"
 alwaysApply: false
 ---
 

@@ -1,9 +1,9 @@
 ---
 description: TypeScript style and structure for the backend - language, types, nullability, imports, class layout, errors, logging, DTOs. Applies to src and tests.
-globs: src/**/*.ts, __tests__/**/*.ts
+globs: app/src/**/*.ts, app/__tests__/**/*.ts
 paths:
-  - "src/**/*.ts"
-  - "__tests__/**/*.ts"
+  - "app/src/**/*.ts"
+  - "app/__tests__/**/*.ts"
 alwaysApply: false
 ---
 
