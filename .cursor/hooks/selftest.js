@@ -164,7 +164,44 @@ for (const agent of ["cursor", "claude"]) {
 }
 fs.rmSync(tmp, { force: true });
 
-const total = SHELL_CASES.length * 2 + READ_CASES.length * 2 + 4;
+// For TypeScript under app/, format-on-edit also runs ESLint and reports what autofix
+// could not solve: Claude Code reads stderr on exit 2, Cursor has no feedback channel.
+const tmpTs = path.join(
+  REPO_ROOT,
+  "app",
+  "__tests__",
+  "helpers",
+  ".selftest-tmp.ts",
+);
+try {
+  fs.writeFileSync(
+    tmpTs,
+    'import { join } from "../constants";\nexport const unused = join;\n',
+  );
+  const out = run(
+    "format-on-edit.js",
+    claudePayload("PostToolUse", "Edit", {
+      file_path: tmpTs,
+      old_string: "",
+      new_string: "",
+    }),
+  );
+  check("claude format-on-edit eslint feedback exit code", 2, out.status);
+  check(
+    "claude format-on-edit eslint feedback names the rule",
+    true,
+    /no-restricted-imports/.test(out.stderr),
+  );
+  const cursorOut = run(
+    "format-on-edit.js",
+    cursorPayload("afterFileEdit", { file_path: tmpTs, edits: [] }),
+  );
+  check("cursor format-on-edit stays silent", 0, cursorOut.status);
+} finally {
+  fs.rmSync(tmpTs, { force: true });
+}
+
+const total = SHELL_CASES.length * 2 + READ_CASES.length * 2 + 4 + 3;
 if (failures.length) {
   console.error(`hooks selftest: ${failures.length} of ${total} checks failed`);
   for (const f of failures) console.error(`  - ${f}`);
