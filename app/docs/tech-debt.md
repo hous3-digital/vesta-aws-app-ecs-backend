@@ -30,7 +30,7 @@ O alvo é o que as rules em `.cursor/rules/` descrevem. Medido em 2026-09-24: `c
 - Agent `code-reviewer` com checklist mapeado rule por rule.
 - Commands do fluxo spec-driven (`create-prd`, `create-tech-spec`, `create-task`, `exec-task`) e templates.
 
-### F2 · Testes
+### F2 · Testes · Track `task_01m37yhxe0esj953cpggknvbgk` (item 4) e as tasks `[BUG]` da R4, uma por CT vermelho
 
 - ~~Árvore de testes por camada~~ feito em 2026-09-24.
 - Um `mockXRepository()` e um `mockXGateway()` por token abstrato.
@@ -40,7 +40,7 @@ O alvo é o que as rules em `.cursor/rules/` descrevem. Medido em 2026-09-24: `c
 - Cobrir o catálogo `docs/__test__/cenarios.md`: 11 CTs em e2e e 12 em unit hoje, de 72.
 - Cobertura medida só em `domain/`.
 
-### F3 · Fronteira de chain (TD-002)
+### F3 · Fronteira de chain (TD-002) · Track `task_01m37yhapqesj953b9m3erqzk5`
 
 - Ports abstratos em `domain/`: verificador de prova, registry de emissor, vault de payout, conta e trustline, assinante.
 - `src/infra/gateways/chain/stellar/`: cliente RPC, builder e assinatura de transação, um gateway por contrato, codec XDR isolado.
@@ -58,7 +58,7 @@ O alvo é o que as rules em `.cursor/rules/` descrevem. Medido em 2026-09-24: `c
 - Dissolver `modules/backoffice`: `api-keys`, `commissions`, `credentials`, `profile`, `verifications` viram `api/backoffice/` e `application/backoffice/` do módulo dono; `verifiers` vira `modules/verifier`. Rotas não mudam.
 - Handlers com mais de quatro dependências (`proof-public-prepare`) movem a orquestração para `application/services/`.
 
-### F5 · Eventos em processo (TD-001)
+### F5 · Eventos em processo (TD-001) · Track `task_01m37yhaq8esj953bqv03h2av1`
 
 Depende de TD-004 ligado antes, para haver rastro dos side effects.
 
