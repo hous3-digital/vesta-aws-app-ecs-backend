@@ -51,7 +51,7 @@ This backend is the API behind the Vesta SDK (browser and Node), the issuer back
 
 ```bash
 # Local environment (from the repo root)
-make env        # creates app/.env.local from app/.env.local.example if missing
+make env        # creates app/.env.local and app/.env.test from their .example files if missing
 make up         # Postgres + Redis via docker compose
 make db         # prisma generate + migrations + local fixtures
 make dev        # API in watch mode reading app/.env.local (http://localhost:3000, Swagger at /docs)
@@ -67,7 +67,7 @@ yarn prettier:format    # formats src, __tests__ and harness markdown
 yarn typecheck          # tsc --noEmit
 yarn test:unit          # __tests__/@unit
 yarn test:integration   # __tests__/@integration (needs the compose Postgres)
-yarn test:e2e           # __tests__/@e2e (HTTP against a running API)
+yarn test:e2e           # __tests__/@e2e: creates the local vesta_test database, migrates, seeds, boots the app in-process
 yarn audit:ci           # dependency audit
 
 # Database (from app/)
@@ -81,7 +81,7 @@ Local fixtures (`app/src/infra/database/seeds/local-fixtures.sql`): issuer `loca
 ## Environments and secrets
 
 - `app/.env` is **staging**. Never read it, never copy from it, never point local tooling at it. Hooks block reading it.
-- `app/.env.local` is the local environment. `app/.env.local.example` is its template and is the only env file that may be committed.
+- `app/.env.local` is the local environment and `app/.env.test` is the e2e environment (own database `vesta_test`, `NODE_ENV=local`). Their `.example` templates are the only env files that may be committed.
 - Local runs with no Privy, no real contracts (`VESTA_CONTRACT_ID=PLACEHOLDER` means mocked Stellar) and real ZK proofs.
 - Environment variables are validated with Zod in `app/src/infra/env/env.schema.ts`. A new variable goes there first, then in `.env.local.example`.
 - Secrets never appear in code, tests, fixtures, logs or commit messages. Key material is never logged, not even a prefix.
@@ -150,16 +150,17 @@ The rules above describe the target. Most of the code does not follow it yet. Tw
 
 Tests live in `app/__tests__/`, split by layer, one jest config per layer in `app/config/`. Follow the AAA pattern (`// Arrange`, `// Act`, `// Assert`).
 
-| Layer          | Directory                 | What goes there                                                                                      | Never goes there                                                                 |
-| -------------- | ------------------------- | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `@unit`        | `__tests__/@unit/`        | Entities, value objects, formatters, builders. Pure TypeScript, no Nest container, no I/O            | Handlers, services, controllers, DAOs, repositories, mappers                     |
-| `@integration` | `__tests__/@integration/` | Handlers and services **that contain a rule**: branching, validation, transformation, error handling | Passthrough handlers (fetch, call, return), DAOs, gateways that only wrap an SDK |
-| `@e2e`         | `__tests__/@e2e/`         | HTTP flows against the running API with the compose Postgres. The smoke flow is the first spec       | Anything already proven by a lower layer                                         |
+| Layer          | Directory                 | What goes there                                                                                                   | Never goes there                                                                 |
+| -------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `@unit`        | `__tests__/@unit/`        | Entities, value objects, formatters, builders. Pure TypeScript, no Nest container, no I/O                         | Handlers, services, controllers, DAOs, repositories, mappers                     |
+| `@integration` | `__tests__/@integration/` | Handlers and services **that contain a rule**: branching, validation, transformation, error handling              | Passthrough handlers (fetch, call, return), DAOs, gateways that only wrap an SDK |
+| `@e2e`         | `__tests__/@e2e/`         | HTTP contract of every route, booted in-process on the compose Postgres, chain mocked, ZK real. Named by QA CT id | Anything already proven by a lower layer                                         |
 
 - Coverage is collected from `src/**/domain/**` only. A thin domain is a finding, not a reason to test services instead.
 - Never test DAOs, provider endpoints or chain gateways with mocked networks.
 - If you cannot name the rule a test protects, do not write it.
 - Run a single spec: `yarn test:unit __tests__/@unit/entities/credential.spec.ts`.
+- What must be tested, case by case, is `app/docs/__test__/cenarios.md`; the tree and conventions are `.cursor/rules/standard-test.mdc`.
 
 ## Git and pull requests
 

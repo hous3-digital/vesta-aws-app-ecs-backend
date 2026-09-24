@@ -25,17 +25,19 @@ O alvo é o que as rules em `.cursor/rules/` descrevem. Medido em 2026-09-24: `c
 - Rules restantes: `standard-code`, `standard-test`, `standard-chain`, `standard-security`.
 - Skills: `new-module`, `unit-testing`, `integration-testing`, `chain-gateway`, `prisma-migration`.
 - Symlinks em `.claude/rules` e `.claude/skills`; validar o mesmo prompt nos dois agentes.
-- Sensor de testes relacionados no `format-on-edit`.
+- Sensor de testes relacionados no `format-on-edit` (roda o spec do arquivo editado).
 - ESLint `no-restricted-imports` para `@stellar/stellar-sdk` fora de `src/infra/gateways/chain/`, com allowlist dos 6 arquivos atuais que encolhe a cada frente.
 - Agent `code-reviewer` com checklist mapeado rule por rule.
 - Commands do fluxo spec-driven (`create-prd`, `create-tech-spec`, `create-task`, `exec-task`) e templates.
 
 ### F2 · Testes
 
-- Árvore `__tests__/@unit/{entities,value-objects,formatters,builders}`, `@integration/{handlers,services,rules}`, `@e2e/fixtures`, `mocks/{repository,gateway,cqrs,service}`, `helpers/`.
+- ~~Árvore de testes por camada~~ feito em 2026-09-24.
 - Um `mockXRepository()` e um `mockXGateway()` por token abstrato.
-- Reclassificar os 17 specs atuais: os `*.service.spec.ts` são integração, não unit.
-- `test:e2e` funcionando contra a API local com `.env.test`; o smoke atual vira spec `@e2e`.
+- ~~Reclassificar os 17 specs~~ feito em 2026-09-24.
+- ~~`test:e2e` funcionando~~ feito em 2026-09-24; falta o fluxo de prova do smoke como spec `@e2e` (ZK real).
+- Um `mockXRepository()` e um `mockXGateway()` por token abstrato: ainda nenhum arquivo em `mocks/`.
+- Cobrir o catálogo `docs/__test__/cenarios.md`: 11 CTs em e2e e 12 em unit hoje, de 72.
 - Cobertura medida só em `domain/`.
 
 ### F3 · Fronteira de chain (TD-002)
