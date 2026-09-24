@@ -1,11 +1,12 @@
 import { Module } from "@nestjs/common";
-import { APP_GUARD } from "@nestjs/core";
+import { APP_FILTER, APP_GUARD } from "@nestjs/core";
 import { CqrsModule } from "@nestjs/cqrs";
 import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import { HealthController } from "@src/health.controller";
 import { AuthModule } from "@src/infra/auth/auth.module";
 import { ApiKeyGuard } from "@src/infra/auth/api-key.guard";
 import { DatabaseModule } from "@src/infra/database/database.module";
+import { DomainErrorFilter } from "@src/infra/http/domain-error.filter";
 import { EnvModule } from "@src/infra/env/env.module";
 import { EgressModule } from "@src/infra/logging/egress/egress.module";
 import { IngressModule } from "@src/infra/logging/ingress/ingress.module";
@@ -47,6 +48,7 @@ import { GlobalUnhandledException } from "@src/utils/subscribers/global-unhandle
     GlobalUnhandledException,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: ApiKeyGuard },
+    { provide: APP_FILTER, useClass: DomainErrorFilter },
   ],
 })
 export class AppModule {}
