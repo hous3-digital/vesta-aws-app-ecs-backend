@@ -57,14 +57,10 @@ readStdin().then((raw) => {
   const eslint = bin("eslint");
   if (!lintable || !eslint) process.exit(0);
 
-  const result = spawnSync(
-    eslint,
-    ["--fix", "--no-warn-ignored", "--format", "unix", relToApp],
-    {
-      cwd: APP_DIR,
-      encoding: "utf8",
-    },
-  );
+  const result = spawnSync(eslint, ["--fix", "--no-warn-ignored", relToApp], {
+    cwd: APP_DIR,
+    encoding: "utf8",
+  });
 
   if (result.status === 0 || result.status === null) process.exit(0);
 
