@@ -93,6 +93,7 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^25.3.3",
     "@types/supertest": "^7.2.0",
+    "@types/uuid": "^10",
     "@typescript-eslint/eslint-plugin": "^8.56.1",
     "@typescript-eslint/parser": "^8.56.1",
     "audit-ci": "^7.1.0",

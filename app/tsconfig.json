@@ -14,7 +14,7 @@
     "skipLibCheck": true,
     "types": ["node", "jest"],
     "strictNullChecks": true,
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
