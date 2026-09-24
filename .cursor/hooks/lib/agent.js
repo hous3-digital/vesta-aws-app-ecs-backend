@@ -4,13 +4,17 @@
 /**
  * Agent-agnostic adapter for hook scripts.
  *
- * Cursor sends the payload fields at the root ({ file_path }, { command }) and
+ * Cursor sends { hook_event_name, workspace_roots, file_path | command, ... } and
  * expects a JSON decision on stdout: { permission: "allow" | "deny" | "ask" }.
  *
  * Claude Code sends { hook_event_name, tool_name, tool_input: { file_path | command } }
  * and expects either nothing (allow) or a JSON decision on stdout:
  * { hookSpecificOutput: { hookEventName, permissionDecision, permissionDecisionReason } }.
  * For post-edit feedback it reads stderr when the script exits with code 2.
+ *
+ * `node .cursor/hooks/selftest.js` feeds both payload shapes to every hook and is
+ * part of `yarn lint`, so a detection regression fails the gate instead of silently
+ * allowing everything.
  */
 
 const path = require("path");
@@ -38,9 +42,11 @@ function normalize(raw) {
     return { ok: false, agent: "unknown", filePath: "", command: "" };
   }
 
+  // Both agents send hook_event_name. Only Claude Code wraps the tool arguments
+  // in tool_input; Cursor puts file_path / command at the root next to workspace_roots.
   const isClaude =
-    payload.tool_input !== undefined || payload.hook_event_name !== undefined;
-  const source = isClaude ? payload.tool_input || {} : payload;
+    payload.tool_input !== null && typeof payload.tool_input === "object";
+  const source = isClaude ? payload.tool_input : payload;
 
   return {
     ok: true,

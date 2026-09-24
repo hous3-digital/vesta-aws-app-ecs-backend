@@ -60,7 +60,7 @@ make smoke      # full flow against the local API: issue -> verify -> challenge 
 make down       # stops the containers
 
 # Quality (from app/)
-yarn lint               # eslint, no autofix
+yarn lint               # eslint, no autofix, then the hook self-test (yarn harness:test)
 yarn lint:fix           # eslint with autofix
 yarn prettier:check     # formatting check
 yarn prettier:format    # formats src, __tests__ and harness markdown
@@ -72,8 +72,8 @@ yarn audit:ci           # dependency audit
 
 # Database (from app/)
 yarn prisma:gen         # generates the client (output is gitignored)
-yarn prisma:migrate     # creates and applies a dev migration
-yarn prisma:deploy      # applies pending migrations (staging/prod, run manually before deploy)
+yarn prisma:migrate:local # creates and applies a dev migration on the LOCAL database (reads .env.local)
+yarn prisma:deploy      # applies pending migrations on staging/prod (reads app/.env; CI runs it, the hook asks first)
 ```
 
 Local fixtures (`app/src/infra/database/seeds/local-fixtures.sql`): issuer `local_bank`, API key `vesta_live_local_dev_do_not_use_in_production`, backoffice `dev@localhost` / `vesta_local`, verifier `verifier_local`.
@@ -95,7 +95,7 @@ Local fixtures (`app/src/infra/database/seeds/local-fixtures.sql`): issuer `loca
 5. **Never change a `/public/*` contract in place.** See the change classes above.
 6. **No workarounds for a failing gate.** A failing lint, typecheck, test or hook is fixed at the source. Never disable a rule, skip a test, or add `// eslint-disable` to get through.
 7. **Absolute imports** with `@src/...` and `@test/...`. Relative imports are blocked by ESLint.
-8. **Never reset or drop a database except the local one, through `make db-reset`** (or `yarn db:reset:local`). Both read only `app/.env.local`. Any other reset form (`yarn prisma:reset`, `prisma migrate reset`, `db push --force-reset`, `DROP`, `TRUNCATE`) loads `app/.env`, which is staging, and is blocked by the shell hook. The hook also refuses `make db-reset` if `.env.local` does not point to localhost.
+8. **Never reset or drop a database except the local one, through `make db-reset`** (or `yarn db:reset:local`). Both read only `app/.env.local`. Any other reset form (`yarn prisma:reset`, `prisma migrate reset`, `db push --force-reset`, `DROP`, `TRUNCATE`) loads `app/.env`, which is staging, and is blocked by the shell hook. The hook also refuses `make db-reset` if `.env.local` does not point to localhost, denies a bare `prisma migrate dev` (use `yarn prisma:migrate:local`) and asks before `prisma migrate deploy` or `db seed` without `dotenv -e .env.local`, because those read `app/.env`.
 
 ## Architecture
 
@@ -175,14 +175,14 @@ Tests live in `app/__tests__/`, split by layer, one jest config per layer in `ap
 
 The harness is agnostic: `.cursor/` is canonical and `.claude/` mirrors it with symlinks, so both agents read one source per artifact.
 
-| Artifact | Location                    | Purpose                                                                                                                                        |
-| -------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| Rules    | `.cursor/rules/*.mdc`       | Declarative standards, attached by glob. Each rule states what, why and the trigger                                                            |
-| Skills   | `.cursor/skills/*/SKILL.md` | Procedures (create a module, write a unit test, add a chain gateway). Each skill opens by citing the rules it applies                          |
-| Commands | `.cursor/commands/*.md`     | Spec-driven flow: `/create-prd`, `/create-tech-spec`, `/create-task`, `/exec-task`                                                             |
-| Agents   | `.cursor/agents/*.md`       | Specialists such as `code-reviewer`, which reviews a diff against this file and the rules                                                      |
-| Hooks    | `.cursor/hooks/*.js`        | Sensors: format and lint on every edit, block secret reads, block destructive shell. Wired in `.cursor/hooks.json` and `.claude/settings.json` |
-| Specs    | `tasks/prd-{feature}/`      | PRD, tech spec and task files produced by the commands                                                                                         |
+| Artifact | Location                    | Purpose                                                                                                                                                                                  |
+| -------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Rules    | `.cursor/rules/*.mdc`       | Declarative standards, attached by glob. Each rule states what, why and the trigger                                                                                                      |
+| Skills   | `.cursor/skills/*/SKILL.md` | Procedures (create a module, write a unit test, add a chain gateway). Each skill opens by citing the rules it applies                                                                    |
+| Commands | `.cursor/commands/*.md`     | Spec-driven flow: `/create-prd`, `/create-tech-spec`, `/create-task`, `/exec-task`                                                                                                       |
+| Agents   | `.cursor/agents/*.md`       | Specialists such as `code-reviewer`, which reviews a diff against this file and the rules                                                                                                |
+| Hooks    | `.cursor/hooks/*.js`        | Sensors: format and lint on every edit, block secret reads, block destructive shell. Wired in `.cursor/hooks.json` and `.claude/settings.json`; `selftest.js` proves both payload shapes |
+| Specs    | `tasks/prd-{feature}/`      | PRD, tech spec and task files produced by the commands                                                                                                                                   |
 
 Before touching an area, read its guide:
 
