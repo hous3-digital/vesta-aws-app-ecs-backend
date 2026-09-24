@@ -12,6 +12,7 @@ APP := app
 
 env:
 	@test -f $(APP)/.env.local || (cp $(APP)/.env.local.example $(APP)/.env.local && echo "created $(APP)/.env.local")
+	@test -f $(APP)/.env.test || (cp $(APP)/.env.test.example $(APP)/.env.test && echo "created $(APP)/.env.test")
 
 up:
 	cd $(APP) && docker compose up -d --wait
