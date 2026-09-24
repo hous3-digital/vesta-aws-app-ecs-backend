@@ -64,7 +64,8 @@ async function executeBaseSeed() {
 
 async function executeLocalFixtures() {
   const env = process.env.NODE_ENV;
-  const canExecute = env === "local" || env === "development" || env === "test";
+  // "test" is the deployed staging profile (see .env.test.example), never a local fixture target.
+  const canExecute = env === "local" || env === "development";
   if (!canExecute) return;
 
   await executeSqlFile("local-fixtures.sql");

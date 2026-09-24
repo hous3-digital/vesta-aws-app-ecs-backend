@@ -72,6 +72,16 @@ function localDatabaseIsLocal() {
   }
 }
 
+// Prisma commands load app/.env (staging) through prisma.config.ts unless the call is
+// wrapped in `dotenv -e .env.local` or `.env.test`. `migrate dev` may offer a reset on
+// drift, so it is denied outright; deploy and seed are the documented manual staging
+// procedure and only ask.
+const ENV_OVERRIDE = /\bdotenv\s+-e\s+\.env\.(local|test)\b/;
+const PRISMA_MIGRATE_DEV =
+  /\b(prisma\s+migrate\s+dev\b|(yarn|npm\s+run|pnpm)\s+prisma:migrate(?![:\w]))/;
+const PRISMA_STAGING_WRITE =
+  /\b(prisma\s+(migrate\s+deploy|db\s+(seed|push|execute))\b|(yarn|npm\s+run|pnpm)\s+prisma:deploy(?![:\w]))/;
+
 const CONFIRM = [
   /\b(npm|yarn|pnpm)\s+publish\b/,
   /\b(gh|git)\s+release\b/,
@@ -120,6 +130,23 @@ readStdin().then((raw) => {
       "Blocked: database reset or drop is manual-only.",
       "Never run prisma:reset, prisma migrate reset, db push --force-reset, DROP or TRUNCATE. Tell the user which command to run and let them run it. Do not retry.",
     );
+  }
+
+  if (!ENV_OVERRIDE.test(command)) {
+    if (PRISMA_MIGRATE_DEV.test(command)) {
+      deny(
+        ctx,
+        "Blocked: prisma migrate dev would read app/.env (staging).",
+        "Create and apply dev migrations only against the local database: run `yarn prisma:migrate:local` from app/. Do not retry the bare form.",
+      );
+    }
+    if (PRISMA_STAGING_WRITE.test(command)) {
+      ask(
+        ctx,
+        "Confirm: this Prisma command reads app/.env (staging), not the local database.",
+        "prisma migrate deploy and db seed without `dotenv -e .env.local` run against staging. Wait for the user to confirm, or use `yarn db:local` for the local database.",
+      );
+    }
   }
 
   if (DESTRUCTIVE.some((re) => re.test(command))) {
