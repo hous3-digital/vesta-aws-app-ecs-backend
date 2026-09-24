@@ -14,7 +14,7 @@ How a file is written once `standard-module` has said where it goes. Prettier an
 ## Language
 
 - English for identifiers, comments, commit messages, Swagger text, log lines and exception messages.
-- Legacy Portuguese text is translated when the line is touched, with one exception: a message returned by a `/public/*` route may be shown to an end user by the client, so changing it is a behavioral change. Keep the text and open a task if it must change.
+- Legacy Portuguese text is translated when the line is touched, including exception messages. Clients branch on `code`, never on the message text. While decision D6 in `app/docs/decisions.md` (production usage map) is open, a translated message on a `/public/*` route is listed in the PR as a behavioral change.
 
 ## Types
 
