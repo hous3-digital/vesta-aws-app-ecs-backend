@@ -1,0 +1,72 @@
+---
+description: Test layers, folder tree, what each layer may test, mocks and helpers convention, and how specs link to the QA scenario catalog. Applies to everything under app/__tests__.
+globs: __tests__/**/*.ts
+paths:
+  - "__tests__/**/*.ts"
+alwaysApply: false
+---
+
+# Test standard
+
+`AGENTS.md` fixes the three layers. This file fixes the tree, what may live in each folder, and the conventions every spec follows. The scenario catalog in `app/docs/__test__/cenarios.md` says which cases exist and which layer owns each one: a new spec adds or references a row there.
+
+## Tree
+
+```
+__tests__/
+├── @unit/                    # pure TypeScript, no Nest container, no I/O, no jest.fn on repositories
+│   ├── entities/             # {entity}.spec.ts
+│   ├── value-objects/        # {name}.spec.ts
+│   ├── formatters/           # pure output shaping
+│   ├── builders/             # pure construction with logic (configs, tx args)
+│   └── codecs/               # pure encode/decode (XDR, ScVal, proof encoding)
+├── @integration/             # one class under test, dependencies mocked, no database
+│   ├── handlers/             # {module}-{context}-{action}.handler.spec.ts
+│   ├── services/             # {name}.service.spec.ts
+│   ├── controllers/          # only for logic that lives in a controller (legacy)
+│   └── http/                 # filters, guards, interceptors
+├── @e2e/                     # HTTP against the app with the compose Postgres, Stellar mocked, real ZK
+│   ├── {context}-{module}.spec.ts   # public-credential.spec.ts, admin-issuers.spec.ts
+│   └── fixtures/             # request bodies per API: {module}-api.fixture.ts
+├── mocks/
+│   ├── repository/           # mock{Entity}Repository(): jest.Mocked<I{Entity}Repository>
+│   ├── gateway/              # mock{Name}Gateway() for chain and provider ports
+│   ├── service/              # mock{Name}Service() for legacy services still injected as classes
+│   ├── cqrs/                 # event-bus.mock.ts, command-bus.mock.ts
+│   └── model/                # {entity}Model(overrides?) returning a restored entity
+├── helpers/                  # create-test-app.helper.ts, cleanup.helper.ts, auth helpers
+└── constants/                # ids and fixed values shared by layers
+```
+
+One jest config per layer in `app/config/`. Coverage is collected from `src/**/domain/**` only.
+
+## What each layer may test
+
+| Artifact                                                     | Layer                     | Note                                                                          |
+| ------------------------------------------------------------ | ------------------------- | ----------------------------------------------------------------------------- |
+| Entity, value object                                         | `@unit`                   | Every `create`, transition, `isX`, `ensureX`. Not getters, `restore`, `touch` |
+| Pure codec, builder, formatter                               | `@unit`                   | Input to output, no mocks                                                     |
+| Handler or service with a rule                               | `@integration`            | Branching, validation, transformation, error mapping                          |
+| Passthrough handler                                          | none                      | fetch, call, return: `@e2e` covers it                                         |
+| Filter, guard, interceptor                                   | `@integration/http`       | With a hand-built `ArgumentsHost` or `ExecutionContext`                       |
+| Repository, mapper, DAO                                      | never                     | Round-trip proven by `@e2e`                                                   |
+| Chain gateway, provider client                               | never with mocked network | Contract tests against testnet are a separate concern (F3)                    |
+| HTTP route, auth, throttle, tenant isolation, contract shape | `@e2e`                    | The only layer that proves `/public/*` did not change                         |
+
+If you cannot name the rule a test protects, do not write it. If the rule lives in the wrong place (a repository that accrues commissions), test it where it is and add a row to the legacy map, do not move it in the test task.
+
+## Conventions
+
+- **Names** state the rule: `it("rejects revoke when the credential is already revoked")`. When a case comes from the QA suite, the CT id opens the name: `it("CT-VESTA-CRED-003 returns 409 when the CPF is already registered")`. `grep CT-VESTA` must find every automated scenario.
+- **AAA** with the three comments `// Arrange`, `// Act`, `// Assert`, one `Act` per test.
+- **`@unit` builds its own arrange**, no factory, no `makeSut`. Repetition is fine: the arrange is the documentation of the rule.
+- **`@integration` uses `makeSut()`** at the top of the file returning `{ sut, ...mocks }`, with mocks from `__tests__/mocks/`. Every mock file has one factory returning `jest.Mocked<Port>` with every method stubbed to a sane default. A spec overrides only what the case needs.
+- **Never assert calls to repository reads** (`findByX` was called with). Assert the outcome: the returned value, the thrown error, or the write that changed state (`updateOrThrow` received the entity in the new state).
+- **Errors** are asserted by class and by `code`: `await expect(act).rejects.toMatchObject({ code: "CREDENTIAL_NOT_FOUND" })`. Legacy Nest exceptions are asserted by class and message until the line moves to `DomainError`.
+- **`@e2e`** boots the app once per file with `createTestApp()` from `helpers/`, uses `supertest`, authenticates through the real routes (login, API key from fixtures), and cleans what it created in `afterAll`. Stellar is mocked by `VESTA_CONTRACT_ID=PLACEHOLDER` in `.env.test`; ZK is real, so proof cases carry `jest.setTimeout` and live in their own file.
+- **Fixtures** are static functions returning request bodies with `faker` for free text and valid generated CPFs. They never contain a real person's data.
+- **No `.only`, no `.skip` without a `TD-` or Track id in the reason string, no `console.log`.**
+
+## Red first when fixing a client-visible bug
+
+A bug found by QA (`#354` to `#362`) or by a client gets its `@e2e` or `@integration` spec written first, failing, named after the CT. The fix makes it green. The PR shows both.
