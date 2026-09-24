@@ -7,6 +7,7 @@
   "license": "UNLICENSED",
   "packageManager": "yarn@1.22.22",
   "scripts": {
+    "prepare": "cd .. && husky app/.husky || true",
     "build": "nest build",
     "prebuild:clear": "npx rimraf dist",
     "prebuild": "run-s prebuild:clear",
@@ -80,6 +81,8 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19",
+    "@commitlint/config-conventional": "^19",
     "@eslint/js": "^10.0.1",
     "@faker-js/faker": "^10.3.0",
     "@nestjs/cli": "11.0.16",
@@ -98,6 +101,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
     "eslint-plugin-unused-imports": "^4.4.1",
+    "husky": "^9.1.7",
     "jest": "^30.3.0",
     "npm-run-all": "^4.1.5",
     "prettier": "^3.8.1",

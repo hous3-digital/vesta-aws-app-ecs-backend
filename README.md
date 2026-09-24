@@ -114,6 +114,8 @@ Fixtures criadas pelo `make db` (`app/src/infra/database/seeds/local-fixtures.sq
 
 O `.env` continua sendo o arquivo de staging/producao e nunca deve ser copiado para o `.env.local`. A API le outro arquivo quando `ENV_FILE` esta definido (e o que `yarn start:local` faz).
 
+O `yarn install` tambem ativa o hook de `commit-msg` (husky em `app/.husky`): mensagens de commit fora do padrao Conventional Commits (`app/commitlint.config.js`: tipo da lista fixa, assunto com no minimo 15 caracteres, header ate 100) sao rejeitadas localmente.
+
 - API: `http://localhost:3000`
 - Swagger: `http://localhost:3000/docs`
 - Health: `http://localhost:3000/health`
