@@ -163,10 +163,11 @@ Tests live in `app/__tests__/`, split by layer, one jest config per layer in `ap
 
 ## Git and pull requests
 
-- Branches: `feat/*`, `fix/*`, `chore/*`, `task/*`. Pushing one opens a PR against `staging` automatically.
+- **One branch per product feature**, not per task: `feat/<feature-slug>`, `fix/<slug>` or `chore/<slug>`. Pushing one opens a PR against `staging` automatically, so the PR is the feature.
+- **Inside the branch, a task is a group of commits**, never one squashed commit. Scope is the area touched (`chore(harness):`, `feat(credential):`). The tracker task id goes in the footer (`Track: task_...`) so `git log --grep` finds every commit of a task.
+- Exceptions that get their own branch: a behavioral or breaking change on `/public/*` (must be revertable alone), a legacy-map migration (keeps logic review clean), and a feature whose PR would pass about 2000 lines (split in two).
 - Commits follow Conventional Commits and are checked by commitlint on `commit-msg`: types `build, chore, ci, docs, feat, fix, perf, refactor, revert, style, test`, header up to 100 chars, subject at least 15 chars, English.
-- Before pushing: `yarn lint`, `yarn typecheck`, `yarn prettier:check`, `yarn test:unit`, `yarn test:integration`. CI runs the same set and blocks the PR on failure.
-- One concern per PR. A migration in the legacy map is its own PR, never bundled with a feature.
+- Before pushing: `yarn lint`, `yarn typecheck`, `yarn prettier:check`, `yarn test:unit`, `yarn test:integration`.
 - Every decision that changes architecture or a rule in this file gets a line in `app/docs/decisions.md` (dated) and, when structural, an ADR in `app/docs/adr/`.
 
 ## Harness layout
