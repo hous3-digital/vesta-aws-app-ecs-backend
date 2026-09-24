@@ -247,7 +247,7 @@ yarn start:prod          # Rodar build compilado
 ```bash
 yarn test:unit           # __tests__/@unit: entidades e value objects
 yarn test:integration    # __tests__/@integration: handlers e services com regra (precisa do Postgres do compose)
-yarn test:e2e            # __tests__/@e2e: HTTP contra a API de pe (em reconstrucao: hoje referencia .env.test e docker-compose-test.yaml inexistentes)
+yarn test:e2e            # __tests__/@e2e: cria o banco local vesta_test, migra, semeia e sobe o app em processo (make env cria o .env.test)
 yarn test:cov            # Unitarios com coverage
 ```
 

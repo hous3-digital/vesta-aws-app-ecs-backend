@@ -4,6 +4,8 @@ Fonte dos cenários: os 72 casos manuais da suíte de QA (`internal/qa-manual-te
 
 Objetivo imediato: **travar o comportamento de `/public/*` e do backoffice antes de mexer na fronteira de chain e nos módulos** (frentes F3 e F4 de `tech-debt.md`). Um refactor que passa nesta suíte não mudou o que o cliente vê.
 
+Cobertura em 2026-09-24: `@unit` 53 testes (entidades e value objects cobertos), `@integration` 59, `@e2e` 11.
+
 Legenda da coluna "hoje": `—` nada · `parcial` existe spec que cobre parte · `ok` coberto · `red` spec deve nascer falhando (bug aberto).
 
 ## Superfície e autenticação
