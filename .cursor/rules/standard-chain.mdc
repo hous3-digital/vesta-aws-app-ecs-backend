@@ -51,4 +51,4 @@ The network a tenant operates on is persisted (`OrganizationWallet.network`), no
 
 ## Legacy map for the chain boundary
 
-The ESLint allowlist in `app/eslint.config.js` is the list of files that still import the SDK outside the adapter: two commission gateways, the issuer registry gateway, `issuer-did.value-object.ts`, `wallet.service.ts` and `scripts/deploy-payout-vault.ts`. Touching one of them means moving its SDK code behind a port into `src/infra/gateways/chain/stellar/` and removing it from the list (F3). The list never grows.
+The ESLint allowlist in `app/eslint.config.js` is the list of files that still import the SDK outside the adapter: two commission gateways, the issuer registry gateway, `issuer-did.value-object.ts`, `wallet.service.ts`, `scripts/deploy-payout-vault.ts` and two specs that build SDK objects for them (`admin-issuers.controller.spec.ts`, `wallet.service.spec.ts`). Touching one of them means moving its SDK code behind a port into `src/infra/gateways/chain/stellar/` and removing it from the list (F3). The list never grows.

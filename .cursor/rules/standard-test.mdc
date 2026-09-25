@@ -60,7 +60,7 @@ If you cannot name the rule a test protects, do not write it. If the rule lives 
 
 - **Names** state the rule: `it("rejects revoke when the credential is already revoked")`. When a case comes from the QA suite, the CT id opens the name: `it("CT-VESTA-CRED-003 returns 409 when the CPF is already registered")`. `grep CT-VESTA` must find every automated scenario.
 - **AAA** with the three comments `// Arrange`, `// Act`, `// Assert`, one `Act` per test.
-- **`@unit` builds its own arrange**, no factory, no `makeSut`. Repetition is fine: the arrange is the documentation of the rule.
+- **`@unit` builds its own arrange**, no `makeSut`, nothing from `mocks/`. A file-local helper (`restoreWith({ status })`) is fine when the field the case depends on is explicit at the call site. Repetition is fine: the arrange is the documentation of the rule.
 - **`@integration` uses `makeSut()`** at the top of the file returning `{ sut, ...mocks }`, with mocks from `__tests__/mocks/`. Every mock file has one factory returning `jest.Mocked<Port>` with every method stubbed to a sane default. A spec overrides only what the case needs.
 - **Never assert calls to repository reads** (`findByX` was called with). Assert the outcome: the returned value, the thrown error, or the write that changed state (`updateOrThrow` received the entity in the new state).
 - **Errors** are asserted by class and by `code`: `await expect(act).rejects.toMatchObject({ code: "CREDENTIAL_NOT_FOUND" })`. Legacy Nest exceptions are asserted by class and message until the line moves to `DomainError`.
