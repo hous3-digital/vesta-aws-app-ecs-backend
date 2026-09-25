@@ -30,7 +30,7 @@ O alvo é o que as rules em `.cursor/rules/` descrevem. Medido em 2026-09-24: `c
 - Feito: rules `standard-module`, `standard-code`, `standard-test` (globs em `app/…`); skills `new-module`, `unit-testing`, `integration-testing`, `e2e-testing`; symlinks em `.claude/`; hooks com `selftest.js` nos dois formatos de payload; ESLint `no-restricted-imports` para `@stellar/stellar-sdk` com allowlist nominal (8 arquivos de `src` e specs, encolhe a cada frente); `catalog:check`.
 - Feito em 2026-09-25: rule `standard-chain`, skill `chain-gateway`, primeiro mock em `__tests__/mocks/gateway`, skill oficial da Stellar como dependência por máquina (não versionada).
 - Feito em 2026-09-25: rule `standard-security` (registra TD-005 e TD-006 como gaps de hoje).
-- Skill restante: `prisma-migration`.
+- Feito em 2026-09-25: skill `prisma-migration` (expand/contract, ordem schema → migration → mapper → entidade → testes, checklist do SQL, o que nunca fazer). Primeira migration real que passa por ela: hash de API key, #357.
 - Sensor de testes relacionados no `format-on-edit` (roda o spec do arquivo editado).
 - Regras de `standard-code` que ainda são prosa e deveriam virar ESLint com allowlist que só encolhe: `no-explicit-any` (12 usos hoje), `no-console` fora de `main.ts` e `scripts/` (12 usos), `explicit-member-accessibility`, `no-floating-promises`.
 - Feito em 2026-09-25: agent `code-reviewer` (`.cursor/agents/`, espelhado em `.claude/agents`) com checklist mapeado seção por seção nas cinco rules, classe de mudança e legacy map; só reporta, nunca edita. Rodado no diff do PR #96 como prova.
