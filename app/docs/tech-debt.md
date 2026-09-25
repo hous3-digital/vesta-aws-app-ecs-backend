@@ -31,10 +31,10 @@ O alvo é o que as rules em `.cursor/rules/` descrevem. Medido em 2026-09-24: `c
 - Feito em 2026-09-25: rule `standard-chain`, skill `chain-gateway`, primeiro mock em `__tests__/mocks/gateway`, skill oficial da Stellar como dependência por máquina (não versionada).
 - Feito em 2026-09-25: rule `standard-security` (registra TD-005 e TD-006 como gaps de hoje).
 - Feito em 2026-09-25: skill `prisma-migration` (expand/contract, ordem schema → migration → mapper → entidade → testes, checklist do SQL, o que nunca fazer). Primeira migration real que passa por ela: hash de API key, #357.
-- Sensor de testes relacionados no `format-on-edit` (roda o spec do arquivo editado).
+- Feito em 2026-09-25: sensor de testes relacionados no `format-on-edit` (roda o spec de mesmo basename e devolve a falha ao Claude Code) e `coverageThreshold` de domínio nos jest configs.
 - Regras de `standard-code` que ainda são prosa e deveriam virar ESLint com allowlist que só encolhe: `no-explicit-any` (12 usos hoje), `no-console` fora de `main.ts` e `scripts/` (12 usos), `explicit-member-accessibility`, `no-floating-promises`.
 - Feito em 2026-09-25: agent `code-reviewer` (`.cursor/agents/`, espelhado em `.claude/agents`) com checklist mapeado seção por seção nas cinco rules, classe de mudança e legacy map; só reporta, nunca edita. Rodado no diff do PR #96 como prova.
-- Commands do fluxo spec-driven (`create-prd`, `create-tech-spec`, `create-task`, `exec-task`) e templates. Até existirem, o fluxo do Track é seguido à mão.
+- Feito em 2026-09-25: commands `create-prd`, `create-tech-spec`, `create-task`, `exec-task` em `.cursor/commands` (espelho `.claude/commands`) com templates em `app/.templates/` e saída em `tasks/prd-{feature}/`; `exec-task` faz a ponte com o Track (`get_agent_execution_context`, `in_development`, gates, `code-reviewer`, critério item a item, `complete_dev_task`). Primeiro ciclo completo numa task real ainda por rodar.
 
 ### F2 · Testes · Track: camadas e catálogo `task_01m3ass0q2f6btcfztyft7q7z1`, e2e de prova `task_01m3ass0wjf6btcg23v070dbe5`, cobrir catálogo `task_01m3ass0x4f6btcg2cwdav33ks`, style `task_01m3ass0xpf6btcg2mv123mqgp`, e as tasks `[BUG]` da R4, uma por CT vermelho
 
