@@ -69,6 +69,7 @@ yarn test:unit          # __tests__/@unit
 yarn test:integration   # __tests__/@integration (needs the compose Postgres)
 yarn test:e2e           # __tests__/@e2e: creates the local vesta_test database, migrates, seeds, boots the app in-process
 yarn audit:ci           # dependency audit
+yarn deploy:check       # env.schema.ts vs infra/terraform/envs/{staging,prod}: required vars missing, duplicates, dead vars
 
 # Database (from app/)
 yarn prisma:gen         # generates the client (output is gitignored)
@@ -192,6 +193,7 @@ Before touching an area, read its guide:
 | Tests                                      | `app/docs/__test__/README.md`                            |
 | Env, database, logging, gateways           | `app/docs/infra/README.md`                               |
 | A decision already taken, or a pending one | `app/docs/decisions.md`                                  |
+| Anything that must happen outside the repo | `app/docs/deploy-checklist.md`                           |
 | Chain contracts                            | `app/contracts/*/README.md`                              |
 
 ## Definition of done for any task
@@ -201,3 +203,4 @@ Before touching an area, read its guide:
 3. `yarn lint`, `yarn typecheck`, `yarn prettier:check`, `yarn test:unit` and `yarn test:integration` green.
 4. Change class stated in the PR (additive, behavioral, breaking).
 5. `app/docs/decisions.md` updated if anything in this file changed.
+6. Anything the change needs outside the repo (env var, secret, migration on prod, data fix, contract or ZK artifact) has a row in `app/docs/deploy-checklist.md`, in the same commit.

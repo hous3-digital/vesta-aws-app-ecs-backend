@@ -16,6 +16,7 @@
     "lint": "eslint src __tests__ && yarn harness:test",
     "harness:test": "node ../.cursor/hooks/selftest.js && yarn catalog:check",
     "catalog:check": "node scripts/catalog-check.mjs",
+    "deploy:check": "node scripts/env-diff.mjs",
     "lint:fix": "eslint src __tests__ --fix",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "start": "nest start",
