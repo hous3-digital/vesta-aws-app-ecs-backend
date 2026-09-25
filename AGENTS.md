@@ -68,6 +68,7 @@ yarn typecheck          # tsc --noEmit
 yarn test:unit          # __tests__/@unit
 yarn test:integration   # __tests__/@integration (needs the compose Postgres)
 yarn test:e2e           # __tests__/@e2e: creates the local vesta_test database, migrates, seeds, boots the app in-process
+yarn test:cov           # unit tests with coverage of src/**/domain/**; fails below the coverageThreshold of the jest config
 yarn audit:ci           # dependency audit
 yarn deploy:check       # env.schema.ts vs infra/terraform/envs/{staging,prod}: required vars missing, duplicates, dead vars
 
@@ -157,7 +158,7 @@ Tests live in `app/__tests__/`, split by layer, one jest config per layer in `ap
 | `@integration` | `__tests__/@integration/` | Handlers and services **that contain a rule**: branching, validation, transformation, error handling              | Passthrough handlers (fetch, call, return), DAOs, gateways that only wrap an SDK |
 | `@e2e`         | `__tests__/@e2e/`         | HTTP contract of every route, booted in-process on the compose Postgres, chain mocked, ZK real. Named by QA CT id | Anything already proven by a lower layer                                         |
 
-- Coverage is collected from `src/**/domain/**` only. A thin domain is a finding, not a reason to test services instead.
+- Coverage is collected from `src/**/domain/**` only, and `coverageThreshold` in `app/config/jest-*.config.ts` holds the floor measured when it was set. It only goes up, one task at a time. A thin domain is a finding, not a reason to test services instead.
 - Never test DAOs, provider endpoints or chain gateways with mocked networks.
 - If you cannot name the rule a test protects, do not write it.
 - Run a single spec: `yarn test:unit __tests__/@unit/entities/credential.spec.ts`.
@@ -176,14 +177,14 @@ Tests live in `app/__tests__/`, split by layer, one jest config per layer in `ap
 
 The harness is agnostic: `.cursor/` is canonical and `.claude/` mirrors it with symlinks, so both agents read one source per artifact.
 
-| Artifact | Location                    | Purpose                                                                                                                                                                                           |
-| -------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Rules    | `.cursor/rules/*.mdc`       | Declarative standards, attached by glob. Each rule states what, why and the trigger                                                                                                               |
-| Skills   | `.cursor/skills/*/SKILL.md` | Procedures (create a module, write a unit test, add a chain gateway). Each skill opens by citing the rules it applies                                                                             |
-| Commands | `.cursor/commands/*.md`     | **Planned** (tech-debt.md F1): spec-driven flow `/create-prd`, `/create-tech-spec`, `/create-task`, `/exec-task`. Until then, the Track workflow in the workspace `AGENTS.md` is followed by hand |
-| Agents   | `.cursor/agents/*.md`       | Subagents. `code-reviewer` reviews a diff against this file and the five rules, section by section, and reports findings with file, line and rule; it never edits. Run it before pushing          |
-| Hooks    | `.cursor/hooks/*.js`        | Sensors: format and lint on every edit, block secret reads, block destructive shell. Wired in `.cursor/hooks.json` and `.claude/settings.json`; `selftest.js` proves both payload shapes          |
-| Specs    | `tasks/prd-{feature}/`      | **Planned**, produced by the commands once they exist                                                                                                                                             |
+| Artifact | Location                    | Purpose                                                                                                                                                                                                                                                              |
+| -------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Rules    | `.cursor/rules/*.mdc`       | Declarative standards, attached by glob. Each rule states what, why and the trigger                                                                                                                                                                                  |
+| Skills   | `.cursor/skills/*/SKILL.md` | Procedures (create a module, write a unit test, add a chain gateway). Each skill opens by citing the rules it applies                                                                                                                                                |
+| Commands | `.cursor/commands/*.md`     | **Planned** (tech-debt.md F1): spec-driven flow `/create-prd`, `/create-tech-spec`, `/create-task`, `/exec-task`. Until then, the Track workflow in the workspace `AGENTS.md` is followed by hand                                                                    |
+| Agents   | `.cursor/agents/*.md`       | Subagents. `code-reviewer` reviews a diff against this file and the five rules, section by section, and reports findings with file, line and rule; it never edits. Run it before pushing                                                                             |
+| Hooks    | `.cursor/hooks/*.js`        | Sensors: format, lint and the related spec (same basename under `__tests__/@unit` or `@integration`) on every edit, block secret reads, block destructive shell. Wired in `.cursor/hooks.json` and `.claude/settings.json`; `selftest.js` proves both payload shapes |
+| Specs    | `tasks/prd-{feature}/`      | **Planned**, produced by the commands once they exist                                                                                                                                                                                                                |
 
 Soroban knowledge that is not Vesta's (RPC, XDR, simulation, ZK verifiers) comes from the official `stellar/stellar-dev-skill`, installed per machine (Claude Code: `/plugin marketplace add stellar/stellar-dev-skill` then `/plugin install stellar-dev@stellar-dev`) and never vendored into this repo. The `chain-gateway` skill names the sub-skills to load.
 

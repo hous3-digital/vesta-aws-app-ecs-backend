@@ -34,6 +34,8 @@ const config: Config.InitialOptions = {
     "^@test/(.*)$": "<rootDir>/__tests__/$1",
   },
   collectCoverageFrom: ["src/**/domain/**/*.ts", "!src/**/*.d.ts", "!src/**/*.spec.ts", "!src/**/*.test.ts"],
+  // Floor of the domain coverage measured on 2026-09-25; only goes up, one task at a time.
+  coverageThreshold: { global: { statements: 83, branches: 96, functions: 68, lines: 82 } },
   coverageReporters: ["text", "lcov", "html", "json-summary"],
   setupFilesAfterEnv: ["<rootDir>/config/test-setup.ts"],
   testTimeout: 10000,
