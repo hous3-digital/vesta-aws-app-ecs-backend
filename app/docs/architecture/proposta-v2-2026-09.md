@@ -25,20 +25,20 @@ Tudo o que **não** está nessa lista (PII, KYC pendente, Passkey, wallets, API 
 
 ## 1. Divisão on-chain / off-chain (resposta ao "on-chain KYC feasibility")
 
-| Dado / decisão | Onde vive | Por quê | Se o backend Vesta for comprometido |
-|---|---|---|---|
-| CPF, nome, data, documento, biometria | Off-chain, no issuer. Vesta só vê em memória no prover | LGPD; não há motivo para ledger público | Atacante vê inputs em trânsito do prover (mitigação: prover isolado / client-side, §6.4) |
-| Hashes Poseidon + salt + assinatura EdDSA do issuer (VC) | Device do titular (+ cópia cifrada para recovery) | É o material de prova; nunca vai on-chain em claro | Nada muda: a VC só serve com o CPF real |
-| `vc_commitment` + `issuer` + `expires_at` + `credential_type` | **On-chain** (`protocol.anchor`) | Ciclo de vida verificável; métrica de adoção auditável | Atacante pode ancorar lixo assinado com chave de issuer custodiada (mitigação: KMS + rate limit + issuer pode revogar) |
-| Revogação | **On-chain** (`protocol.revoke`) | Verifier precisa checar sem confiar na Vesta | Atacante pode revogar (DoS), não pode "des-revogar" |
-| Chave de verificação Groth16 | **On-chain**, `instance` storage do `verifier` | Sem isso o contrato aceita qualquer circuito | Nenhum efeito: só admin multisig altera |
-| Nonce anti-replay | **On-chain**, `temporary` storage do `verifier` | One-time precisa ser verificável | Nenhum efeito |
-| Attestation (resultado) | **On-chain** (evento + storage) | É o produto | Nenhum efeito |
-| Preço por reuso, `share_bps`, roles | **On-chain**, `registry`, versionados | Comissão precisa ser derivada, não informada | Atacante não altera termos (admin multisig); backend não participa do cálculo |
-| Crédito de comissão, hold, reversão, saque | **On-chain**, `vault` | Custódia de valor | Operator comprometido só pode `settle` para o `payout_address` registrado; guardian pausa |
-| Status KYC pendente/aprovado (webhook) | Off-chain | É pré-emissão; nada a verificar ainda | Sem impacto on-chain |
-| Passkey, challenge de sessão, JWT, API key | Off-chain (Redis/PG) | Autenticação de borda | Ver §7 (Privy) |
-| Ledger de comissão, painel, CSV | Off-chain, **projeção de eventos** | UX | Projeção pode divergir; reconciliação detecta (§5.4) |
+| Dado / decisão                                                | Onde vive                                              | Por quê                                                | Se o backend Vesta for comprometido                                                                                    |
+| ------------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| CPF, nome, data, documento, biometria                         | Off-chain, no issuer. Vesta só vê em memória no prover | LGPD; não há motivo para ledger público                | Atacante vê inputs em trânsito do prover (mitigação: prover isolado / client-side, §6.4)                               |
+| Hashes Poseidon + salt + assinatura EdDSA do issuer (VC)      | Device do titular (+ cópia cifrada para recovery)      | É o material de prova; nunca vai on-chain em claro     | Nada muda: a VC só serve com o CPF real                                                                                |
+| `vc_commitment` + `issuer` + `expires_at` + `credential_type` | **On-chain** (`protocol.anchor`)                       | Ciclo de vida verificável; métrica de adoção auditável | Atacante pode ancorar lixo assinado com chave de issuer custodiada (mitigação: KMS + rate limit + issuer pode revogar) |
+| Revogação                                                     | **On-chain** (`protocol.revoke`)                       | Verifier precisa checar sem confiar na Vesta           | Atacante pode revogar (DoS), não pode "des-revogar"                                                                    |
+| Chave de verificação Groth16                                  | **On-chain**, `instance` storage do `verifier`         | Sem isso o contrato aceita qualquer circuito           | Nenhum efeito: só admin multisig altera                                                                                |
+| Nonce anti-replay                                             | **On-chain**, `temporary` storage do `verifier`        | One-time precisa ser verificável                       | Nenhum efeito                                                                                                          |
+| Attestation (resultado)                                       | **On-chain** (evento + storage)                        | É o produto                                            | Nenhum efeito                                                                                                          |
+| Preço por reuso, `share_bps`, roles                           | **On-chain**, `registry`, versionados                  | Comissão precisa ser derivada, não informada           | Atacante não altera termos (admin multisig); backend não participa do cálculo                                          |
+| Crédito de comissão, hold, reversão, saque                    | **On-chain**, `vault`                                  | Custódia de valor                                      | Operator comprometido só pode `settle` para o `payout_address` registrado; guardian pausa                              |
+| Status KYC pendente/aprovado (webhook)                        | Off-chain                                              | É pré-emissão; nada a verificar ainda                  | Sem impacto on-chain                                                                                                   |
+| Passkey, challenge de sessão, JWT, API key                    | Off-chain (Redis/PG)                                   | Autenticação de borda                                  | Ver §7 (Privy)                                                                                                         |
+| Ledger de comissão, painel, CSV                               | Off-chain, **projeção de eventos**                     | UX                                                     | Projeção pode divergir; reconciliação detecta (§5.4)                                                                   |
 
 O ciclo de vida do KYC no Soroban é, portanto: **`anchor` → N × `verify` → `revoke`** (ou expiração pelo `expires_at` ancorado). Emissão do KYC em si e recovery ficam fora.
 
@@ -50,10 +50,10 @@ O ciclo de vida do KYC no Soroban é, portanto: **`anchor` → N × `verify` →
 
 **Regra para separar contrato:** governança/chaves distintas, cadência de upgrade distinta, ou reuso por terceiros. Só o cofre cumpre isso.
 
-| Contrato | Módulos Rust internos | Por que é um contrato |
-|---|---|---|
-| `vesta-protocol` | `registry`, `credentials`, `verifier`, `settlement` | Um admin, um upgrade, storage keys isoladas por módulo (`RegistryKey::*`, `CredentialKey::*`, …). `verify_proof` não faz nenhuma cross-call exceto `vault.credit`. |
-| `vesta-vault` | — | Custodia tokens: chaves `operator`/`guardian` próprias, pausável isolado, raramente atualizado, superfície de auditoria mínima (security.md: controles de emergência para contratos com valor). |
+| Contrato         | Módulos Rust internos                               | Por que é um contrato                                                                                                                                                                           |
+| ---------------- | --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `vesta-protocol` | `registry`, `credentials`, `verifier`, `settlement` | Um admin, um upgrade, storage keys isoladas por módulo (`RegistryKey::*`, `CredentialKey::*`, …). `verify_proof` não faz nenhuma cross-call exceto `vault.credit`.                              |
+| `vesta-vault`    | —                                                   | Custodia tokens: chaves `operator`/`guardian` próprias, pausável isolado, raramente atualizado, superfície de auditoria mínima (security.md: controles de emergência para contratos com valor). |
 
 ```mermaid
 flowchart LR
@@ -94,7 +94,7 @@ As seções a seguir descrevem cada módulo. Assinaturas são as funções públ
 
 ### 2.1 Módulo `registry` (evolução do issuer-registry)
 
-Cadastra **participantes**: issuers *e* verifiers (hoje verifier é só tabela Postgres).
+Cadastra **participantes**: issuers _e_ verifiers (hoje verifier é só tabela Postgres).
 
 ```rust
 pub struct Participant {
@@ -231,13 +231,13 @@ Papéis de chave (todas distintas, ver relatório S-07): `admin` (multisig, frio
 
 ### 2.6 Eventos on-chain (contrato de integração com o backend)
 
-| Contrato / módulo | Evento | Consumidor no backend |
-|---|---|---|
-| protocol / registry | `participant_registered/updated/status`, `terms_set`, `price_set` | `participant` (projeção) |
-| protocol / credentials | `credential_anchored`, `credential_revoked` | `credential` (status da projeção) |
-| protocol / verifier | `proof_verified`, `vk_set` | `attestation` (projeção), `backoffice` |
-| protocol / settlement | `commission_accrued`, `commission_reversed_for_credential` | `settlement` (ledger) |
-| vault | `commission_matured`, `commission_reversed`, `payout_settled`, `deposit`, `paused` | `settlement` (ledger, saques) |
+| Contrato / módulo      | Evento                                                                             | Consumidor no backend                  |
+| ---------------------- | ---------------------------------------------------------------------------------- | -------------------------------------- |
+| protocol / registry    | `participant_registered/updated/status`, `terms_set`, `price_set`                  | `participant` (projeção)               |
+| protocol / credentials | `credential_anchored`, `credential_revoked`                                        | `credential` (status da projeção)      |
+| protocol / verifier    | `proof_verified`, `vk_set`                                                         | `attestation` (projeção), `backoffice` |
+| protocol / settlement  | `commission_accrued`, `commission_reversed_for_credential`                         | `settlement` (ledger)                  |
+| vault                  | `commission_matured`, `commission_reversed`, `payout_settled`, `deposit`, `paused` | `settlement` (ledger, saques)          |
 
 Todos os eventos são `#[contractevent]` tipados com o módulo como primeiro topic (`("vesta", "registry", …)`), para o indexer filtrar por módulo sem decodificar o payload.
 
@@ -274,6 +274,7 @@ kyc_ok = GreaterEqThan(kyc_level, min_kyc_level)
 ```
 
 Notas:
+
 - `salt` por credencial impede que a mesma pessoa gere o mesmo `vc_commitment` em dois issuers (linkabilidade entre issuers).
 - `nonce` e `verifier_did_hash` entram só como sinais públicos: o `vk_x` do Groth16 os amarra à prova. Um replay em outro verifier ou com outro nonce falha no `pairing_check`.
 - EdDSA-Poseidon do circomlib: ordem de ~5k constraints; total do circuito continua pequeno.
@@ -464,18 +465,23 @@ Job diário compara, por contrato, o estado on-chain (leituras `get_*` amostrada
 ## 6. Escalabilidade e operação
 
 ### 6.1 Indexer (`ledger-sync`)
+
 Um único consumidor por contrato com cursor persistido (`getEvents` do RPC, janela ≤ 24h de retenção — se ficar fora, fallback para `getLedgerEntries`/Horizon ou um indexer externo tipo Mercury/SubQuery). Processamento idempotente por `event_id`. Publica `DomainEvent` in-process (Nest `EventEmitter2`/CQRS `EventBus`); se o backend virar multi-instância, o indexer roda como **deployable separado** e publica em fila (SQS/Redis Streams).
 
 ### 6.2 Outbox (`ledger-sync`)
+
 Worker único (lock distribuído Redis) drena `onchain_outbox` em ordem, um signer por `signer_role`, backoff exponencial, `idempotency_key` derivada do agregado (ex.: `anchor:<commitment>`). Substitui os `setInterval` e os três clientes Soroban atuais.
 
 ### 6.3 API
+
 Stateless; sessões e challenges em Redis (obrigatório em prod, não opcional). Rate limit por API key e por `verifier`.
 
 ### 6.4 Prover
+
 Geração de prova é CPU-bound e recebe CPF em claro. Extrair para serviço próprio (`vesta-prover`, mesma imagem, outro target ECS) com fila e **zero persistência**; a API só orquestra. Meta v3: proving **no cliente** (snarkjs/wasm no browser via SDK) — o CPF nunca sai do device. O desenho v2 já deixa isso plugável: `IProverPort` tem implementação `snarkjs` (servidor) e, em v3, `client-supplied` (a prova chega pronta do SDK).
 
 ### 6.5 Fee-bump e custo
+
 Vesta patrocina fees. Mitigar DoS econômico: orçamento diário por `verifier`, `prepare` só com nonce válido emitido para aquele verifier, monitoramento de saldo do deployer.
 
 ---
@@ -484,20 +490,20 @@ Vesta patrocina fees. Mitigar DoS econômico: orçamento diário por `verifier`,
 
 Atacantes: **titular malicioso**, **verifier malicioso**, **issuer malicioso**, **backend Vesta comprometido**, **Privy comprometida**, **admin/operator com chave vazada**.
 
-| Vetor pedido pelo SCF | Mitigação em v2 | Onde |
-|---|---|---|
-| Replay de credencial | nonce em `temporary` storage + nonce e `verifier_did_hash` como sinais públicos (pairing falha em outro contexto) + `subject.require_auth` | protocol.verifier, circuito |
-| Prova de circuito alheio | VK em storage, `set_vk` só admin, evento público | verifier |
-| `vc_commitment` solto | dentro do circuito, amarrado à assinatura do issuer | circuito |
-| Credencial revogada/expirada verificando | `credentials::is_valid` on-chain antes do pairing | protocol.verifier, protocol.credentials |
-| Colusão cross-issuer no split | split derivado do registry versionado; `credit` só pelo settlement; resto para Vesta; hold + `reverse` pelo guardian; auto-dealing (mesma entidade como técnico e comercial) detectável on-chain e limitado por `vesta_bps` mínimo | protocol.settlement, vault, protocol.registry |
-| Verifier sybil gerando reusos | preço por reuso pago pelo verifier (decisão §9) ou orçamento de fee-bump por verifier; `is_active` no registry | protocol.settlement, backend |
-| Operator drenando cofre | `settle` só para `stellar_address` registrado; saldo do operator limitado; guardian `pause` | vault |
-| Admin único | multisig Stellar nativo para admin; `upgrade` emite evento | todos |
-| Privy: backend emite custom-auth JWT | declarar: Vesta comprometida pode autenticar como titular perante a Privy. Mitigações: Passkey obrigatória antes de qualquer `proofChallenge` (já existe, torna-se inegociável), JWT 60s com `aud`/`sub` amarrados ao `vc_commitment`, session signer Privy com política "só `verifier.verify_proof`", sem fallback para deployer, JWKS com rotação | wallet, holder-auth |
-| Privy comprometida | wallet do titular assina o que quiser, mas sem CPF real não gera prova; dano limitado a replay bloqueado por nonce | — |
-| Backend comprometido | pode ancorar/revogar (DoS) via chaves KMS; **não** pode forjar verificação nem comissão | por design |
-| TTL de storage expirando | `extend_ttl` em toda leitura/escrita (já feito); keeper bumpa attestations/creditos; documentar custo | contratos |
+| Vetor pedido pelo SCF                    | Mitigação em v2                                                                                                                                                                                                                                                                                                                                     | Onde                                          |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| Replay de credencial                     | nonce em `temporary` storage + nonce e `verifier_did_hash` como sinais públicos (pairing falha em outro contexto) + `subject.require_auth`                                                                                                                                                                                                          | protocol.verifier, circuito                   |
+| Prova de circuito alheio                 | VK em storage, `set_vk` só admin, evento público                                                                                                                                                                                                                                                                                                    | verifier                                      |
+| `vc_commitment` solto                    | dentro do circuito, amarrado à assinatura do issuer                                                                                                                                                                                                                                                                                                 | circuito                                      |
+| Credencial revogada/expirada verificando | `credentials::is_valid` on-chain antes do pairing                                                                                                                                                                                                                                                                                                   | protocol.verifier, protocol.credentials       |
+| Colusão cross-issuer no split            | split derivado do registry versionado; `credit` só pelo settlement; resto para Vesta; hold + `reverse` pelo guardian; auto-dealing (mesma entidade como técnico e comercial) detectável on-chain e limitado por `vesta_bps` mínimo                                                                                                                  | protocol.settlement, vault, protocol.registry |
+| Verifier sybil gerando reusos            | preço por reuso pago pelo verifier (decisão §9) ou orçamento de fee-bump por verifier; `is_active` no registry                                                                                                                                                                                                                                      | protocol.settlement, backend                  |
+| Operator drenando cofre                  | `settle` só para `stellar_address` registrado; saldo do operator limitado; guardian `pause`                                                                                                                                                                                                                                                         | vault                                         |
+| Admin único                              | multisig Stellar nativo para admin; `upgrade` emite evento                                                                                                                                                                                                                                                                                          | todos                                         |
+| Privy: backend emite custom-auth JWT     | declarar: Vesta comprometida pode autenticar como titular perante a Privy. Mitigações: Passkey obrigatória antes de qualquer `proofChallenge` (já existe, torna-se inegociável), JWT 60s com `aud`/`sub` amarrados ao `vc_commitment`, session signer Privy com política "só `verifier.verify_proof`", sem fallback para deployer, JWKS com rotação | wallet, holder-auth                           |
+| Privy comprometida                       | wallet do titular assina o que quiser, mas sem CPF real não gera prova; dano limitado a replay bloqueado por nonce                                                                                                                                                                                                                                  | —                                             |
+| Backend comprometido                     | pode ancorar/revogar (DoS) via chaves KMS; **não** pode forjar verificação nem comissão                                                                                                                                                                                                                                                             | por design                                    |
+| TTL de storage expirando                 | `extend_ttl` em toda leitura/escrita (já feito); keeper bumpa attestations/creditos; documentar custo                                                                                                                                                                                                                                               | contratos                                     |
 
 ---
 

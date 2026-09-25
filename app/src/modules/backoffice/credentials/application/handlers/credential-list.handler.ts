@@ -2,11 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { IQueryHandler, QueryHandler } from "@nestjs/cqrs";
 import { CredentialListQuery } from "@src/modules/backoffice/credentials/application/queries/credential-list.query";
 import { CredentialsBackofficeDao } from "@src/modules/backoffice/credentials/infra/credentials-backoffice.dao";
-import {
-  clampLimit,
-  decodeCursor,
-  encodeCursor,
-} from "@src/modules/backoffice/shared/cursor-pagination.util";
+import { clampLimit, decodeCursor, encodeCursor } from "@src/modules/backoffice/shared/cursor-pagination.util";
 
 export interface CredentialListItem {
   id: string;

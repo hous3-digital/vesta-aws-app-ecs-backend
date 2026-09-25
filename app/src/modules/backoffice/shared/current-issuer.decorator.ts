@@ -8,15 +8,13 @@ import type { AuthenticatedRequest } from "@src/infra/auth/auth.types";
  * para command/query handlers. A abordagem idiomatica com CQRS e passar
  * issuerId como parte do command/query.
  */
-export const CurrentIssuer = createParamDecorator<undefined>(
-  (_data, ctx: ExecutionContext): string => {
-    const request = ctx.switchToHttp().getRequest<AuthenticatedRequest>();
-    const issuerId = request.backofficeUser?.issuerId;
+export const CurrentIssuer = createParamDecorator<undefined>((_data, ctx: ExecutionContext): string => {
+  const request = ctx.switchToHttp().getRequest<AuthenticatedRequest>();
+  const issuerId = request.backofficeUser?.issuerId;
 
-    if (!issuerId) {
-      throw new UnauthorizedException("Sessao do backoffice obrigatoria");
-    }
+  if (!issuerId) {
+    throw new UnauthorizedException("Sessao do backoffice obrigatoria");
+  }
 
-    return issuerId;
-  },
-);
+  return issuerId;
+});

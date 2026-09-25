@@ -48,16 +48,18 @@ describe("CredentialRecoveryService", () => {
       rpId: "app.example.com",
       vcHash: "vc-hash",
     });
-    credentialRepository.findByVcHash.mockResolvedValue(Credential.issue({
-      vcHash: "vc-hash",
-      vcDocument: vc,
-      cpfDedupKey: null,
-      issuerDid: vc.issuer.id,
-      issuerId: "issuer-1",
-      subjectDid: vc.credential_subject.id,
-      kycLevel: "complete",
-      expiresAt: new Date(vc.expiration_date),
-    }));
+    credentialRepository.findByVcHash.mockResolvedValue(
+      Credential.issue({
+        vcHash: "vc-hash",
+        vcDocument: vc,
+        cpfDedupKey: null,
+        issuerDid: vc.issuer.id,
+        issuerId: "issuer-1",
+        subjectDid: vc.credential_subject.id,
+        kycLevel: "complete",
+        expiresAt: new Date(vc.expiration_date),
+      }),
+    );
 
     await expect(service.recover("issuer-1", "one-time-token")).resolves.toEqual({
       vc,
@@ -77,15 +79,17 @@ describe("CredentialRecoveryService", () => {
       rpId: "app.example.com",
       vcHash: "vc-hash",
     });
-    credentialRepository.findByVcHash.mockResolvedValue(Credential.issue({
-      vcHash: "vc-hash",
-      cpfDedupKey: null,
-      issuerDid: vc.issuer.id,
-      issuerId: "issuer-1",
-      subjectDid: vc.credential_subject.id,
-      kycLevel: "complete",
-      expiresAt: new Date(vc.expiration_date),
-    }));
+    credentialRepository.findByVcHash.mockResolvedValue(
+      Credential.issue({
+        vcHash: "vc-hash",
+        cpfDedupKey: null,
+        issuerDid: vc.issuer.id,
+        issuerId: "issuer-1",
+        subjectDid: vc.credential_subject.id,
+        kycLevel: "complete",
+        expiresAt: new Date(vc.expiration_date),
+      }),
+    );
 
     await expect(service.recover("issuer-1", "one-time-token")).rejects.toBeInstanceOf(ConflictException);
   });

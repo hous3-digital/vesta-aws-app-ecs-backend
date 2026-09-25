@@ -75,8 +75,6 @@ export class CredentialPublicController {
       input.kycLevel,
       input.reason,
     );
-    return this.commandBus.execute<CredentialPublicKycStatusCommand, CredentialKycStatusResult>(
-      command,
-    );
+    return this.commandBus.execute<CredentialPublicKycStatusCommand, CredentialKycStatusResult>(command);
   }
 }

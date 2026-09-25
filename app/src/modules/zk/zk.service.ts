@@ -1,6 +1,11 @@
 import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
 import { EnvService } from "@src/infra/env/env.service";
-import type { EncodedVerificationKey, Groth16Proof, ZkProofInput, ZkProofResult } from "@src/shared/types/vesta-vc.types";
+import type {
+  EncodedVerificationKey,
+  Groth16Proof,
+  ZkProofInput,
+  ZkProofResult,
+} from "@src/shared/types/vesta-vc.types";
 import { encodeProof, encodeFr, encodeVerificationKey } from "@src/modules/zk/zk-encoder";
 import { createHash } from "crypto";
 import { fork } from "child_process";
@@ -54,7 +59,9 @@ export class ZkService implements OnModuleInit {
   }
 
   public async generateProof(input: ZkProofInput): Promise<ZkProofResult> {
-    this.logger.log(`Gerando prova ZK (${this.mockMode ? "mock" : "real"}) — kycLevel=${input.kycLevel}, minKycLevel=${input.minKycLevel}`);
+    this.logger.log(
+      `Gerando prova ZK (${this.mockMode ? "mock" : "real"}) — kycLevel=${input.kycLevel}, minKycLevel=${input.minKycLevel}`,
+    );
 
     if (this.mockMode) {
       return this.buildMockProof(input);
@@ -66,7 +73,7 @@ export class ZkService implements OnModuleInit {
   public loadVerificationKey(): EncodedVerificationKey {
     const vkPath = path.join(this.artifactsDir, "verification_key.json");
     if (!fs.existsSync(vkPath)) {
-      throw new Error('verification_key.json não encontrado. Configure ZK_ARTIFACTS_DIR corretamente.');
+      throw new Error("verification_key.json não encontrado. Configure ZK_ARTIFACTS_DIR corretamente.");
     }
     const vk = JSON.parse(fs.readFileSync(vkPath, "utf-8")) as Record<string, unknown>;
     return encodeVerificationKey(vk);
@@ -77,12 +84,7 @@ export class ZkService implements OnModuleInit {
       const wasmPath = path.join(this.artifactsDir, "vesta_kyc_js", "vesta_kyc.wasm");
       const zkeyPath = path.join(this.artifactsDir, "vesta_kyc_final.zkey");
 
-      const normalized = input.fullName
-        .toUpperCase()
-        .trim()
-        .normalize("NFD")
-        .replace(/[̀-ͯ]/g, "")
-        .replace(/\s+/g, " ");
+      const normalized = input.fullName.toUpperCase().trim().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\s+/g, " ");
       const fullNameHex = Buffer.from(normalized).toString("hex").slice(0, 60);
       const fullNameBigInt = String(BigInt("0x" + fullNameHex));
 

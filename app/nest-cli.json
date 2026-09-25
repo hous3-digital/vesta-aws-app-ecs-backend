@@ -5,9 +5,7 @@
   "compilerOptions": {
     "deleteOutDir": true,
     "watchAssets": true,
-    "assets": [
-      "**/*.hbs"
-    ],
+    "assets": ["**/*.hbs"],
     "watchOptions": {
       "ignored": [
         "**/node_modules/**",

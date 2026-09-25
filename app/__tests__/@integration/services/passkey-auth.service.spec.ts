@@ -66,9 +66,9 @@ describe("PasskeyAuthService", () => {
 
   it("impede substituir um Passkey já registrado apenas com API key e vcHash", async () => {
     prisma.passkeyCredential.findUnique.mockResolvedValue({ id: "existing" });
-    await expect(
-      service.registrationOptions("issuer-1", vcHash, "app.example.com"),
-    ).rejects.toBeInstanceOf(ConflictException);
+    await expect(service.registrationOptions("issuer-1", vcHash, "app.example.com")).rejects.toBeInstanceOf(
+      ConflictException,
+    );
     expect(challengeService.generate).not.toHaveBeenCalled();
     expect(challengeService.store).not.toHaveBeenCalled();
   });
@@ -88,9 +88,7 @@ describe("PasskeyAuthService", () => {
       },
       120,
     );
-    expect(generateRegistrationOptions).toHaveBeenCalledWith(
-      expect.objectContaining({ timeout: 60_000 }),
-    );
+    expect(generateRegistrationOptions).toHaveBeenCalledWith(expect.objectContaining({ timeout: 60_000 }));
     expect((generateRegistrationOptions as jest.Mock).mock.calls[0][0]).not.toHaveProperty("challenge");
     expect(options.challenge).toMatch(/^[A-Za-z0-9_-]+$/);
   });
@@ -107,9 +105,7 @@ describe("PasskeyAuthService", () => {
       },
       120,
     );
-    expect(generateAuthenticationOptions).toHaveBeenCalledWith(
-      expect.objectContaining({ timeout: 60_000 }),
-    );
+    expect(generateAuthenticationOptions).toHaveBeenCalledWith(expect.objectContaining({ timeout: 60_000 }));
     expect((generateAuthenticationOptions as jest.Mock).mock.calls[0][0]).not.toHaveProperty("challenge");
     expect(options.challenge).toMatch(/^[A-Za-z0-9_-]+$/);
   });
@@ -156,9 +152,11 @@ describe("PasskeyAuthService", () => {
       } as never,
     });
 
-    expect(prisma.passkeyCredential.updateMany).toHaveBeenCalledWith(expect.objectContaining({
-      data: expect.objectContaining({ counter: 8 }),
-    }));
+    expect(prisma.passkeyCredential.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ counter: 8 }),
+      }),
+    );
     expect(walletService.issueCustomAuthToken).toHaveBeenCalledWith(credential.subjectDid);
     expect(result).toEqual({
       verified: true,
