@@ -89,7 +89,7 @@ Local fixtures (`app/src/infra/database/seeds/local-fixtures.sql`): issuer `loca
 ## Non-negotiable rules
 
 1. **English everywhere in code**: identifiers, comments, JSDoc, Swagger descriptions, commit messages, PR titles. Documentation under `app/docs/` may be in Portuguese.
-2. **Chain SDK only inside the adapter.** `@stellar/stellar-sdk` is imported only in `src/modules/stellar/` (and, once it exists, `src/infra/gateways/chain/`). Every other module talks to the chain through a port interface. ESLint enforces this; the current offenders are listed in an explicit allowlist that only shrinks.
+2. **Chain SDK only inside the adapter.** `@stellar/stellar-sdk` is imported only in `src/modules/stellar/` (and, once it exists, `src/infra/gateways/chain/`). Every other module talks to the chain through a port interface. ESLint enforces this (`no-restricted-imports` in `app/eslint.config.js`); the current offenders are listed there by name in an allowlist that only shrinks.
 3. **Every fact has one declared owner.** The chain owns what a third party must verify without trusting us: an attestation exists, an issuer is active in the registry, a credit or payout settled. Postgres owns everything else: state before submission (cycles, previews, attempts) and off-chain data (KYC, passkeys, API keys, sessions). Consequences: `onChain*`, `*Ledger` and `*TxHash` columns are written only by the receipt or reconciliation path, never by handler logic; a record becomes "settled" or "anchored" only with a receipt; when Postgres and chain disagree on a chain-owned fact, the chain wins and `reconcile` fixes Postgres. There is no event indexer and no rebuildable projection (see `app/docs/tech-debt.md`, TD-001).
 4. **PII only as a hash.** CPF and any other identifier is stored and logged only as `HMAC-SHA256(CPF_HMAC_SECRET)` or a Poseidon commitment. Raw PII exists in memory during proving and nowhere else.
 5. **Never change a `/public/*` contract in place.** See the change classes above.
@@ -136,13 +136,13 @@ The rules above describe the target. Most of the code does not follow it yet. Tw
 
 | Module                | State (2026-09-24) | Gap                                                                                                                                                                                                                               |
 | --------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `credential`          | On target          | Backoffice queries still live in `backoffice/credentials`                                                                                                                                                                         |
+| `credential`          | On target          | Backoffice queries still live in `backoffice/credentials`; the entity still throws `BadRequestException` (replace with `DomainError` on touch)                                                                                    |
 | `proof`               | On target          | Backoffice queries still live in `backoffice/verifications`                                                                                                                                                                       |
 | `issuer`              | Partial            | `domain/` and `infra/` exist; service and gateway sit at the module root; `issuer-did.value-object.ts` imports the chain SDK                                                                                                      |
 | `commission`          | Flat               | Services and gateways only, no `domain/`; two gateways import the chain SDK; backoffice controller at the module root; queries live in `backoffice/commissions`                                                                   |
 | `challenge`           | Flat               | Three services at the root plus `api/public`                                                                                                                                                                                      |
 | `wallet`              | Flat               | Imports the chain SDK; instantiates `JwtService` outside DI                                                                                                                                                                       |
-| `vc`, `zk`, `stellar` | Flat               | Single service each; `stellar` is the only legitimate home of the chain SDK today                                                                                                                                                 |
+| `vc`, `zk`, `stellar` | Flat               | One service each (`zk` also has an encoder and a worker); `stellar` is the only legitimate home of the chain SDK today                                                                                                            |
 | `backoffice`          | Anti-target        | Bag of six submodules. `verifiers` is a real aggregate and becomes `modules/verifier` first; the read-only submodules dissolve into the modules that own their data; `shared/` utilities move to `src/shared` or `src/infra/auth` |
 | `infra/auth`          | Mixed              | Holds admin and backoffice controllers that belong in the modules they operate on                                                                                                                                                 |
 
@@ -160,7 +160,7 @@ Tests live in `app/__tests__/`, split by layer, one jest config per layer in `ap
 - Never test DAOs, provider endpoints or chain gateways with mocked networks.
 - If you cannot name the rule a test protects, do not write it.
 - Run a single spec: `yarn test:unit __tests__/@unit/entities/credential.spec.ts`.
-- What must be tested, case by case, is `app/docs/__test__/cenarios.md`; the tree and conventions are `.cursor/rules/standard-test.mdc`.
+- What must be tested, case by case, is `app/docs/__test__/cenarios.md`; the tree and conventions are `.cursor/rules/standard-test.mdc`. `yarn catalog:check` (part of `yarn lint`) fails when a spec carries a CT id whose catalog row still says `—`.
 
 ## Git and pull requests
 
@@ -175,14 +175,14 @@ Tests live in `app/__tests__/`, split by layer, one jest config per layer in `ap
 
 The harness is agnostic: `.cursor/` is canonical and `.claude/` mirrors it with symlinks, so both agents read one source per artifact.
 
-| Artifact | Location                    | Purpose                                                                                                                                                                                  |
-| -------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Rules    | `.cursor/rules/*.mdc`       | Declarative standards, attached by glob. Each rule states what, why and the trigger                                                                                                      |
-| Skills   | `.cursor/skills/*/SKILL.md` | Procedures (create a module, write a unit test, add a chain gateway). Each skill opens by citing the rules it applies                                                                    |
-| Commands | `.cursor/commands/*.md`     | Spec-driven flow: `/create-prd`, `/create-tech-spec`, `/create-task`, `/exec-task`                                                                                                       |
-| Agents   | `.cursor/agents/*.md`       | Specialists such as `code-reviewer`, which reviews a diff against this file and the rules                                                                                                |
-| Hooks    | `.cursor/hooks/*.js`        | Sensors: format and lint on every edit, block secret reads, block destructive shell. Wired in `.cursor/hooks.json` and `.claude/settings.json`; `selftest.js` proves both payload shapes |
-| Specs    | `tasks/prd-{feature}/`      | PRD, tech spec and task files produced by the commands                                                                                                                                   |
+| Artifact | Location                    | Purpose                                                                                                                                                                                           |
+| -------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Rules    | `.cursor/rules/*.mdc`       | Declarative standards, attached by glob. Each rule states what, why and the trigger                                                                                                               |
+| Skills   | `.cursor/skills/*/SKILL.md` | Procedures (create a module, write a unit test, add a chain gateway). Each skill opens by citing the rules it applies                                                                             |
+| Commands | `.cursor/commands/*.md`     | **Planned** (tech-debt.md F1): spec-driven flow `/create-prd`, `/create-tech-spec`, `/create-task`, `/exec-task`. Until then, the Track workflow in the workspace `AGENTS.md` is followed by hand |
+| Agents   | `.cursor/agents/*.md`       | **Planned** (tech-debt.md F1): `code-reviewer`, which reviews a diff against this file and the rules. Until then, the [Definition of done](#definition-of-done-for-any-task) is the checklist     |
+| Hooks    | `.cursor/hooks/*.js`        | Sensors: format and lint on every edit, block secret reads, block destructive shell. Wired in `.cursor/hooks.json` and `.claude/settings.json`; `selftest.js` proves both payload shapes          |
+| Specs    | `tasks/prd-{feature}/`      | **Planned**, produced by the commands once they exist                                                                                                                                             |
 
 Before touching an area, read its guide:
 
