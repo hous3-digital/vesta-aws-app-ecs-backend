@@ -23,8 +23,9 @@ O alvo é o que as rules em `.cursor/rules/` descrevem. Medido em 2026-09-24: `c
 ### F1 · Harness · Track: rules e skills `task_01m3ass0p1f6btcfzgqs3g9v9z`, chain `task_01m3ass0s0f6btcg0nyyq9nkpq`, segurança `task_01m3ass0skf6btcg0xaa460ah7`, code-reviewer `task_01m3ass0t4f6btcg17581j9wd1`, commands `task_01m3ass0tnf6btcg1cg2xsbx03`, sensor de testes `task_01m3ass0v9f6btcg1qyzz835ze`, prisma-migration `task_01m3ass0w0f6btcg1xrfc32wkd`
 
 - Feito: rules `standard-module`, `standard-code`, `standard-test` (globs em `app/…`); skills `new-module`, `unit-testing`, `integration-testing`, `e2e-testing`; symlinks em `.claude/`; hooks com `selftest.js` nos dois formatos de payload; ESLint `no-restricted-imports` para `@stellar/stellar-sdk` com allowlist nominal (8 arquivos de `src` e specs, encolhe a cada frente); `catalog:check`.
-- Rules restantes: `standard-chain`, `standard-security`.
-- Skills restantes: `chain-gateway`, `prisma-migration`.
+- Feito em 2026-09-25: rule `standard-chain`, skill `chain-gateway`, primeiro mock em `__tests__/mocks/gateway`, skill oficial da Stellar como dependência por máquina (não versionada).
+- Rule restante: `standard-security`.
+- Skill restante: `prisma-migration`.
 - Sensor de testes relacionados no `format-on-edit` (roda o spec do arquivo editado).
 - Regras de `standard-code` que ainda são prosa e deveriam virar ESLint com allowlist que só encolhe: `no-explicit-any` (12 usos hoje), `no-console` fora de `main.ts` e `scripts/` (12 usos), `explicit-member-accessibility`, `no-floating-promises`.
 - Agent `code-reviewer` com checklist mapeado rule por rule. Até existir, o "Definition of done" do `AGENTS.md` é o checklist.
