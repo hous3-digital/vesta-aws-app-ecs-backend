@@ -1,0 +1,66 @@
+---
+description: Security defaults the agent gets wrong unless told - secrets through EnvService only, what never reaches a log, PII as hash, validation at the edge, the guard pairing per context, tenant checks in every backoffice handler, challenge lifetime, timing-safe compares. Applies to src.
+globs: app/src/**/*.ts
+paths:
+  - "app/src/**/*.ts"
+alwaysApply: false
+---
+
+# Security standard
+
+`AGENTS.md` rule 4 (PII only as a hash) and "Environments and secrets" are the contract. The hooks `guard-secrets` and `guard-shell` in `.cursor/hooks/` keep secrets out of the agent's context and block destructive shell; this file covers what hooks cannot see: the code the agent writes. Where the code does something else today, the line says so and the fix happens on touch (`standard-code`, Legacy map).
+
+## Secrets
+
+- A secret is read once, in `EnvService`, validated by `env.schema.ts`. No `process.env.X` outside `src/infra/env/`, no secret as a default value, no secret in a fixture, a spec or a Swagger example.
+- One secret, one purpose. `BACKOFFICE_JWT_SECRET` falling back to `ADMIN_SECRET` (`env.service.ts`) is legacy: a leaked admin header would forge backoffice sessions. On touch, the fallback goes and the schema requires the JWT secret.
+- Key material is resolved only by the adapter that signs (`standard-chain`). Handlers, services and controllers never hold a `Keypair`, a JWT signing key or the admin secret.
+- Secret comparison is constant-time: `crypto.timingSafeEqual` over equal-length buffers, never `===`. `admin-secret.guard.ts` still uses `!==` (TD-006).
+- Credentials at rest are hashed: a backoffice password with bcrypt (done), an API key as `SHA-256(key)` looked up by hash. Today `api_keys.key` holds the plaintext (TD-005); a new credential type is born hashed.
+
+## Never in a log
+
+Key material, a signed XDR, a challenge, a VC document, a CPF, an API key, a JWT, a Privy token, a passkey credential, a full request body. Not even a prefix: `api-key.guard.ts` (12 chars of a rejected key), `challenge.service.ts` (16 chars of a challenge) and `wallet.service.ts` (DID prefix) are legacy and lose the prefix on touch. Log ids, hashes, statuses, counts and the `txHash`. The ingress and egress loggers (TD-004) will redact by field name; that never licenses a handler to log what is listed here.
+
+## PII
+
+- A CPF exists as `HMAC-SHA256(CPF_HMAC_SECRET)` in Postgres and as a Poseidon commitment in the proof. Raw PII lives in memory during issuing or proving and in no column, log, event payload, error `details` or test fixture.
+- Never in a URL, a query string or a domain event. Events carry ids.
+- `DomainError.details` is logged, never returned; it must not carry PII either.
+
+## Validation at the edge
+
+- Every `@Body()`, `@Query()` and `@Param()` object is a DTO class with `class-validator` decorators. The global `ValidationPipe` (`configure-app.ts`) runs `whitelist` and `forbidNonWhitelisted`, which only act on classes: an inline type such as `@Body() body: { name: string }` is a bypass. Three controllers still do it (`admin.controller.ts`, `api-keys-backoffice.controller.ts`, `payout-preview.controller.ts`); replacing one is a behavioral change for clients that send extra fields, so it ships with the check in `deploy-checklist.md` (SUB-012).
+- A value from a request is never typed `any` and never reaches Prisma, a codec or a chain call without passing through the DTO. Ids go through the `Id` value object, DIDs and addresses through theirs.
+- Amounts arrive as strings and are parsed once, at the DTO, into `bigint` or a decimal type.
+
+## Guard per context
+
+`ApiKeyGuard` and `ThrottlerGuard` are global (`APP_GUARD`). `@PublicEndpoint()` only opts a controller out of the API key check; it never means "no auth". The pairing is:
+
+| Route prefix    | Decorators on the controller class                                        | Identity on the request                        |
+| --------------- | ------------------------------------------------------------------------- | ---------------------------------------------- |
+| `/public/*`     | none (global `ApiKeyGuard`)                                               | `@CurrentApiKeyIssuer()` gives the issuer id   |
+| `/backoffice/*` | `@PublicEndpoint()` + `@BackofficeAuth()`                                 | `@CurrentBackofficeUser()`, `@CurrentIssuer()` |
+| `/admin/*`      | `@PublicEndpoint()` + `@AdminSecret()`                                    | none (operator)                                |
+| open            | `@PublicEndpoint()` alone: only health, JWKS and `/backoffice/auth/login` | none                                           |
+
+`@BackofficeAuth()` and `@AdminSecret()` are the composed decorators exported by the guard files; never write `@UseGuards(...)` by hand (`api-keys-backoffice.controller.ts` still does; switch on touch, #357). A controller with `@PublicEndpoint()` and neither of the two, outside the three open routes, is an open route and a finding.
+
+## Tenant isolation, the rule behind bugs #354 and #355
+
+- The tenant is the issuer. It comes from the credential (API key context or JWT `issuerId`), never from the body, the query or the path. A handler or service that accepts `issuerId` from the client is wrong; `admin.controller.ts` does it legitimately because the operator chooses the tenant.
+- Every read and write in a public or backoffice handler filters by the request's issuer in the query (`where: { id, issuerId }`), never `where: { id }` followed by a check in code, and never `where: { id }` alone. A resource of another issuer answers 404, not 403, so existence does not leak.
+- Verifiers, credentials, verifications, API keys, payouts and backoffice users are issuer-scoped. Only admin queries span issuers.
+- The e2e layer proves it per route with two issuers (`cenarios.md`, the isolation rows). A new backoffice route ships with that spec.
+
+## Challenges and sessions
+
+- A challenge (WebAuthn, proof, prepare) has a TTL, is bound to its context and is consumed exactly once: `ChallengeService.consumeContext` does `GET` + `DEL` in one Redis transaction, or a single-row delete in Postgres. Verifying a challenge without consuming it makes it replayable.
+- WebAuthn origin and RP id come from `WEBAUTHN_ALLOWED_ORIGINS` and `WEBAUTHN_ALLOWED_RP_IDS` (`passkey-auth.service.ts` asserts the origin); never trust the origin the client claims.
+- Throttling is global, 60 requests per minute per IP (`ThrottlerModule` in `app.module.ts`); login, challenge and proof routes have no stricter limit today. A new route that hands out a challenge or checks a secret declares its own tighter `@Throttle()`.
+- Backoffice JWTs carry `issuerId` and expire. `BACKOFFICE_JWT_EXPIRES_IN=never` is a local convenience and never a deployed value. Guards look the user or key up on every request, so revocation is immediate.
+
+## CORS
+
+`CORS_ALLOWED_ORIGINS` is an explicit list, one origin or wildcard pattern per entry. Methods (today in `main.ts`, only `GET`, `POST` and `OPTIONS`, which is bug #356 for the backoffice) and headers (`cors.config.ts`) are explicit lists too, never a wildcard. `enableCors()` without arguments exists only outside production. A deployed origin list never contains `localhost`.
