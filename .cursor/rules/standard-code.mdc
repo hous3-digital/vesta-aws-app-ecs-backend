@@ -63,6 +63,7 @@ How a file is written once `standard-module` has said where it goes. Prettier an
 - `Logger` from `@nestjs/common` with the class name as context. `console.*` exists only in `main.ts` and `src/scripts/`.
 - Never log a secret, a signed XDR, a private input, a full VC document, a CPF or an API key. Log ids, hashes and status.
 - One log line per business fact at `log` level; `debug` for steps inside a fact; `warn` for a handled anomaly; `error` only with the error object attached.
+- Request-level ingress and egress logging lives in `src/infra/logging/` and is not wired yet (TD-004). Do not hand-roll per-request logs in handlers or controllers to compensate; the fix is wiring the loggers.
 
 ## DTOs and outputs
 

@@ -43,7 +43,7 @@ src/modules/{module}/
 └── {module}.module.ts
 ```
 
-A module owns one aggregate and every context of it. `backoffice` is a context inside the owning module, never a module. Chain adapters do not live here: the abstract gateway is in `domain/`, the Stellar implementation goes to `src/infra/gateways/chain/stellar/` (TD-002).
+A module owns one aggregate and every context of it. `backoffice` is a context inside the owning module, never a module. Chain adapters do not live here: the abstract gateway is in `domain/`, the Stellar implementation goes to `src/infra/gateways/chain/stellar/`, a target path that F3 creates (TD-002); today it still sits in `src/modules/stellar/`.
 
 ## Naming
 
