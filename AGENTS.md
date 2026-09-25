@@ -90,7 +90,7 @@ Local fixtures (`app/src/infra/database/seeds/local-fixtures.sql`): issuer `loca
 ## Non-negotiable rules
 
 1. **English everywhere in code**: identifiers, comments, JSDoc, Swagger descriptions, commit messages, PR titles. Documentation under `app/docs/` may be in Portuguese.
-2. **Chain SDK only inside the adapter.** `@stellar/stellar-sdk` is imported only in `src/modules/stellar/` (and, once it exists, `src/infra/gateways/chain/`). Every other module talks to the chain through a port interface. ESLint enforces this (`no-restricted-imports` in `app/eslint.config.js`); the current offenders are listed there by name in an allowlist that only shrinks.
+2. **Chain SDK only inside the adapter.** `@stellar/stellar-sdk` is imported only in `src/modules/stellar/` (and, once it exists, `src/infra/gateways/chain/`). Every other module talks to the chain through a port interface (`.cursor/rules/standard-chain.mdc`). ESLint enforces this (`no-restricted-imports` in `app/eslint.config.js`); the current offenders are listed there by name in an allowlist that only shrinks.
 3. **Every fact has one declared owner.** The chain owns what a third party must verify without trusting us: an attestation exists, an issuer is active in the registry, a credit or payout settled. Postgres owns everything else: state before submission (cycles, previews, attempts) and off-chain data (KYC, passkeys, API keys, sessions). Consequences: `onChain*`, `*Ledger` and `*TxHash` columns are written only by the receipt or reconciliation path, never by handler logic; a record becomes "settled" or "anchored" only with a receipt; when Postgres and chain disagree on a chain-owned fact, the chain wins and `reconcile` fixes Postgres. There is no event indexer and no rebuildable projection (see `app/docs/tech-debt.md`, TD-001).
 4. **PII only as a hash.** CPF and any other identifier is stored and logged only as `HMAC-SHA256(CPF_HMAC_SECRET)` or a Poseidon commitment. Raw PII exists in memory during proving and nowhere else.
 5. **Never change a `/public/*` contract in place.** See the change classes above.
@@ -185,6 +185,8 @@ The harness is agnostic: `.cursor/` is canonical and `.claude/` mirrors it with 
 | Hooks    | `.cursor/hooks/*.js`        | Sensors: format and lint on every edit, block secret reads, block destructive shell. Wired in `.cursor/hooks.json` and `.claude/settings.json`; `selftest.js` proves both payload shapes          |
 | Specs    | `tasks/prd-{feature}/`      | **Planned**, produced by the commands once they exist                                                                                                                                             |
 
+Soroban knowledge that is not Vesta's (RPC, XDR, simulation, ZK verifiers) comes from the official `stellar/stellar-dev-skill`, installed per machine (Claude Code: `/plugin marketplace add stellar/stellar-dev-skill` then `/plugin install stellar-dev@stellar-dev`) and never vendored into this repo. The `chain-gateway` skill names the sub-skills to load.
+
 Before touching an area, read its guide:
 
 | When touching                              | Read                                                     |
@@ -195,6 +197,7 @@ Before touching an area, read its guide:
 | A decision already taken, or a pending one | `app/docs/decisions.md`                                  |
 | Anything that must happen outside the repo | `app/docs/deploy-checklist.md`                           |
 | Chain contracts                            | `app/contracts/*/README.md`                              |
+| A gateway or any Soroban call              | `.cursor/skills/chain-gateway/SKILL.md`                  |
 
 ## Definition of done for any task
 
