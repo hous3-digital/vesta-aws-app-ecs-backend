@@ -21,7 +21,8 @@ Applies `standard-test.mdc` (`createTestApp`, fixtures, cleanup, CT naming) and 
 5. **Assert the contract**, not the implementation: status, the fields the client reads (`body.data.vcHash`), the error `code` on failures, and that a field must NOT be there (PII). Read the database only to prove storage rules (CT-VESTA-CRED-007).
 6. **Tenant isolation** cases create the resource with issuer A and read it with issuer B: assert 403 or 404 and an empty list. This is the only layer that proves it.
 7. **Proof routes** (`/public/proof/*`) generate a real Groth16 proof: their file sets `jest.setTimeout(120_000)` and stays separate so the fast files stay fast.
-8. Run the file alone: `yarn test:e2e` runs everything; for one file use `npx dotenv -e .env.test -- npx jest --config config/jest-e2e.config.ts --runInBand __tests__/@e2e/{file}`.
+8. Run the file alone: `yarn test:e2e` runs everything; for one file use `npx dotenv -v ENV_FILE=.env.test -e .env.test -- npx jest --config config/jest-e2e.config.ts --runInBand __tests__/@e2e/{file}`. The `-v ENV_FILE=.env.test` is not optional: without it `EnvModule` reads `app/.env` (staging) for every variable that `.env.test` does not set, and on 2026-09-25 that booted the app under test with the staging Privy app and created real Privy users (SUB-013 in `deploy-checklist.md`).
+9. **Rows inserted through prisma** for a scenario the API cannot produce locally (attestation, ledger entry, payout) must be terminal: `PayoutProcessorService` claims any `REQUESTED` payout on boot and every 10 s, and the settlement attempt keeps jest alive. Insert `CONFIRMED` or `FAILED`, never `REQUESTED`.
 
 ## Shape
 

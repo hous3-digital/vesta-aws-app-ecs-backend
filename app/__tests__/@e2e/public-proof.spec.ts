@@ -92,10 +92,11 @@ describe("/public/proof", () => {
     });
 
     it("CT-VESTA-PROOF-005 consumes the session, submits through the mocked Stellar and persists the attestation", async () => {
+      // Arrange
+      const body = ProofApiFixture.submitSigned(prepared);
+
       // Act
-      const response = await withKey(api().post("/public/proof/submit-signed")).send(
-        ProofApiFixture.submitSigned(prepared),
-      );
+      const response = await withKey(api().post("/public/proof/submit-signed")).send(body);
 
       // Assert
       expect(response.status).toBe(201);
@@ -108,10 +109,11 @@ describe("/public/proof", () => {
     });
 
     it("CT-VESTA-PROOF-007 the attestation credits the issuer with a PENDING_SECURITY ledger entry", async () => {
+      // Arrange
+      const attestationId = attestationIds[0];
+
       // Act
-      const entry = await testApp.prisma.commissionLedgerEntry.findUnique({
-        where: { attestationId: attestationIds[0] },
-      });
+      const entry = await testApp.prisma.commissionLedgerEntry.findUnique({ where: { attestationId } });
 
       // Assert
       expect(entry?.status).toBe("PENDING_SECURITY");
@@ -121,10 +123,11 @@ describe("/public/proof", () => {
     });
 
     it("CT-VESTA-PROOF-006 a consumed session is rejected with 400", async () => {
+      // Arrange
+      const consumed = ProofApiFixture.submitSigned(prepared);
+
       // Act
-      const response = await withKey(api().post("/public/proof/submit-signed")).send(
-        ProofApiFixture.submitSigned(prepared),
-      );
+      const response = await withKey(api().post("/public/proof/submit-signed")).send(consumed);
 
       // Assert
       expect(response.status).toBe(400);
@@ -143,13 +146,16 @@ describe("/public/proof", () => {
       expect(response.status).toBe(400);
     });
 
-    it("answers 503 with a stable code when the issuer registry is not configured (local has no registry contract)", async () => {
+    it("answers 503 with a stable code when the issuer registry is not configured (local has no registry contract, TD-008)", async () => {
+      // Arrange
+      const attestationId = attestationIds[0];
+
       // Act
-      const response = await withKey(api().get(`/public/attestations/${attestationIds[0]}/issuer`));
+      const response = await withKey(api().get(`/public/attestations/${attestationId}/issuer`));
 
       // Assert
       expect(response.status).toBe(503);
-      expect(JSON.stringify(response.body)).toContain("REGISTRY_NOT_CONFIGURED");
+      expect(response.body).toMatchObject({ code: "REGISTRY_NOT_CONFIGURED" });
     });
   });
 });
