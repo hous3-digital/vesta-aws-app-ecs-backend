@@ -22,5 +22,15 @@ export async function createTestApp(): Promise<TestApp> {
   await app.init();
 
   const prisma = app.get(PrismaService);
-  return { app, prisma, close: () => app.close() };
+  return { app, prisma, close: () => closeApp(app) };
+}
+
+/**
+ * snarkjs keeps a bn128 thread pool alive after groth16.verify (used by /public/proof/prepare)
+ * and only exposes it as a global; without terminate() jest never exits after a proof spec.
+ */
+async function closeApp(app: INestApplication): Promise<void> {
+  await app.close();
+  const curve = (globalThis as { curve_bn128?: { terminate: () => Promise<void> } }).curve_bn128;
+  if (curve) await curve.terminate();
 }

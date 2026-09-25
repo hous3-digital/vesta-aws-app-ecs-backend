@@ -68,7 +68,8 @@ yarn typecheck          # tsc --noEmit
 yarn test:unit          # __tests__/@unit
 yarn test:integration   # __tests__/@integration (needs the compose Postgres)
 yarn test:e2e           # __tests__/@e2e: creates the local vesta_test database, migrates, seeds, boots the app in-process
-yarn test:cov           # unit tests with coverage of src/**/domain/**; fails below the coverageThreshold of the jest config
+yarn test:cov           # unit tests with coverage of src/**/domain/**; fails below the coverageThreshold of the jest config (CI runs it)
+yarn test:integration:cov # same for the integration layer, on demand
 yarn audit:ci           # dependency audit
 yarn deploy:check       # env.schema.ts vs infra/terraform/envs/{staging,prod}: required vars missing, duplicates, dead vars
 

@@ -16,3 +16,6 @@ coverage
 # Rust/Soroban build output
 **/target/
 **/test_snapshots/
+
+# temp files of .cursor/hooks/selftest.js (removed on exit; kept out of git if a run is interrupted)
+selftest-sensor-tmp*
