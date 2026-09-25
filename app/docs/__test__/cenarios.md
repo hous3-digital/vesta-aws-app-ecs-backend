@@ -4,7 +4,7 @@ Fonte dos cenários: os 72 casos manuais da suíte de QA (`internal/qa-manual-te
 
 Objetivo imediato: **travar o comportamento de `/public/*` e do backoffice antes de mexer na fronteira de chain e nos módulos** (frentes F3 e F4 de `tech-debt.md`). Um refactor que passa nesta suíte não mudou o que o cliente vê.
 
-Cobertura em 2026-09-24: `@unit` 53 testes (entidades e value objects cobertos), `@integration` 59, `@e2e` 11.
+Cobertura em 2026-09-25: `@unit` 53 testes (entidades e value objects cobertos), `@integration` 61, `@e2e` 74 (1 `it.skip`, TD-009).
 
 Legenda da coluna "hoje": `—` nada · `parcial` existe spec que cobre parte · `ok` coberto · `red` spec deve nascer falhando (bug aberto).
 
@@ -19,44 +19,44 @@ A coluna é verificada por `yarn catalog:check` (parte de `yarn lint`): todo CT 
 | SURF-003 rota SDK sem API key retorna 401                    | e2e    | `@e2e/surface.spec.ts`           | ok                                                                                     |
 | SURF-004 API key inválida retorna 401                        | e2e    | `@e2e/surface.spec.ts`           | ok                                                                                     |
 | SURF-005 Swagger fora de production                          | e2e    | `@e2e/surface.spec.ts`           | —                                                                                      |
-| AUTH-001 login válido devolve token                          | e2e    | `@e2e/backoffice-auth.spec.ts`   | —                                                                                      |
-| AUTH-002 login rejeita senha, user inativo, campos vazios    | e2e    | `@e2e/backoffice-auth.spec.ts`   | —                                                                                      |
-| AUTH-003 `GET /backoffice/auth/me` com JWT válido e inválido | e2e    | `@e2e/backoffice-auth.spec.ts`   | —                                                                                      |
+| AUTH-001 login válido devolve token                          | e2e    | `@e2e/backoffice-auth.spec.ts`   | ok                                                                                     |
+| AUTH-002 login rejeita senha, user inativo, campos vazios    | e2e    | `@e2e/backoffice-auth.spec.ts`   | ok                                                                                     |
+| AUTH-003 `GET /backoffice/auth/me` com JWT válido e inválido | e2e    | `@e2e/backoffice-auth.spec.ts`   | ok                                                                                     |
 | AUTH-004 API key via `X-Api-Key` e via `Bearer`              | e2e    | `@e2e/surface.spec.ts`           | ok                                                                                     |
-| AUTH-005 API key revogada deixa de autenticar                | e2e    | `@e2e/admin-api-keys.spec.ts`    | —                                                                                      |
+| AUTH-005 API key revogada deixa de autenticar                | e2e    | `@e2e/admin-api-keys.spec.ts`    | ok                                                                                     |
 | AUTH-006 issuer vem da chave, nunca do body                  | e2e    | `@e2e/public-credential.spec.ts` | —                                                                                      |
 
 ## Admin e onboarding do emissor
 
-| CT                                                              | Camada                      | Spec                                                                                                         | Hoje                                                        |
-| --------------------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- |
-| ADMIN-001 criar issuer com roles e provisionar wallet           | e2e                         | `@e2e/admin-issuers.spec.ts`                                                                                 | —                                                           |
-| ADMIN-002 issuerId duplicado retorna 409                        | e2e                         | `@e2e/admin-issuers.spec.ts`                                                                                 | —                                                           |
-| ADMIN-003 sem roles retorna 400                                 | e2e                         | `@e2e/admin-issuers.spec.ts`                                                                                 | —                                                           |
-| ADMIN-004 provisionar ou recuperar wallet org                   | e2e + integration           | `@e2e/admin-issuers.spec.ts`; `@integration/services/wallet.service.spec.ts`                                 | parcial                                                     |
-| ADMIN-005 registrar no registry com commissionTerms             | integration (chain mockada) | `@integration/services/issuer-registry.service.spec.ts`                                                      | parcial — registro repetido gera 2ª tx: decidir se é regra  |
-| ADMIN-006 registry rejeita sem DID ou wallet ativa              | unit + integration          | `@unit/entities/issuer.spec.ts` (`isRegistryReady`); `@integration/services/issuer-registry.service.spec.ts` | parcial                                                     |
-| ADMIN-007 criar usuário de backoffice, senha temporária uma vez | e2e                         | `@e2e/admin-backoffice-users.spec.ts`                                                                        | —                                                           |
-| ADMIN-008 usuário duplicado retorna 409                         | e2e                         | `@e2e/admin-backoffice-users.spec.ts`                                                                        | —                                                           |
-| ADMIN-009 criar, listar sem segredo, revogar API key            | e2e                         | `@e2e/admin-api-keys.spec.ts`                                                                                | red (#359: body inválido devolve 401 e não 400)             |
-| ADMIN-010 admin sem secret ou secret inválido retorna 401       | e2e                         | `@e2e/surface.spec.ts`                                                                                       | ok                                                          |
-| ADMIN-011 `POST /admin/payout-cycles/preview` não montado       | e2e                         | `@e2e/admin-payouts.spec.ts`                                                                                 | — (documentar como comportamento esperado ou montar a rota) |
+| CT                                                              | Camada                      | Spec                                                                                                         | Hoje                                                                     |
+| --------------------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| ADMIN-001 criar issuer com roles e provisionar wallet           | e2e                         | `@e2e/admin-issuers.spec.ts`                                                                                 | ok                                                                       |
+| ADMIN-002 issuerId duplicado retorna 409                        | e2e                         | `@e2e/admin-issuers.spec.ts`                                                                                 | ok                                                                       |
+| ADMIN-003 sem roles retorna 400                                 | e2e                         | `@e2e/admin-issuers.spec.ts`                                                                                 | ok                                                                       |
+| ADMIN-004 provisionar ou recuperar wallet org                   | e2e + integration           | `@e2e/admin-issuers.spec.ts`; `@integration/services/wallet.service.spec.ts`                                 | parcial (e2e cobre o provisionamento local: wallet fica ERROR sem Privy) |
+| ADMIN-005 registrar no registry com commissionTerms             | integration (chain mockada) | `@integration/services/issuer-registry.service.spec.ts`                                                      | parcial — registro repetido gera 2ª tx: decidir se é regra               |
+| ADMIN-006 registry rejeita sem DID ou wallet ativa              | unit + integration          | `@unit/entities/issuer.spec.ts` (`isRegistryReady`); `@integration/services/issuer-registry.service.spec.ts` | parcial                                                                  |
+| ADMIN-007 criar usuário de backoffice, senha temporária uma vez | e2e                         | `@e2e/admin-backoffice-users.spec.ts`                                                                        | ok                                                                       |
+| ADMIN-008 usuário duplicado retorna 409                         | e2e                         | `@e2e/admin-backoffice-users.spec.ts`                                                                        | ok                                                                       |
+| ADMIN-009 criar, listar sem segredo, revogar API key            | e2e                         | `@e2e/admin-api-keys.spec.ts`                                                                                | red (#359: body inválido devolve 401 e não 400)                          |
+| ADMIN-010 admin sem secret ou secret inválido retorna 401       | e2e                         | `@e2e/surface.spec.ts`                                                                                       | ok                                                                       |
+| ADMIN-011 `POST /admin/payout-cycles/preview` não montado       | e2e                         | `@e2e/admin-payouts.spec.ts`                                                                                 | — (documentar como comportamento esperado ou montar a rota)              |
 
 ## Credencial (`/public/credential`)
 
-| CT                                                                   | Camada             | Spec                                                                                              | Hoje                                |
-| -------------------------------------------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------- | ----------------------------------- |
-| CRED-001 emitir VC kycLevel complete                                 | e2e                | `@e2e/public-credential.spec.ts`                                                                  | ok                                  |
-| CRED-002 emitir VC kycLevel pending                                  | e2e + unit         | `@e2e/public-credential.spec.ts`; `@unit/entities/credential.spec.ts` (`issuePending`)            | parcial (unit ok; e2e pendente)     |
-| CRED-003 mesmo CPF retorna 409 `CPF_ALREADY_REGISTERED`              | e2e + integration  | `@e2e/public-credential.spec.ts`; `@integration/handlers/credential-public-issue.handler.spec.ts` | parcial (e2e ok; handler pendente)  |
-| CRED-004 CPF REJECTED é apagado e permite nova emissão               | integration        | `@integration/handlers/credential-public-issue.handler.spec.ts`                                   | —                                   |
-| CRED-005 validação de CPF, birthDate, fullName, campos extras        | e2e                | `@e2e/public-credential.spec.ts`                                                                  | ok                                  |
-| CRED-006 issuer inativo ou inexistente retorna 422                   | integration + unit | handler de issue; `@unit/entities/issuer.spec.ts` (`isActive`, `canIssueCredentialType`)          | parcial (unit ok; handler pendente) |
-| CRED-007 CPF não aparece na VC nem na linha                          | e2e                | `@e2e/public-credential.spec.ts` (inspeciona o banco)                                             | ok                                  |
-| CRED-008 verify de ACTIVE retorna valid true e challengeNonce        | e2e                | `@e2e/public-credential.spec.ts`                                                                  | ok                                  |
-| CRED-009 verify de pending, revoked, rejected, expired retorna false | unit + e2e         | `@unit/entities/credential.spec.ts` (`isApproved`, `isExpired`…); e2e por status                  | parcial (unit ok; e2e pendente)     |
-| CRED-010 revogar a própria VC                                        | e2e + unit         | `@e2e/public-credential.spec.ts`; `@unit/entities/credential.spec.ts` (`revoke` duas vezes)       | ok                                  |
-| CRED-011 revoke não checa dono da VC                                 | e2e + integration  | `@e2e/public-credential.spec.ts`; handler de revoke                                               | red (#354)                          |
+| CT                                                                   | Camada             | Spec                                                                                              | Hoje                            |
+| -------------------------------------------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------- | ------------------------------- |
+| CRED-001 emitir VC kycLevel complete                                 | e2e                | `@e2e/public-credential.spec.ts`                                                                  | ok                              |
+| CRED-002 emitir VC kycLevel pending                                  | e2e + unit         | `@e2e/public-credential.spec.ts`; `@unit/entities/credential.spec.ts` (`issuePending`)            | parcial (unit ok; e2e pendente) |
+| CRED-003 mesmo CPF retorna 409 `CPF_ALREADY_REGISTERED`              | e2e + integration  | `@e2e/public-credential.spec.ts`; `@integration/handlers/credential-public-issue.handler.spec.ts` | ok                              |
+| CRED-004 CPF REJECTED é apagado e permite nova emissão               | integration        | `@integration/handlers/credential-public-issue.handler.spec.ts`                                   | ok                              |
+| CRED-005 validação de CPF, birthDate, fullName, campos extras        | e2e                | `@e2e/public-credential.spec.ts`                                                                  | ok                              |
+| CRED-006 issuer inativo ou inexistente retorna 422                   | integration + unit | handler de issue; `@unit/entities/issuer.spec.ts` (`isActive`, `canIssueCredentialType`)          | ok                              |
+| CRED-007 CPF não aparece na VC nem na linha                          | e2e                | `@e2e/public-credential.spec.ts` (inspeciona o banco)                                             | ok                              |
+| CRED-008 verify de ACTIVE retorna valid true e challengeNonce        | e2e                | `@e2e/public-credential.spec.ts`                                                                  | ok                              |
+| CRED-009 verify de pending, revoked, rejected, expired retorna false | unit + e2e         | `@unit/entities/credential.spec.ts` (`isApproved`, `isExpired`…); e2e por status                  | parcial (unit ok; e2e pendente) |
+| CRED-010 revogar a própria VC                                        | e2e + unit         | `@e2e/public-credential.spec.ts`; `@unit/entities/credential.spec.ts` (`revoke` duas vezes)       | ok                              |
+| CRED-011 revoke não checa dono da VC                                 | e2e + integration  | `@e2e/public-credential.spec.ts`; handler de revoke                                               | red (#354)                      |
 
 ## KYC assíncrono (`/public/credential/kyc-status`)
 
@@ -64,8 +64,8 @@ A coluna é verificada por `yarn catalog:check` (parte de `yarn lint`): todo CT 
 | ----------------------------------------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------ | ----------------------------------- |
 | KYC-001 webhook aprova PENDING e atualiza kycLevel                | unit + integration | `credential.spec.ts` (`approve`); `@integration/handlers/credential-public-kyc-status.handler.spec.ts` | parcial (unit ok; handler pendente) |
 | KYC-002 webhook rejeita PENDING                                   | unit + integration | `credential.spec.ts` (`reject`); mesmo handler                                                         | parcial (unit ok; handler pendente) |
-| KYC-003 issuer diferente retorna 403 `CREDENTIAL_ISSUER_MISMATCH` | integration + e2e  | mesmo handler; `@e2e/public-credential.spec.ts`                                                        | —                                   |
-| KYC-004 CPF inexistente 404, já ACTIVE 409                        | integration + unit | mesmo handler; `credential.spec.ts` (`approve` em ACTIVE)                                              | parcial (unit ok; handler pendente) |
+| KYC-003 issuer diferente retorna 403 `CREDENTIAL_ISSUER_MISMATCH` | integration + e2e  | mesmo handler; `@e2e/public-credential.spec.ts`                                                        | parcial (handler ok; e2e pendente)  |
+| KYC-004 CPF inexistente 404, já ACTIVE 409                        | integration + unit | mesmo handler; `credential.spec.ts` (`approve` em ACTIVE)                                              | ok                                  |
 
 ## Passkey e challenge (`/public/auth`)
 
@@ -97,25 +97,25 @@ A coluna é verificada por `yarn catalog:check` (parte de `yarn lint`): todo CT 
 
 | CT                                                  | Camada            | Spec                                                                                                  | Hoje                      |
 | --------------------------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------------- | ------------------------- |
-| BO-001 profile e wallet do issuer logado            | e2e               | `@e2e/backoffice-profile.spec.ts`                                                                     | —                         |
+| BO-001 profile e wallet do issuer logado            | e2e               | `@e2e/backoffice-profile.spec.ts`                                                                     | ok                        |
 | BO-002 activation start emite challenge de controle | e2e               | `@e2e/backoffice-profile.spec.ts` (confirm exige assinatura da wallet org: só o start e os negativos) | —                         |
 | BO-003 trustline prepare recusa wallet sem controle | integration + e2e | `wallet.service.spec.ts`; e2e                                                                         | parcial                   |
-| BO-004 lista e detalha credenciais sem PII          | e2e               | `@e2e/backoffice-credentials.spec.ts`                                                                 | —                         |
-| BO-005 verificações, detalhe, export CSV            | e2e               | `@e2e/backoffice-verifications.spec.ts`                                                               | —                         |
+| BO-004 lista e detalha credenciais sem PII          | e2e               | `@e2e/backoffice-credentials.spec.ts`                                                                 | ok                        |
+| BO-005 verificações, detalhe, export CSV            | e2e               | `@e2e/backoffice-verifications.spec.ts`                                                               | ok                        |
 | BO-006 verifiers escopados ao issuer do JWT         | e2e + unit        | `@e2e/backoffice-verifiers.spec.ts`; `@unit/entities/verifier.spec.ts`                                | red (#355, depende de D4) |
-| BO-007 API keys só do próprio issuer                | e2e               | `@e2e/backoffice-api-keys.spec.ts`                                                                    | —                         |
+| BO-007 API keys só do próprio issuer                | e2e               | `@e2e/backoffice-api-keys.spec.ts`                                                                    | ok                        |
 
 ## Comissão e payout
 
-| CT                                                             | Camada      | Spec                                                      | Hoje    |
-| -------------------------------------------------------------- | ----------- | --------------------------------------------------------- | ------- |
-| COMM-001 balance mostra PENDING_SECURITY e promove após cutoff | integration | `@integration/services/commission-ledger.service.spec.ts` | parcial |
-| COMM-002 crédito usa `COMMISSION_PER_VERIFICATION_BRL`         | integration | `attestation.repository.spec.ts`                          | ok      |
-| PAY-001 readiness lista pré-requisitos                         | e2e         | `@e2e/backoffice-payouts.spec.ts`                         | —       |
-| PAY-002 payout com Idempotency-Key 202 e rejeita segundo ativo | integration | `@integration/services/payout-request.service.spec.ts`    | parcial |
-| PAY-003 issuer B não vê payouts nem ledger de A                | e2e         | `@e2e/backoffice-payouts.spec.ts`                         | —       |
-| processor concilia payout desconhecido                         | integration | `payout-processor.service.spec.ts`                        | ok      |
-| registro de comissão on-chain com retry                        | integration | `commission-registration-processor.service.spec.ts`       | ok      |
+| CT                                                             | Camada      | Spec                                                      | Hoje                                                             |
+| -------------------------------------------------------------- | ----------- | --------------------------------------------------------- | ---------------------------------------------------------------- |
+| COMM-001 balance mostra PENDING_SECURITY e promove após cutoff | integration | `@integration/services/commission-ledger.service.spec.ts` | parcial                                                          |
+| COMM-002 crédito usa `COMMISSION_PER_VERIFICATION_BRL`         | integration | `attestation.repository.spec.ts`                          | ok                                                               |
+| PAY-001 readiness lista pré-requisitos                         | e2e         | `@e2e/backoffice-payouts.spec.ts`                         | parcial (readiness sem carteira responde 400, `it.skip`, TD-009) |
+| PAY-002 payout com Idempotency-Key 202 e rejeita segundo ativo | integration | `@integration/services/payout-request.service.spec.ts`    | parcial                                                          |
+| PAY-003 issuer B não vê payouts nem ledger de A                | e2e         | `@e2e/backoffice-payouts.spec.ts`                         | ok                                                               |
+| processor concilia payout desconhecido                         | integration | `payout-processor.service.spec.ts`                        | ok                                                               |
+| registro de comissão on-chain com retry                        | integration | `commission-registration-processor.service.spec.ts`       | ok                                                               |
 
 ## Segurança transversal
 
