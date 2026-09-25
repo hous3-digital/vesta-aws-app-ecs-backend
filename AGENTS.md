@@ -169,7 +169,7 @@ Tests live in `app/__tests__/`, split by layer, one jest config per layer in `ap
 - **Inside the branch, a task is a group of commits**, never one squashed commit. Scope is the area touched (`chore(harness):`, `feat(credential):`). The tracker task id goes in the footer (`Track: task_...`) so `git log --grep` finds every commit of a task.
 - Exceptions that get their own branch: a behavioral or breaking change on `/public/*` (must be revertable alone), a legacy-map migration (keeps logic review clean), and a feature whose PR would pass about 2000 lines (split in two).
 - Commits follow Conventional Commits and are checked by commitlint on `commit-msg`: types `build, chore, ci, docs, feat, fix, perf, refactor, revert, style, test`, header up to 100 chars, subject at least 15 chars, English.
-- Before pushing: `yarn lint`, `yarn typecheck`, `yarn prettier:check`, `yarn test:unit`, `yarn test:integration`.
+- Before pushing: `yarn lint`, `yarn typecheck`, `yarn prettier:check`, `yarn test:unit`, `yarn test:integration`, then the `code-reviewer` agent on the branch diff; blocking findings are fixed before the push.
 - Every decision that changes architecture or a rule in this file gets a line in `app/docs/decisions.md` (dated) and, when structural, an ADR in `app/docs/adr/`.
 
 ## Harness layout
@@ -181,7 +181,7 @@ The harness is agnostic: `.cursor/` is canonical and `.claude/` mirrors it with 
 | Rules    | `.cursor/rules/*.mdc`       | Declarative standards, attached by glob. Each rule states what, why and the trigger                                                                                                               |
 | Skills   | `.cursor/skills/*/SKILL.md` | Procedures (create a module, write a unit test, add a chain gateway). Each skill opens by citing the rules it applies                                                                             |
 | Commands | `.cursor/commands/*.md`     | **Planned** (tech-debt.md F1): spec-driven flow `/create-prd`, `/create-tech-spec`, `/create-task`, `/exec-task`. Until then, the Track workflow in the workspace `AGENTS.md` is followed by hand |
-| Agents   | `.cursor/agents/*.md`       | **Planned** (tech-debt.md F1): `code-reviewer`, which reviews a diff against this file and the rules. Until then, the [Definition of done](#definition-of-done-for-any-task) is the checklist     |
+| Agents   | `.cursor/agents/*.md`       | Subagents. `code-reviewer` reviews a diff against this file and the five rules, section by section, and reports findings with file, line and rule; it never edits. Run it before pushing          |
 | Hooks    | `.cursor/hooks/*.js`        | Sensors: format and lint on every edit, block secret reads, block destructive shell. Wired in `.cursor/hooks.json` and `.claude/settings.json`; `selftest.js` proves both payload shapes          |
 | Specs    | `tasks/prd-{feature}/`      | **Planned**, produced by the commands once they exist                                                                                                                                             |
 

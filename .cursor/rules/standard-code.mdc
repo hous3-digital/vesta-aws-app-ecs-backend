@@ -11,6 +11,10 @@ alwaysApply: false
 
 How a file is written once `standard-module` has said where it goes. Prettier and ESLint run on every edit (sensor), so this file has no formatting rules: only what a tool cannot catch.
 
+## What counts as a touch
+
+Several rules say "on touch": translate the message, replace the exception, move the file, drop the log prefix. A touch is a hunk that changes behaviour or structure on that line or in that file. A formatting-only pass (Prettier, import reordering, getter reflow) is not a touch and fires none of them; otherwise every style change would drag a migration with it, against "migrate only what the task touches" (`AGENTS.md`, Legacy map).
+
 ## Language
 
 - English for identifiers, comments, commit messages, Swagger text, log lines and exception messages.
@@ -19,7 +23,7 @@ How a file is written once `standard-module` has said where it goes. Prettier an
 ## Types
 
 - `strictNullChecks` and `noImplicitAny` are on. `any` is forbidden: use `unknown` and narrow, or type the boundary (Prisma `Json`, external payloads) with a parser.
-- `as unknown as` only inside a mapper, on a Prisma `Json` column. `as` elsewhere means the type is wrong upstream.
+- `as unknown as` only inside a mapper, on a Prisma `Json` column. `as` elsewhere means the type is wrong upstream. In `__tests__`, a hand-built double (`{ switchToHttp } as unknown as ArgumentsHost`, a one-field `VestaVC`) may be cast; a production type is never cast to silence a missing field.
 - The non-null `!` appears only in DTO declarations (`public cpf!: string`). Never on an expression.
 - Enums are string enums with PascalCase members and the persisted value as the value, as in `CredentialStatus.Active = "ACTIVE"`. Unions of literals are for values that are never persisted.
 - Ids are the `Id` value object from `@src/shared/value-objects`, never a bare string, from the command inward. The controller receives the string and the command carries it as is; the handler wraps it.
