@@ -53,10 +53,17 @@ async function main() {
   console.log(`smoke -> ${BASE_URL}\n`);
 
   const health = await call("health", "/health");
-  record("GET /health", health.res.status === 200 && health.json?.status === "ok", `${health.res.status} ${health.ms}ms`);
+  record(
+    "GET /health",
+    health.res.status === 200 && health.json?.status === "ok",
+    `${health.res.status} ${health.ms}ms`,
+  );
   if (health.res.status !== 200) return;
 
-  const login = await call("login", "/backoffice/auth/login", { method: "POST", body: { email: BO_EMAIL, password: BO_PASSWORD } });
+  const login = await call("login", "/backoffice/auth/login", {
+    method: "POST",
+    body: { email: BO_EMAIL, password: BO_PASSWORD },
+  });
   const token = login.json?.accessToken ?? login.json?.token ?? login.json?.access_token;
   record("POST /backoffice/auth/login", login.res.status < 300 && !!token, `${login.res.status}`);
 
@@ -74,14 +81,30 @@ async function main() {
     headers: apiKey,
     body: { ...person, kycLevel: "complete", kycMethod: "document_ocr" },
   });
-  record("POST /public/credential (issue)", issue.res.status < 300 && !!issue.json?.vcHash, `${issue.res.status} vcHash=${String(issue.json?.vcHash ?? "").slice(0, 12)}`);
+  record(
+    "POST /public/credential (issue)",
+    issue.res.status < 300 && !!issue.json?.vcHash,
+    `${issue.res.status} vcHash=${String(issue.json?.vcHash ?? "").slice(0, 12)}`,
+  );
   if (!issue.json?.vcHash) return finish();
 
-  const verify = await call("verify", "/public/credential/verify", { method: "POST", headers: apiKey, body: { vcHash: issue.json.vcHash } });
-  record("POST /public/credential/verify", verify.res.status < 300, `${verify.res.status} status=${verify.json?.status ?? verify.json?.valid}`);
+  const verify = await call("verify", "/public/credential/verify", {
+    method: "POST",
+    headers: apiKey,
+    body: { vcHash: issue.json.vcHash },
+  });
+  record(
+    "POST /public/credential/verify",
+    verify.res.status < 300,
+    `${verify.res.status} status=${verify.json?.status ?? verify.json?.valid}`,
+  );
 
   const challenge = await call("challenge", "/public/auth/challenge", { headers: apiKey });
-  record("GET /public/auth/challenge", challenge.res.status === 200 && !!challenge.json?.challenge, `${challenge.res.status}`);
+  record(
+    "GET /public/auth/challenge",
+    challenge.res.status === 200 && !!challenge.json?.challenge,
+    `${challenge.res.status}`,
+  );
   if (!challenge.json?.challenge) return finish();
 
   const prepare = await call("prepare", "/public/proof/prepare", {

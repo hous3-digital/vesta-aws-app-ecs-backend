@@ -12,9 +12,10 @@ export interface VerifierUpdateStatusResult {
 
 @Injectable()
 @CommandHandler(VerifierUpdateStatusCommand)
-export class VerifierUpdateStatusHandler
-  implements ICommandHandler<VerifierUpdateStatusCommand, VerifierUpdateStatusResult>
-{
+export class VerifierUpdateStatusHandler implements ICommandHandler<
+  VerifierUpdateStatusCommand,
+  VerifierUpdateStatusResult
+> {
   public constructor(private readonly verifierRepository: IVerifierRepository) {}
 
   public async execute(command: VerifierUpdateStatusCommand): Promise<VerifierUpdateStatusResult> {

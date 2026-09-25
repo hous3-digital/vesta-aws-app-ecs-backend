@@ -13,10 +13,7 @@ export class CredentialRecoveryController {
   @ApiOperation({ summary: "Recover a VC after a verified synced-Passkey assertion" })
   @Throttle({ default: { ttl: 60000, limit: 10 } })
   @Post("/recover")
-  public recover(
-    @CurrentApiKeyIssuer() issuerId: string,
-    @Body() input: CredentialRecoveryInput,
-  ) {
+  public recover(@CurrentApiKeyIssuer() issuerId: string, @Body() input: CredentialRecoveryInput) {
     return this.recoveryService.recover(issuerId, input.recoveryToken);
   }
 }

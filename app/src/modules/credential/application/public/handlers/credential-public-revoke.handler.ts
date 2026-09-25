@@ -12,7 +12,10 @@ export interface CredentialRevokeResult {
 
 @Injectable()
 @CommandHandler(CredentialPublicRevokeCommand)
-export class CredentialPublicRevokeHandler implements ICommandHandler<CredentialPublicRevokeCommand, CredentialRevokeResult> {
+export class CredentialPublicRevokeHandler implements ICommandHandler<
+  CredentialPublicRevokeCommand,
+  CredentialRevokeResult
+> {
   public constructor(private readonly credentialRepository: ICredentialRepository) {}
 
   public async execute(command: CredentialPublicRevokeCommand): Promise<CredentialRevokeResult> {

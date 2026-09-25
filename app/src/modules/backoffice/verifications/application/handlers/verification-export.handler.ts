@@ -11,7 +11,18 @@ export interface VerificationExportResult {
   csv: string;
 }
 
-const HEADER = ["id", "date", "verifierId", "verifierName", "vcHash", "verificationHash", "status", "txHash", "ledger", "amountBRL"].join(",");
+const HEADER = [
+  "id",
+  "date",
+  "verifierId",
+  "verifierName",
+  "vcHash",
+  "verificationHash",
+  "status",
+  "txHash",
+  "ledger",
+  "amountBRL",
+].join(",");
 
 @Injectable()
 @QueryHandler(VerificationExportQuery)

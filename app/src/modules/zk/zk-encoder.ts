@@ -65,7 +65,12 @@ export function encodeG2(point: string[][]): Buffer {
   const { c0: xAffC0, c1: xAffC1 } = fp2Mul(xC0, xC1, zInvC0, zInvC1);
   const { c0: yAffC0, c1: yAffC1 } = fp2Mul(yC0, yC1, zInvC0, zInvC1);
 
-  return Buffer.concat([bigintToBytes32(xAffC1), bigintToBytes32(xAffC0), bigintToBytes32(yAffC1), bigintToBytes32(yAffC0)]);
+  return Buffer.concat([
+    bigintToBytes32(xAffC1),
+    bigintToBytes32(xAffC0),
+    bigintToBytes32(yAffC1),
+    bigintToBytes32(yAffC0),
+  ]);
 }
 
 export function encodeFr(value: string): Buffer {

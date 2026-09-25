@@ -28,11 +28,21 @@ export class Verifier {
     this._updatedAt = props.updatedAt;
   }
 
-  public get id(): string { return this._id; }
-  public get name(): string { return this._name; }
-  public get status(): VerifierStatus { return this._status; }
-  public get createdAt(): Date { return this._createdAt; }
-  public get updatedAt(): Date { return this._updatedAt; }
+  public get id(): string {
+    return this._id;
+  }
+  public get name(): string {
+    return this._name;
+  }
+  public get status(): VerifierStatus {
+    return this._status;
+  }
+  public get createdAt(): Date {
+    return this._createdAt;
+  }
+  public get updatedAt(): Date {
+    return this._updatedAt;
+  }
 
   public static create(params: { id: string; name: string }): Verifier {
     if (!params.id.trim()) throw new BadRequestException("Verifier id obrigatorio");

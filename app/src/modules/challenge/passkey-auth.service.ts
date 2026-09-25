@@ -11,10 +11,7 @@ import {
   verifyAuthenticationResponse,
   verifyRegistrationResponse,
 } from "@simplewebauthn/server";
-import type {
-  AuthenticationResponseJSON,
-  RegistrationResponseJSON,
-} from "@simplewebauthn/server";
+import type { AuthenticationResponseJSON, RegistrationResponseJSON } from "@simplewebauthn/server";
 import { PrismaService } from "@src/infra/database/@prisma/prisma.service";
 import { EnvService } from "@src/infra/env/env.service";
 import { ChallengeService } from "@src/modules/challenge/challenge.service";
@@ -211,9 +208,7 @@ export class PasskeyAuthService {
       vcHash: passkey.vcHash,
     });
     const privyEnabled = await this.walletService.isEnabledForIssuer(params.issuerId);
-    const customAuth = privyEnabled
-      ? await this.walletService.issueCustomAuthToken(passkey.subjectDid)
-      : null;
+    const customAuth = privyEnabled ? await this.walletService.issueCustomAuthToken(passkey.subjectDid) : null;
 
     return {
       verified: true,
@@ -226,11 +221,15 @@ export class PasskeyAuthService {
   }
 
   private allowedOrigins(): string[] {
-    return this.envService.WEBAUTHN_ALLOWED_ORIGINS.split(",").map((value) => value.trim()).filter(Boolean);
+    return this.envService.WEBAUTHN_ALLOWED_ORIGINS.split(",")
+      .map((value) => value.trim())
+      .filter(Boolean);
   }
 
   private assertAllowedRpId(rpId: string): void {
-    const allowed = this.envService.WEBAUTHN_ALLOWED_RP_IDS.split(",").map((value) => value.trim()).filter(Boolean);
+    const allowed = this.envService.WEBAUTHN_ALLOWED_RP_IDS.split(",")
+      .map((value) => value.trim())
+      .filter(Boolean);
     const matches = allowed.some((pattern) =>
       pattern.startsWith("*.") ? rpId.endsWith(pattern.slice(1)) && rpId !== pattern.slice(2) : rpId === pattern,
     );
@@ -273,8 +272,9 @@ export class PasskeyAuthService {
 
   private toTransports(value: unknown) {
     if (!Array.isArray(value)) return undefined;
-    return value.filter((item): item is "ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb" =>
-      typeof item === "string" && ["ble", "cable", "hybrid", "internal", "nfc", "smart-card", "usb"].includes(item),
+    return value.filter(
+      (item): item is "ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb" =>
+        typeof item === "string" && ["ble", "cable", "hybrid", "internal", "nfc", "smart-card", "usb"].includes(item),
     );
   }
 }

@@ -1,4 +1,12 @@
-import { applyDecorators, CanActivate, ExecutionContext, Injectable, SetMetadata, UnauthorizedException, UseGuards } from "@nestjs/common";
+import {
+  applyDecorators,
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  SetMetadata,
+  UnauthorizedException,
+  UseGuards,
+} from "@nestjs/common";
 import { EnvService } from "@src/infra/env/env.service";
 
 const ADMIN_GUARD_KEY = "adminSecretGuard";
@@ -29,5 +37,4 @@ export class AdminSecretGuard implements CanActivate {
  * Protege um controller ou handler com o header X-Admin-Secret.
  * O valor deve corresponder à env var ADMIN_SECRET.
  */
-export const AdminSecret = () =>
-  applyDecorators(SetMetadata(ADMIN_GUARD_KEY, true), UseGuards(AdminSecretGuard));
+export const AdminSecret = () => applyDecorators(SetMetadata(ADMIN_GUARD_KEY, true), UseGuards(AdminSecretGuard));

@@ -64,21 +64,51 @@ export class Credential {
     this._expiresAt = props.expiresAt;
   }
 
-  public get id(): Id { return this._id; }
-  public get vcHash(): string { return this._vcHash; }
-  public get vcDocument(): VestaVC | null { return this._vcDocument; }
-  public get cpfDedupKey(): string | null { return this._cpfDedupKey; }
-  public get issuerDid(): string { return this._issuerDid; }
-  public get issuerId(): string { return this._issuerId; }
-  public get subjectDid(): string { return this._subjectDid; }
-  public get kycLevel(): string { return this._kycLevel; }
-  public get status(): CredentialStatus { return this._status; }
-  public get sorobanTxHash(): string | null { return this._sorobanTxHash; }
-  public get userWalletAddress(): string | null { return this._userWalletAddress; }
-  public get privyUserId(): string | null { return this._privyUserId; }
-  public get createdAt(): Date { return this._createdAt; }
-  public get updatedAt(): Date { return this._updatedAt; }
-  public get expiresAt(): Date { return this._expiresAt; }
+  public get id(): Id {
+    return this._id;
+  }
+  public get vcHash(): string {
+    return this._vcHash;
+  }
+  public get vcDocument(): VestaVC | null {
+    return this._vcDocument;
+  }
+  public get cpfDedupKey(): string | null {
+    return this._cpfDedupKey;
+  }
+  public get issuerDid(): string {
+    return this._issuerDid;
+  }
+  public get issuerId(): string {
+    return this._issuerId;
+  }
+  public get subjectDid(): string {
+    return this._subjectDid;
+  }
+  public get kycLevel(): string {
+    return this._kycLevel;
+  }
+  public get status(): CredentialStatus {
+    return this._status;
+  }
+  public get sorobanTxHash(): string | null {
+    return this._sorobanTxHash;
+  }
+  public get userWalletAddress(): string | null {
+    return this._userWalletAddress;
+  }
+  public get privyUserId(): string | null {
+    return this._privyUserId;
+  }
+  public get createdAt(): Date {
+    return this._createdAt;
+  }
+  public get updatedAt(): Date {
+    return this._updatedAt;
+  }
+  public get expiresAt(): Date {
+    return this._expiresAt;
+  }
 
   public static issue(params: {
     vcHash: string;
@@ -146,9 +176,7 @@ export class Credential {
 
   public approve(kycLevel: KycLevel): void {
     if (this._status !== CredentialStatus.Pending) {
-      throw new BadRequestException(
-        `Só é possível aprovar credencial pendente. Status atual: ${this._status}`,
-      );
+      throw new BadRequestException(`Só é possível aprovar credencial pendente. Status atual: ${this._status}`);
     }
     this._status = CredentialStatus.Active;
     this._kycLevel = kycLevel;
@@ -157,9 +185,7 @@ export class Credential {
 
   public reject(): void {
     if (this._status !== CredentialStatus.Pending) {
-      throw new BadRequestException(
-        `Só é possível reprovar credencial pendente. Status atual: ${this._status}`,
-      );
+      throw new BadRequestException(`Só é possível reprovar credencial pendente. Status atual: ${this._status}`);
     }
     this._status = CredentialStatus.Rejected;
     this._updatedAt = new Date();

@@ -15,7 +15,10 @@ export type CredentialVerifyResult =
 
 @Injectable()
 @QueryHandler(CredentialPublicVerifyQuery)
-export class CredentialPublicVerifyHandler implements IQueryHandler<CredentialPublicVerifyQuery, CredentialVerifyResult> {
+export class CredentialPublicVerifyHandler implements IQueryHandler<
+  CredentialPublicVerifyQuery,
+  CredentialVerifyResult
+> {
   public constructor(private readonly credentialRepository: ICredentialRepository) {}
 
   public async execute(query: CredentialPublicVerifyQuery): Promise<CredentialVerifyResult> {

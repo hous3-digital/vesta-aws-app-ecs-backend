@@ -7,11 +7,7 @@ import {
   VerificationsBackofficeDao,
 } from "@src/modules/backoffice/verifications/infra/verifications-backoffice.dao";
 import { IVerifierRepository } from "@src/modules/backoffice/verifiers/domain/verifier.repository";
-import {
-  clampLimit,
-  decodeCursor,
-  encodeCursor,
-} from "@src/modules/backoffice/shared/cursor-pagination.util";
+import { clampLimit, decodeCursor, encodeCursor } from "@src/modules/backoffice/shared/cursor-pagination.util";
 
 export interface VerificationListItem {
   id: string;
