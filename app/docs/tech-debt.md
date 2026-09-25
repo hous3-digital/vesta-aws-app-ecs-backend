@@ -22,13 +22,13 @@ O alvo é o que as rules em `.cursor/rules/` descrevem. Medido em 2026-09-24: `c
 
 ### F1 · Harness · Track: rules e skills `task_01m3ass0p1f6btcfzgqs3g9v9z`, chain `task_01m3ass0s0f6btcg0nyyq9nkpq`, segurança `task_01m3ass0skf6btcg0xaa460ah7`, code-reviewer `task_01m3ass0t4f6btcg17581j9wd1`, commands `task_01m3ass0tnf6btcg1cg2xsbx03`, sensor de testes `task_01m3ass0v9f6btcg1qyzz835ze`, prisma-migration `task_01m3ass0w0f6btcg1xrfc32wkd`
 
-- Rules restantes: `standard-code`, `standard-test`, `standard-chain`, `standard-security`.
-- Skills: `new-module`, `unit-testing`, `integration-testing`, `chain-gateway`, `prisma-migration`.
-- Symlinks em `.claude/rules` e `.claude/skills`; validar o mesmo prompt nos dois agentes.
+- Feito: rules `standard-module`, `standard-code`, `standard-test` (globs em `app/…`); skills `new-module`, `unit-testing`, `integration-testing`, `e2e-testing`; symlinks em `.claude/`; hooks com `selftest.js` nos dois formatos de payload; ESLint `no-restricted-imports` para `@stellar/stellar-sdk` com allowlist nominal (8 arquivos de `src` e specs, encolhe a cada frente); `catalog:check`.
+- Rules restantes: `standard-chain`, `standard-security`.
+- Skills restantes: `chain-gateway`, `prisma-migration`.
 - Sensor de testes relacionados no `format-on-edit` (roda o spec do arquivo editado).
-- ESLint `no-restricted-imports` para `@stellar/stellar-sdk` fora de `src/infra/gateways/chain/`, com allowlist dos 6 arquivos atuais que encolhe a cada frente.
-- Agent `code-reviewer` com checklist mapeado rule por rule.
-- Commands do fluxo spec-driven (`create-prd`, `create-tech-spec`, `create-task`, `exec-task`) e templates.
+- Regras de `standard-code` que ainda são prosa e deveriam virar ESLint com allowlist que só encolhe: `no-explicit-any` (12 usos hoje), `no-console` fora de `main.ts` e `scripts/` (12 usos), `explicit-member-accessibility`, `no-floating-promises`.
+- Agent `code-reviewer` com checklist mapeado rule por rule. Até existir, o "Definition of done" do `AGENTS.md` é o checklist.
+- Commands do fluxo spec-driven (`create-prd`, `create-tech-spec`, `create-task`, `exec-task`) e templates. Até existirem, o fluxo do Track é seguido à mão.
 
 ### F2 · Testes · Track: camadas e catálogo `task_01m3ass0q2f6btcfztyft7q7z1`, e2e de prova `task_01m3ass0wjf6btcg23v070dbe5`, cobrir catálogo `task_01m3ass0x4f6btcg2cwdav33ks`, style `task_01m3ass0xpf6btcg2mv123mqgp`, e as tasks `[BUG]` da R4, uma por CT vermelho
 
