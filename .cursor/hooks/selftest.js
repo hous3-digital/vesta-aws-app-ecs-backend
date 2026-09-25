@@ -201,7 +201,48 @@ try {
   fs.rmSync(tmpTs, { force: true });
 }
 
-const total = SHELL_CASES.length * 2 + READ_CASES.length * 2 + 4 + 3;
+// After lint, format-on-edit runs the spec related to the edited file (same basename under
+// __tests__/@unit or @integration) and feeds a failure back to Claude Code. Cursor's
+// afterFileEdit has no feedback channel, so there the sensor stays silent.
+const tmpSrc = path.join(REPO_ROOT, "app", "src", "selftest-sensor-tmp.ts");
+const tmpSpec = path.join(
+  REPO_ROOT,
+  "app",
+  "__tests__",
+  "@unit",
+  "selftest-sensor-tmp.spec.ts",
+);
+try {
+  fs.writeFileSync(tmpSrc, "export const sensorProbe = 1;\n");
+  fs.writeFileSync(
+    tmpSpec,
+    'describe("sensor", () => {\n  it("fails on purpose", () => {\n    expect(1).toBe(2);\n  });\n});\n',
+  );
+  const out = run(
+    "format-on-edit.js",
+    claudePayload("PostToolUse", "Edit", {
+      file_path: tmpSrc,
+      old_string: "",
+      new_string: "",
+    }),
+  );
+  check("claude format-on-edit related spec exit code", 2, out.status);
+  check(
+    "claude format-on-edit related spec names the failing test",
+    true,
+    /selftest-sensor-tmp\.spec\.ts[\s\S]*fails on purpose/.test(out.stderr),
+  );
+  const cursorOut = run(
+    "format-on-edit.js",
+    cursorPayload("afterFileEdit", { file_path: tmpSrc, edits: [] }),
+  );
+  check("cursor format-on-edit related spec stays silent", 0, cursorOut.status);
+} finally {
+  fs.rmSync(tmpSrc, { force: true });
+  fs.rmSync(tmpSpec, { force: true });
+}
+
+const total = SHELL_CASES.length * 2 + READ_CASES.length * 2 + 4 + 3 + 3;
 if (failures.length) {
   console.error(`hooks selftest: ${failures.length} of ${total} checks failed`);
   for (const f of failures) console.error(`  - ${f}`);
