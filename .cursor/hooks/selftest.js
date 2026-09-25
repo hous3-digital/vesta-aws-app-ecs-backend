@@ -212,6 +212,15 @@ const tmpSpec = path.join(
   "@unit",
   "selftest-sensor-tmp.spec.ts",
 );
+const removeSensorFiles = () => {
+  fs.rmSync(tmpSrc, { force: true });
+  fs.rmSync(tmpSpec, { force: true });
+};
+// finally does not run on Ctrl+C in the middle of the jest run; a leftover red spec would break test:unit.
+process.once("SIGINT", () => {
+  removeSensorFiles();
+  process.exit(130);
+});
 try {
   fs.writeFileSync(tmpSrc, "export const sensorProbe = 1;\n");
   fs.writeFileSync(
@@ -238,8 +247,7 @@ try {
   );
   check("cursor format-on-edit related spec stays silent", 0, cursorOut.status);
 } finally {
-  fs.rmSync(tmpSrc, { force: true });
-  fs.rmSync(tmpSpec, { force: true });
+  removeSensorFiles();
 }
 
 const total = SHELL_CASES.length * 2 + READ_CASES.length * 2 + 4 + 3 + 3;
