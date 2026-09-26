@@ -98,8 +98,7 @@ describe("/backoffice/api-keys", () => {
     const response = await withToken(api().delete(`/backoffice/api-keys/${keyA.id}`), tenantB.token);
 
     // Assert
-    expect(response.status).toBeGreaterThanOrEqual(400);
-    expect(response.status).toBeLessThan(500);
+    expect(response.status).toBe(401);
     const row = await testApp.prisma.apiKey.findUnique({ where: { id: keyA.id } });
     expect(row?.active).toBe(true);
     const challenge = await api().get("/public/auth/challenge").set("X-Api-Key", keyA.key);
@@ -123,8 +122,11 @@ describe("/backoffice/api-keys", () => {
   });
 
   it("CT-VESTA-BO-007 without a backoffice session the routes answer 401", async () => {
+    // Arrange
+    const anonymous = api();
+
     // Act
-    const response = await api().get("/backoffice/api-keys");
+    const response = await anonymous.get("/backoffice/api-keys");
 
     // Assert
     expect(response.status).toBe(401);

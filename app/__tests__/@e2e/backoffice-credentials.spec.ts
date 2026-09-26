@@ -30,8 +30,8 @@ describe("/backoffice/credentials", () => {
     const body = CredentialApiFixture.issue();
     const response = await api().post("/public/credential").set("X-Api-Key", FIXTURE_API_KEY).send(body);
     issuedVcHashes.push(response.body.data.vcHash);
-    const row = await testApp.prisma.credential.findUnique({ where: { vcHash: response.body.data.vcHash } });
-    issued = { id: row!.id, vcHash: row!.vcHash, cpf: String(body.cpf), fullName: String(body.fullName) };
+    const row = await testApp.prisma.credential.findUniqueOrThrow({ where: { vcHash: response.body.data.vcHash } });
+    issued = { id: row.id, vcHash: row.vcHash, cpf: String(body.cpf), fullName: String(body.fullName) };
   });
 
   afterAll(async () => {
@@ -41,8 +41,11 @@ describe("/backoffice/credentials", () => {
   });
 
   it("CT-VESTA-BO-004 the list shows the issuer's credentials with vcHash and status and no PII", async () => {
+    // Arrange
+    const token = tokenA;
+
     // Act
-    const response = await withToken(api().get("/backoffice/credentials"), tokenA);
+    const response = await withToken(api().get("/backoffice/credentials"), token);
 
     // Assert
     expect(response.status).toBe(200);
@@ -57,8 +60,11 @@ describe("/backoffice/credentials", () => {
   });
 
   it("CT-VESTA-BO-004 the status filter returns only credentials in that status", async () => {
+    // Arrange
+    const token = tokenA;
+
     // Act
-    const response = await withToken(api().get("/backoffice/credentials").query({ status: "REVOKED" }), tokenA);
+    const response = await withToken(api().get("/backoffice/credentials").query({ status: "REVOKED" }), token);
 
     // Assert
     expect(response.status).toBe(200);
@@ -68,25 +74,32 @@ describe("/backoffice/credentials", () => {
   });
 
   it("CT-VESTA-BO-004 the detail returns the credential's public fields and no PII", async () => {
+    // Arrange
+    const token = tokenA;
+    const target = issued;
+
     // Act
-    const response = await withToken(api().get(`/backoffice/credentials/${issued.id}`), tokenA);
+    const response = await withToken(api().get(`/backoffice/credentials/${target.id}`), token);
 
     // Assert
     expect(response.status).toBe(200);
-    expect(response.body.data).toMatchObject({ id: issued.id, vcHash: issued.vcHash, status: "ACTIVE" });
+    expect(response.body.data).toMatchObject({ id: target.id, vcHash: target.vcHash, status: "ACTIVE" });
     expect(response.body.data.kycLevel).toEqual(expect.any(String));
     expect(response.body.data.subjectDid).toEqual(expect.any(String));
     expect(response.body.data.issuedAt).toEqual(expect.any(String));
     const serialized = JSON.stringify(response.body);
-    expect(serialized).not.toContain(issued.cpf);
-    expect(serialized).not.toContain(issued.fullName);
+    expect(serialized).not.toContain(target.cpf);
+    expect(serialized).not.toContain(target.fullName);
     expect(serialized).not.toContain("vcDocument");
     expect(serialized).not.toContain("cpfDedupKey");
   });
 
   it("CT-VESTA-BO-004 issuer B does not list issuer A's credential", async () => {
+    // Arrange
+    const token = tenantB.token;
+
     // Act
-    const response = await withToken(api().get("/backoffice/credentials"), tenantB.token);
+    const response = await withToken(api().get("/backoffice/credentials"), token);
 
     // Assert
     expect(response.status).toBe(200);
@@ -94,16 +107,23 @@ describe("/backoffice/credentials", () => {
   });
 
   it("CT-VESTA-BO-004 issuer B reading issuer A's credential by id gets 404", async () => {
+    // Arrange
+    const token = tenantB.token;
+    const target = issued;
+
     // Act
-    const response = await withToken(api().get(`/backoffice/credentials/${issued.id}`), tenantB.token);
+    const response = await withToken(api().get(`/backoffice/credentials/${target.id}`), token);
 
     // Assert
     expect(response.status).toBe(404);
   });
 
   it("CT-VESTA-BO-004 an unknown status filter is rejected with 400", async () => {
+    // Arrange
+    const token = tokenA;
+
     // Act
-    const response = await withToken(api().get("/backoffice/credentials").query({ status: "WHATEVER" }), tokenA);
+    const response = await withToken(api().get("/backoffice/credentials").query({ status: "WHATEVER" }), token);
 
     // Assert
     expect(response.status).toBe(400);

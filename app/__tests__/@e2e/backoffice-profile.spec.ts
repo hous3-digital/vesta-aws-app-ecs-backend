@@ -24,8 +24,11 @@ describe("/backoffice/profile", () => {
   });
 
   it("CT-VESTA-BO-001 the profile is the issuer of the JWT", async () => {
+    // Arrange
+    const token = tokenA;
+
     // Act
-    const response = await withToken(api().get("/backoffice/profile"), tokenA);
+    const response = await withToken(api().get("/backoffice/profile"), token);
 
     // Assert
     expect(response.status).toBe(200);
@@ -58,8 +61,11 @@ describe("/backoffice/profile", () => {
   });
 
   it("CT-VESTA-BO-001 the wallet route answers the logged issuer's own wallet state", async () => {
+    // Arrange
+    const token = tenantB.token;
+
     // Act
-    const response = await withToken(api().get("/backoffice/profile/wallet"), tenantB.token);
+    const response = await withToken(api().get("/backoffice/profile/wallet"), token);
 
     // Assert
     expect(response.status).toBe(200);
@@ -71,8 +77,11 @@ describe("/backoffice/profile", () => {
   });
 
   it("CT-VESTA-BO-001 without a backoffice session the profile answers 401", async () => {
+    // Arrange
+    const anonymous = api();
+
     // Act
-    const response = await api().get("/backoffice/profile");
+    const response = await anonymous.get("/backoffice/profile");
 
     // Assert
     expect(response.status).toBe(401);

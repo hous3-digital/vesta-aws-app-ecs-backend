@@ -86,8 +86,11 @@ describe("/backoffice/payouts", () => {
   });
 
   it("CT-VESTA-PAY-001 readiness lists the settlement contract and the wallet as prerequisites, both unmet locally", async () => {
+    // Arrange
+    const token = tenantB.token;
+
     // Act
-    const response = await withToken(api().get("/backoffice/payouts/readiness"), tenantB.token);
+    const response = await withToken(api().get("/backoffice/payouts/readiness"), token);
 
     // Assert
     expect(response.status).toBe(200);
@@ -99,11 +102,13 @@ describe("/backoffice/payouts", () => {
     });
   });
 
-  // Bug (no id yet): getReadiness refreshes the wallet before listing prerequisites, so an issuer without a
-  // wallet row gets 400 "Carteira organizacional ainda não provisionada" instead of a readiness answer.
-  it.skip("CT-VESTA-PAY-001 readiness of an issuer without a wallet lists the wallet as the missing prerequisite (bug: answers 400 today)", async () => {
+  // TD-009: getReadiness refreshes the wallet before listing prerequisites, so an issuer without a wallet gets 400.
+  it.skip("CT-VESTA-PAY-001 TD-009 readiness of an issuer without a wallet lists the wallet as the missing prerequisite", async () => {
+    // Arrange
+    const token = tokenA;
+
     // Act
-    const response = await withToken(api().get("/backoffice/payouts/readiness"), tokenA);
+    const response = await withToken(api().get("/backoffice/payouts/readiness"), token);
 
     // Assert
     expect(response.status).toBe(200);
@@ -112,8 +117,11 @@ describe("/backoffice/payouts", () => {
   });
 
   it("CT-VESTA-PAY-001 requesting a payout while settlement is not configured is refused with 400", async () => {
+    // Arrange
+    const token = tenantB.token;
+
     // Act
-    const response = await withToken(api().post("/backoffice/payouts"), tenantB.token).set("Idempotency-Key", hex(32));
+    const response = await withToken(api().post("/backoffice/payouts"), token).set("Idempotency-Key", hex(32));
 
     // Assert
     expect(response.status).toBe(400);
@@ -122,8 +130,11 @@ describe("/backoffice/payouts", () => {
   });
 
   it("CT-VESTA-PAY-003 issuer A lists its own payout", async () => {
+    // Arrange
+    const token = tokenA;
+
     // Act
-    const response = await withToken(api().get("/backoffice/payouts"), tokenA);
+    const response = await withToken(api().get("/backoffice/payouts"), token);
 
     // Assert
     expect(response.status).toBe(200);
@@ -131,18 +142,25 @@ describe("/backoffice/payouts", () => {
   });
 
   it("CT-VESTA-PAY-003 issuer A reads its own payout with its attempts", async () => {
+    // Arrange
+    const token = tokenA;
+    const target = payoutA;
+
     // Act
-    const response = await withToken(api().get(`/backoffice/payouts/${payoutA.id}`), tokenA);
+    const response = await withToken(api().get(`/backoffice/payouts/${target.id}`), token);
 
     // Assert
     expect(response.status).toBe(200);
-    expect(response.body.data).toMatchObject({ id: payoutA.id, status: "CONFIRMED", amountMinor: "137" });
+    expect(response.body.data).toMatchObject({ id: target.id, status: "CONFIRMED", amountMinor: "137" });
     expect(response.body.data.attempts).toEqual([]);
   });
 
   it("CT-VESTA-PAY-003 issuer B does not list issuer A's payouts", async () => {
+    // Arrange
+    const token = tenantB.token;
+
     // Act
-    const response = await withToken(api().get("/backoffice/payouts"), tenantB.token);
+    const response = await withToken(api().get("/backoffice/payouts"), token);
 
     // Assert
     expect(response.status).toBe(200);
@@ -150,16 +168,23 @@ describe("/backoffice/payouts", () => {
   });
 
   it("CT-VESTA-PAY-003 issuer B reading issuer A's payout by id gets 404", async () => {
+    // Arrange
+    const token = tenantB.token;
+    const target = payoutA;
+
     // Act
-    const response = await withToken(api().get(`/backoffice/payouts/${payoutA.id}`), tenantB.token);
+    const response = await withToken(api().get(`/backoffice/payouts/${target.id}`), token);
 
     // Assert
     expect(response.status).toBe(404);
   });
 
   it("CT-VESTA-PAY-003 issuer B has no active payout of its own", async () => {
+    // Arrange
+    const token = tenantB.token;
+
     // Act
-    const response = await withToken(api().get("/backoffice/payouts/active"), tenantB.token);
+    const response = await withToken(api().get("/backoffice/payouts/active"), token);
 
     // Assert
     expect(response.status).toBe(200);
@@ -167,8 +192,11 @@ describe("/backoffice/payouts", () => {
   });
 
   it("CT-VESTA-PAY-003 issuer A sees its own ledger entry", async () => {
+    // Arrange
+    const token = tokenA;
+
     // Act
-    const response = await withToken(api().get("/backoffice/commissions/ledger"), tokenA);
+    const response = await withToken(api().get("/backoffice/commissions/ledger"), token);
 
     // Assert
     expect(response.status).toBe(200);
@@ -176,8 +204,11 @@ describe("/backoffice/payouts", () => {
   });
 
   it("CT-VESTA-PAY-003 issuer B does not see issuer A's ledger", async () => {
+    // Arrange
+    const token = tenantB.token;
+
     // Act
-    const response = await withToken(api().get("/backoffice/commissions/ledger"), tenantB.token);
+    const response = await withToken(api().get("/backoffice/commissions/ledger"), token);
 
     // Assert
     expect(response.status).toBe(200);

@@ -32,6 +32,7 @@ describe("/backoffice/verifications", () => {
    * /public/proof needs a real Groth16 proof, which public-proof.spec.ts already covers.
    */
   const insertAttestation = async (vcHash: string): Promise<typeof attestation> => {
+    const sorobanTxHash = hex(64);
     const row = await testApp.prisma.attestation.create({
       data: {
         id: `att_e2e_${hex(24)}`,
@@ -39,7 +40,7 @@ describe("/backoffice/verifications", () => {
         proofHash: hex(64),
         verifierId: FIXTURE_VERIFIER_ID,
         kycLevel: "complete",
-        sorobanTxHash: hex(64),
+        sorobanTxHash,
         sorobanLedger: 1,
         onChainResult: true,
         issuerId: FIXTURE_ISSUER_EXTERNAL_ID,
@@ -47,7 +48,7 @@ describe("/backoffice/verifications", () => {
       },
     });
     attestationIds.push(row.id);
-    return { id: row.id, vcHash: row.vcHash, proofHash: row.proofHash, sorobanTxHash: row.sorobanTxHash! };
+    return { id: row.id, vcHash: row.vcHash, proofHash: row.proofHash, sorobanTxHash };
   };
 
   beforeAll(async () => {
@@ -71,8 +72,11 @@ describe("/backoffice/verifications", () => {
   });
 
   it("CT-VESTA-BO-005 the list shows the issuer's verifications with the verifier name and the commission", async () => {
+    // Arrange
+    const token = tokenA;
+
     // Act
-    const response = await withToken(api().get("/backoffice/verifications"), tokenA);
+    const response = await withToken(api().get("/backoffice/verifications"), token);
 
     // Assert
     expect(response.status).toBe(200);
@@ -89,10 +93,13 @@ describe("/backoffice/verifications", () => {
   });
 
   it("CT-VESTA-BO-005 the list filters by verifierId and by status", async () => {
+    // Arrange
+    const token = tokenA;
+
     // Act
     const response = await withToken(
       api().get("/backoffice/verifications").query({ verifierId: FIXTURE_VERIFIER_ID, status: "failed" }),
-      tokenA,
+      token,
     );
 
     // Assert
@@ -103,16 +110,20 @@ describe("/backoffice/verifications", () => {
   });
 
   it("CT-VESTA-BO-005 the detail returns the verification with its hashes and transaction", async () => {
+    // Arrange
+    const token = tokenA;
+    const target = attestation;
+
     // Act
-    const response = await withToken(api().get(`/backoffice/verifications/${attestation.id}`), tokenA);
+    const response = await withToken(api().get(`/backoffice/verifications/${target.id}`), token);
 
     // Assert
     expect(response.status).toBe(200);
     expect(response.body.data).toMatchObject({
-      id: attestation.id,
-      vcHash: attestation.vcHash,
-      verificationHash: attestation.proofHash,
-      txHash: attestation.sorobanTxHash,
+      id: target.id,
+      vcHash: target.vcHash,
+      verificationHash: target.proofHash,
+      txHash: target.sorobanTxHash,
       status: "completed",
       verifierId: FIXTURE_VERIFIER_ID,
     });
@@ -143,16 +154,22 @@ describe("/backoffice/verifications", () => {
   });
 
   it("CT-VESTA-BO-005 the CSV export without a period is rejected with 400", async () => {
+    // Arrange
+    const token = tokenA;
+
     // Act
-    const response = await withToken(api().get("/backoffice/verifications/export"), tokenA);
+    const response = await withToken(api().get("/backoffice/verifications/export"), token);
 
     // Assert
     expect(response.status).toBe(400);
   });
 
   it("CT-VESTA-BO-005 issuer B does not list issuer A's verification", async () => {
+    // Arrange
+    const token = tenantB.token;
+
     // Act
-    const response = await withToken(api().get("/backoffice/verifications"), tenantB.token);
+    const response = await withToken(api().get("/backoffice/verifications"), token);
 
     // Assert
     expect(response.status).toBe(200);
@@ -160,8 +177,12 @@ describe("/backoffice/verifications", () => {
   });
 
   it("CT-VESTA-BO-005 issuer B reading issuer A's verification by id gets 404", async () => {
+    // Arrange
+    const token = tenantB.token;
+    const target = attestation;
+
     // Act
-    const response = await withToken(api().get(`/backoffice/verifications/${attestation.id}`), tenantB.token);
+    const response = await withToken(api().get(`/backoffice/verifications/${target.id}`), token);
 
     // Assert
     expect(response.status).toBe(404);
