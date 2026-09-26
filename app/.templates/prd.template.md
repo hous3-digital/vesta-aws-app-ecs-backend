@@ -24,7 +24,7 @@ Numbered, testable, one behaviour each. Each becomes an RF in Track.
 
 ## Change class
 
-For every route or SDK method touched: additive, behavioral or breaking (`AGENTS.md`, "Current phase"). A breaking change on `/public/*` needs a new version or a flag, never in place.
+For every route or SDK method touched: additive, behavioral or breaking (the change-class table in `AGENTS.md`, "What Vesta is"). A breaking change on `/public/*` needs a new version or a flag, never in place.
 
 ## Constraints
 
