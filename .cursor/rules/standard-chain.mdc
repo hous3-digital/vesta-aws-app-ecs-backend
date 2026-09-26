@@ -1,0 +1,54 @@
+---
+description: Chain boundary - how the backend talks to Soroban through ports, who signs, what the domain may see, how a submission is confirmed and which columns a receipt owns. Applies to gateways, the stellar module and domain code that names chain facts.
+globs: app/src/modules/stellar/**/*.ts, app/src/infra/gateways/chain/**/*.ts, app/src/**/*gateway*.ts, app/src/**/domain/**/*.ts
+paths:
+  - "app/src/modules/stellar/**/*.ts"
+  - "app/src/infra/gateways/chain/**/*.ts"
+  - "app/src/**/*gateway*.ts"
+  - "app/src/**/domain/**/*.ts"
+alwaysApply: false
+---
+
+# Chain standard
+
+`AGENTS.md` rule 2 says the chain SDK lives only inside the adapter and rule 3 says the chain owns what a third party verifies. This file says what that looks like in code. The boundary is agnostic in vocabulary, not in infrastructure: one Stellar adapter today, ports written so a second network would be a new adapter and nothing else (TD-002, `app/docs/tech-debt.md`).
+
+## Ports speak our vocabulary
+
+- A port is an abstract class in the owning module's `domain/`. The three that exist today (`issuer-registry.gateway.ts`, `commission-registration.gateway.ts`, `payout-settlement.gateway.ts`) still sit at the module root; they move on touch. It names business operations: `getParticipant(did)`, `registerOrUpdate(params)`, `settle(request)`. Never `invoke(functionName, args)`.
+- Inputs and outputs are plain TypeScript: strings for DIDs and addresses, `bigint` for atomic amounts, our enums for roles and statuses, `{ txHash, ledger }` as the receipt. No `ScVal`, `xdr.*`, `Keypair`, `Transaction` or `Contract` crosses a port in either direction.
+- A port returns `null` for "not found" and throws one typed error class per port (`IssuerRegistryUnavailableError(code, message, txHash)`), with a stable `code` the caller can branch on and the `txHash` when a transaction reached the network. Messages are in English on touch (`standard-code`).
+
+## The signer is a parameter of the port
+
+Three signers exist: the platform deployer (`VESTA_DEPLOYER_SECRET`), the payout operator (`STELLAR_PAYOUT_OPERATOR_SECRET`) and an organization wallet through Privy, where the browser signs. A port method that submits a transaction states who signs in its contract, either by taking a `signer` argument or by being explicitly bound to one role in its name and doc. Never reach into `EnvService` for a secret from a handler or a domain service; only the adapter resolves key material, and only for the role the port declared.
+
+## The domain never sees the SDK
+
+- Entities and value objects hold chain facts as data: `payoutAddress: string`, `did: string`, `network: string`. `issuer-did.value-object.ts` importing the SDK to validate a key is a legacy exception in the ESLint allowlist; the target is a pure checksum validator or a validation performed by the adapter.
+- Encoding and decoding (`encodeRoles`, `decodeRegistryParticipant`) is a codec: pure functions in their own file next to the adapter, unit-tested in `@unit/codecs`. The gateway calls the codec; nothing else does.
+- Handlers orchestrate ports. They never build transactions, never poll, never read RPC responses.
+
+## Submit lifecycle, always the same five steps
+
+1. **Simulate** with `prepareTransaction`. A simulation failure is a typed error with code `*_PREFLIGHT_FAILED` and no `txHash`; nothing was sent.
+2. **Sign** with the signer the port declared.
+3. **Submit** with `sendTransaction`. A transport failure here is `*_SUBMISSION_UNKNOWN`: the transaction may or may not have reached the network, so the caller keeps the local state unconfirmed and records nothing as settled.
+4. **Poll** `getTransaction` with a bounded loop (today 20 attempts of 1.5 s). A transient RPC error during polling continues the loop; it never turns a possibly confirmed transaction into a failure. Timeout is `*_CONFIRMATION_TIMEOUT` carrying the `txHash` for support.
+5. **Verify** by reading the fact back from the contract after `SUCCESS`, and return a receipt `{ txHash, ledger }` plus the fact as read. A success without the fact is `*_CONFIRMATION_MISMATCH`.
+
+## Receipts own the on-chain columns
+
+`sorobanTxHash`, `sorobanLedger`, `onChainResult`, `onChainCreditId`, `onChainStatus` and every other `onChain*` or `*Ledger` column are written only from a receipt returned by step 5 or by a reconciliation job that reads the chain. A handler that sets `onChainStatus = SETTLED` before a receipt exists violates rule 3. Persist the `txHash` as soon as step 3 returns it, so a crash between submit and confirmation leaves a trail for `reconcile`.
+
+## Idempotency
+
+A write port is safe to call twice with the same business input. The adapter reads first (`getParticipant` before `register_participant` versus `update_participant`), or the contract enforces uniqueness and the adapter maps the rejection to a `*_ALREADY_*` code. Processors that retry (commission registration, payout) rely on this; they never dedupe by `txHash` alone.
+
+## Network is data
+
+The network a tenant operates on is persisted (`OrganizationWallet.network`), not inferred from env. `STELLAR_NETWORK` and `STELLAR_RPC_URL` configure the single adapter that exists today; the adapter reads the passphrase through `StellarService`, never hardcodes it. Mock mode (`VESTA_CONTRACT_ID=PLACEHOLDER`) short-circuits inside the adapter, and a port method returns a receipt shaped like the real one, so callers never branch on `isMockMode()`.
+
+## Legacy map for the chain boundary
+
+The ESLint allowlist in `app/eslint.config.js` is the list of files that still import the SDK outside the adapter: two commission gateways, the issuer registry gateway, `issuer-did.value-object.ts`, `wallet.service.ts`, `scripts/deploy-payout-vault.ts` and two specs that build SDK objects for them (`admin-issuers.controller.spec.ts`, `wallet.service.spec.ts`). Touching one of them means moving its SDK code behind a port into `src/infra/gateways/chain/stellar/` and removing it from the list (F3). The list never grows.

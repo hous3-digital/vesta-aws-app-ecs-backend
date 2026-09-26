@@ -1,7 +1,9 @@
 node_modules
 dist
 .env
-/src/infra/database/@prisma/generated
+.env.local
+.env.test
+app/src/infra/database/@prisma/generated
 **/.DS_Store
 
 # Cloud layer
@@ -14,3 +16,6 @@ coverage
 # Rust/Soroban build output
 **/target/
 **/test_snapshots/
+
+# temp files of .cursor/hooks/selftest.js (removed on exit; kept out of git if a run is interrupted)
+selftest-sensor-tmp*

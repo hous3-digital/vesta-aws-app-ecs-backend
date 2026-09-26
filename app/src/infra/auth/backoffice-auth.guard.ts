@@ -1,4 +1,11 @@
-import { applyDecorators, CanActivate, ExecutionContext, Injectable, UnauthorizedException, UseGuards } from "@nestjs/common";
+import {
+  applyDecorators,
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+  UseGuards,
+} from "@nestjs/common";
 import { BackofficeAuthService } from "@src/infra/auth/backoffice-auth.service";
 import type { AuthenticatedRequest } from "@src/infra/auth/auth.types";
 

@@ -1,0 +1,82 @@
+---
+description: TypeScript style and structure for the backend - language, types, nullability, imports, class layout, errors, logging, DTOs. Applies to src and tests.
+globs: app/src/**/*.ts, app/__tests__/**/*.ts
+paths:
+  - "app/src/**/*.ts"
+  - "app/__tests__/**/*.ts"
+alwaysApply: false
+---
+
+# Code standard
+
+How a file is written once `standard-module` has said where it goes. Prettier and ESLint run on every edit (sensor), so this file has no formatting rules: only what a tool cannot catch.
+
+## What counts as a touch
+
+Several rules say "on touch": translate the message, replace the exception, move the file, drop the log prefix. A touch is a hunk that changes behaviour or structure on that line or in that file. A formatting-only pass (Prettier, import reordering, getter reflow) is not a touch and fires none of them; otherwise every style change would drag a migration with it, against "migrate only what the task touches" (`AGENTS.md`, Legacy map).
+
+## Language
+
+- English for identifiers, comments, commit messages, Swagger text, log lines and exception messages.
+- Legacy Portuguese text is translated when the line is touched, including exception messages. Clients branch on `code`, never on the message text. While decision D6 in `app/docs/decisions.md` (production usage map) is open, a translated message on a `/public/*` route is listed in the PR as a behavioral change.
+
+## Types
+
+- `strictNullChecks` and `noImplicitAny` are on. `any` is forbidden: use `unknown` and narrow, or type the boundary (Prisma `Json`, external payloads) with a parser.
+- `as unknown as` only inside a mapper, on a Prisma `Json` column. `as` elsewhere means the type is wrong upstream. In `__tests__`, a hand-built double (`{ switchToHttp } as unknown as ArgumentsHost`, a one-field `VestaVC`) may be cast; a production type is never cast to silence a missing field.
+- The non-null `!` appears only in DTO declarations (`public cpf!: string`). Never on an expression.
+- Enums are string enums with PascalCase members and the persisted value as the value, as in `CredentialStatus.Active = "ACTIVE"`. Unions of literals are for values that are never persisted.
+- Ids are the `Id` value object from `@src/shared/value-objects`, never a bare string, from the command inward. The controller receives the string and the command carries it as is; the handler wraps it.
+
+## Nullability
+
+- Absence that is legitimate in the domain is `T | null`, and the code branches on it explicitly. `undefined` and `?` exist only on input DTOs and params.
+- Never manufacture a default to silence the type (`?? ""`, `?? 0`, `?? new Date(0)`). If a value is required, throw; if it is optional, carry the `null`.
+- Entity props are complete: every field is set in the constructor from `create` or `restore`, none is assigned later from outside.
+
+## Imports
+
+- Absolute only: `@src/...` in `src`, `@test/...` in tests. ESLint blocks relative paths.
+- `import type` for anything used only as a type.
+- Order: Node built-ins, packages, `@src`, `@test`. One blank line between groups.
+- Nothing from `@src/infra/database/@prisma/generated` outside `infra/` folders and DAOs.
+
+## Classes
+
+- Every member has an explicit access modifier, including constructors and `readonly` fields.
+- Entity body order: private fields, private constructor, getters, static `create` (or the domain verb: `issue`), static `restore`, transitions (`revoke`, `approve`), predicates (`isX`, `ensureX`), private helpers.
+- Handlers, services and gateways expose one public method per responsibility; a class with more than one public method that does not share state is two classes.
+- Static-only classes are formatters and mappers; everything else is an injectable.
+
+## Errors
+
+- The domain throws `DomainError` subclasses from `@src/shared/errors`: `NotFoundError`, `ConflictError`, `InvalidStateError`, `ForbiddenError`, `ValidationError`. Each takes a stable `code` (`CREDENTIAL_NOT_FOUND`), a message for developers and optional `details` that are logged and never returned. `DomainErrorFilter` in `src/infra/http` maps them to HTTP. Entities never import `@nestjs/common`.
+- Legacy entities throw `BadRequestException` directly; when such a line is touched, replace it with the domain error.
+- `HttpException` subclasses are for the `api/` layer only: auth failures, throttling, malformed requests the DTO could not express.
+- Never expose stack, SQL, XDR or chain payloads in a response.
+- `try/catch` only when the catch does something: maps an external error, adds context, or decides a fallback. A catch that only rethrows or only logs is removed.
+
+## Async
+
+- `return await` only inside `try/catch`. Elsewhere return the promise.
+- No floating promises: every promise is awaited, returned or explicitly `void`ed with a reason in a comment.
+- Independent I/O runs in `Promise.all`; dependent I/O runs in sequence. Never a loop with an `await` per row where a batch call exists.
+
+## Logging
+
+- `Logger` from `@nestjs/common` with the class name as context. `console.*` exists only in `main.ts` and `src/scripts/`.
+- Never log a secret, a signed XDR, a private input, a full VC document, a CPF or an API key. Log ids, hashes and status.
+- One log line per business fact at `log` level; `debug` for steps inside a fact; `warn` for a handled anomaly; `error` only with the error object attached.
+- Request-level ingress and egress logging lives in `src/infra/logging/` and is not wired yet (TD-004). Do not hand-roll per-request logs in handlers or controllers to compensate; the fix is wiring the loggers.
+
+## DTOs and outputs
+
+- Inputs are classes in `api/{context}/inputs/` with `class-validator` and `@ApiProperty` on every field: `public x!: T` when required, `public x?: T` when optional. Validation lives here, never in the handler.
+- `/public/*` handlers return an explicit output type declared next to the handler or in `{module}.output.ts`, never an entity or a Prisma row: the shape is a contract. Backoffice and admin query handlers may return the DAO row.
+- Trim and normalize input once, at the DTO with a transformer, not in the handler.
+
+## Comments
+
+- No comment that narrates the code (`// increment counter`). A comment states a constraint, a non-obvious reason or an external quirk.
+- JSDoc on public ports (`domain/*.gateway.ts`, `*.repository.ts`) and on wrappers of external libraries.
+- No deferred-work comments (`TODO`, `FIXME`, `later`, `for now`). Work that is not done goes to `app/docs/tech-debt.md` or to a Track task, where it has an owner and a trigger. A comment in code has neither.

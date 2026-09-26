@@ -70,7 +70,9 @@ export class ApiKeyService {
 
   public async list(
     issuerId?: string,
-  ): Promise<{ id: string; issuerId: string | null; name: string; active: boolean; createdAt: Date; revokedAt: Date | null }[]> {
+  ): Promise<
+    { id: string; issuerId: string | null; name: string; active: boolean; createdAt: Date; revokedAt: Date | null }[]
+  > {
     return this.prisma.apiKey.findMany({
       where: issuerId ? { issuerId } : undefined,
       select: { id: true, issuerId: true, name: true, active: true, createdAt: true, revokedAt: true },

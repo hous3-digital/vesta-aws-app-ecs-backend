@@ -21,9 +21,7 @@ export interface VerificationDetailResult {
 
 @Injectable()
 @QueryHandler(VerificationDetailQuery)
-export class VerificationDetailHandler
-  implements IQueryHandler<VerificationDetailQuery, VerificationDetailResult>
-{
+export class VerificationDetailHandler implements IQueryHandler<VerificationDetailQuery, VerificationDetailResult> {
   public constructor(
     private readonly dao: VerificationsBackofficeDao,
     private readonly verifierRepository: IVerifierRepository,
