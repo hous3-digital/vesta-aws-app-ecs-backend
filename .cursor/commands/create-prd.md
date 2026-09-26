@@ -1,6 +1,6 @@
 # /create-prd
 
-Write the PRD of a feature in `tasks/prd-{slug}/prd.md` from `app/.templates/prd.template.md`. The PRD says what and why; the tech spec (`/create-tech-spec`) says how.
+Write the PRD of a feature in `tasks/prd-{feature}/prd.md` from `app/.templates/prd.template.md`. The PRD says what and why; the tech spec (`/create-tech-spec`) says how.
 
 ## Before writing
 
@@ -8,10 +8,10 @@ Ask, in one message, only what the request does not answer: the problem and who 
 
 ## Writing
 
-1. Read `AGENTS.md` ("What Vesta is", "Current phase", "Non-negotiable rules") and `app/docs/decisions.md` for decisions already taken on the topic. Cite them instead of reopening them.
+1. Read `AGENTS.md` ("What Vesta is", including the change-class table, and "Non-negotiable rules") and `app/docs/decisions.md` for decisions already taken on the topic. Cite them instead of reopening them.
 2. Fill every section of the template. Functional requirements are numbered `RF-001...`, one observable behaviour each, testable by QA without reading code.
 3. State the change class of every route or SDK method the feature touches (additive, behavioral, breaking). Anything on `/public/*` that is not additive gets its own "Out of scope" line pointing to the versioning decision in `app/docs/decisions.md`.
-4. Keep it under 1000 words. Portuguese is fine in this file; identifiers, routes and ids stay as they are in code.
+4. Keep it under 1000 words. The file may be in Portuguese, like `app/docs/` (`AGENTS.md`, rule 1); identifiers, routes and ids stay as they are in code.
 
 ## After writing
 

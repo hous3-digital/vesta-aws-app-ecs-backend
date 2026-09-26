@@ -21,7 +21,7 @@ Three modes. Pick one before touching anything.
 
 Order matters: each step compiles on its own, so `yarn typecheck` can run after every one.
 
-1. **Schema.** Add the model to `src/infra/database/@prisma/schema.prisma` with `@map` snake*case columns and a status enum when the aggregate has a lifecycle. `yarn prisma:migrate:local --name add*{module}`creates and applies it on the local database; the SQL is reviewed with the`prisma-migration` skill. Ids are TypeID strings with the module name as prefix.
+1. **Schema.** Add the model to `src/infra/database/@prisma/schema.prisma` with `@map` `snake_case` columns and a status enum when the aggregate has a lifecycle. The migration follows the `prisma-migration` skill (`yarn prisma:migrate:local --create-only --name add*{module}`, review the SQL, apply). Ids are TypeID strings with the module name as prefix.
 2. **Entity** in `domain/{entity}.entity.ts`. Copy the layout of `credential.entity.ts`: props interface, private fields, private constructor, getters, static `create` (validates, sets `createdAt`), static `restore` (no validation), transitions, `isX` and `ensureX`. Errors are `DomainError` subclasses from `@src/shared/errors`, never `@nestjs/common`. If the status enum exists in Prisma, declare its twin here with the same values.
 3. **Repository token** in `domain/{entity}.repository.ts`: `export abstract class I{Entity}Repository` with only the methods the first use case needs. Name them by miss behaviour (`findByX` returns `null`, `findByIdOrThrow` throws `NotFoundError`, `saveOrThrow`, `updateOrThrow`).
 4. **Mapper** in `infra/{entity}.mapper.ts`: `toDomain`, `toCreateInput`, `toUpdateInput`, field by field in schema order.

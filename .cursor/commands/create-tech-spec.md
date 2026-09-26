@@ -1,6 +1,6 @@
 # /create-tech-spec
 
-Write the tech spec of a feature in `tasks/prd-{slug}/techspec.md` from `app/.templates/tech-spec.template.md`. Requires `tasks/prd-{slug}/prd.md`; stop and say so if it is missing.
+Write the tech spec of a feature in `tasks/prd-{feature}/techspec.md` from `app/.templates/tech-spec.template.md`. Requires `tasks/prd-{feature}/prd.md`; stop and say so if it is missing.
 
 ## Before writing
 
