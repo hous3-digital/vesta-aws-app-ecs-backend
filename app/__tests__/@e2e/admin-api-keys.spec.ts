@@ -37,11 +37,11 @@ describe("/admin/api-keys", () => {
 
     // Act
     const revoke = await asAdmin(api().delete(`/admin/api-keys/${created.id}`));
-    const afterRevoke = await challengeWith(created.key);
 
     // Assert
     expect(revoke.status).toBe(200);
     expect(revoke.body.data).toEqual({ revoked: true, id: created.id });
+    const afterRevoke = await challengeWith(created.key);
     expect(afterRevoke.status).toBe(401);
     const row = await testApp.prisma.apiKey.findUnique({ where: { id: created.id } });
     expect(row?.active).toBe(false);

@@ -95,15 +95,15 @@ A coluna é verificada por `yarn catalog:check` (parte de `yarn lint`): todo CT 
 
 ## Backoffice do emissor
 
-| CT                                                  | Camada            | Spec                                                                                                  | Hoje                      |
-| --------------------------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------------- | ------------------------- |
-| BO-001 profile e wallet do issuer logado            | e2e               | `@e2e/backoffice-profile.spec.ts`                                                                     | ok                        |
-| BO-002 activation start emite challenge de controle | e2e               | `@e2e/backoffice-profile.spec.ts` (confirm exige assinatura da wallet org: só o start e os negativos) | —                         |
-| BO-003 trustline prepare recusa wallet sem controle | integration + e2e | `wallet.service.spec.ts`; e2e                                                                         | parcial                   |
-| BO-004 lista e detalha credenciais sem PII          | e2e               | `@e2e/backoffice-credentials.spec.ts`                                                                 | ok                        |
-| BO-005 verificações, detalhe, export CSV            | e2e               | `@e2e/backoffice-verifications.spec.ts`                                                               | ok                        |
-| BO-006 verifiers escopados ao issuer do JWT         | e2e + unit        | `@e2e/backoffice-verifiers.spec.ts`; `@unit/entities/verifier.spec.ts`                                | red (#355, depende de D4) |
-| BO-007 API keys só do próprio issuer                | e2e               | `@e2e/backoffice-api-keys.spec.ts`                                                                    | ok                        |
+| CT                                                  | Camada            | Spec                                                                                                  | Hoje                                                                                 |
+| --------------------------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| BO-001 profile e wallet do issuer logado            | e2e               | `@e2e/backoffice-profile.spec.ts`                                                                     | ok                                                                                   |
+| BO-002 activation start emite challenge de controle | e2e               | `@e2e/backoffice-profile.spec.ts` (confirm exige assinatura da wallet org: só o start e os negativos) | —                                                                                    |
+| BO-003 trustline prepare recusa wallet sem controle | integration + e2e | `wallet.service.spec.ts`; e2e                                                                         | parcial                                                                              |
+| BO-004 lista e detalha credenciais sem PII          | e2e               | `@e2e/backoffice-credentials.spec.ts`                                                                 | ok                                                                                   |
+| BO-005 verificações, detalhe, export CSV            | e2e               | `@e2e/backoffice-verifications.spec.ts`                                                               | ok                                                                                   |
+| BO-006 verifiers escopados ao issuer do JWT         | e2e + unit        | `@e2e/backoffice-verifiers.spec.ts`; `@unit/entities/verifier.spec.ts`                                | red (#355, depende de D4)                                                            |
+| BO-007 API keys só do próprio issuer                | e2e               | `@e2e/backoffice-api-keys.spec.ts`                                                                    | ok (revoke de chave alheia responde 401; standard-security pede 404, comportamental) |
 
 ## Comissão e payout
 

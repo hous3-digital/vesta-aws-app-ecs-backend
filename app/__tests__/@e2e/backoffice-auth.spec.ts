@@ -97,16 +97,22 @@ describe("/backoffice/auth", () => {
   });
 
   it("CT-VESTA-AUTH-003 GET /me with an invalid JWT returns 401", async () => {
+    // Arrange
+    const authorization = "Bearer not.a.jwt";
+
     // Act
-    const response = await api().get("/backoffice/auth/me").set("Authorization", "Bearer not.a.jwt");
+    const response = await api().get("/backoffice/auth/me").set("Authorization", authorization);
 
     // Assert
     expect(response.status).toBe(401);
   });
 
   it("CT-VESTA-AUTH-003 GET /me without a bearer returns 401", async () => {
+    // Arrange
+    const anonymous = api();
+
     // Act
-    const response = await api().get("/backoffice/auth/me");
+    const response = await anonymous.get("/backoffice/auth/me");
 
     // Assert
     expect(response.status).toBe(401);
