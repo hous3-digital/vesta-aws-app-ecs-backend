@@ -35,7 +35,7 @@ export class ApiKeyService {
     this.logger.log(`API key created: ${name} (${id}) for issuer ${issuerId}`);
     return {
       id: record.id,
-      key: record.key,
+      key,
       name: record.name,
       issuerId: record.issuerId ?? issuerId,
       createdAt: record.createdAt,
