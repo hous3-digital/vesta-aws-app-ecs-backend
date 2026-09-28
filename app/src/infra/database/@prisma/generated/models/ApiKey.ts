@@ -28,30 +28,39 @@ export type ApiKeyMinAggregateOutputType = {
   id: string | null
   issuerId: string | null
   key: string | null
+  keyHash: string | null
+  keyPrefix: string | null
   name: string | null
   active: boolean | null
   createdAt: Date | null
   revokedAt: Date | null
+  expiresAt: Date | null
 }
 
 export type ApiKeyMaxAggregateOutputType = {
   id: string | null
   issuerId: string | null
   key: string | null
+  keyHash: string | null
+  keyPrefix: string | null
   name: string | null
   active: boolean | null
   createdAt: Date | null
   revokedAt: Date | null
+  expiresAt: Date | null
 }
 
 export type ApiKeyCountAggregateOutputType = {
   id: number
   issuerId: number
   key: number
+  keyHash: number
+  keyPrefix: number
   name: number
   active: number
   createdAt: number
   revokedAt: number
+  expiresAt: number
   _all: number
 }
 
@@ -60,30 +69,39 @@ export type ApiKeyMinAggregateInputType = {
   id?: true
   issuerId?: true
   key?: true
+  keyHash?: true
+  keyPrefix?: true
   name?: true
   active?: true
   createdAt?: true
   revokedAt?: true
+  expiresAt?: true
 }
 
 export type ApiKeyMaxAggregateInputType = {
   id?: true
   issuerId?: true
   key?: true
+  keyHash?: true
+  keyPrefix?: true
   name?: true
   active?: true
   createdAt?: true
   revokedAt?: true
+  expiresAt?: true
 }
 
 export type ApiKeyCountAggregateInputType = {
   id?: true
   issuerId?: true
   key?: true
+  keyHash?: true
+  keyPrefix?: true
   name?: true
   active?: true
   createdAt?: true
   revokedAt?: true
+  expiresAt?: true
   _all?: true
 }
 
@@ -162,11 +180,14 @@ export type ApiKeyGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalA
 export type ApiKeyGroupByOutputType = {
   id: string
   issuerId: string | null
-  key: string
+  key: string | null
+  keyHash: string | null
+  keyPrefix: string | null
   name: string
   active: boolean
   createdAt: Date
   revokedAt: Date | null
+  expiresAt: Date | null
   _count: ApiKeyCountAggregateOutputType | null
   _min: ApiKeyMinAggregateOutputType | null
   _max: ApiKeyMaxAggregateOutputType | null
@@ -193,44 +214,56 @@ export type ApiKeyWhereInput = {
   NOT?: Prisma.ApiKeyWhereInput | Prisma.ApiKeyWhereInput[]
   id?: Prisma.StringFilter<"ApiKey"> | string
   issuerId?: Prisma.StringNullableFilter<"ApiKey"> | string | null
-  key?: Prisma.StringFilter<"ApiKey"> | string
+  key?: Prisma.StringNullableFilter<"ApiKey"> | string | null
+  keyHash?: Prisma.StringNullableFilter<"ApiKey"> | string | null
+  keyPrefix?: Prisma.StringNullableFilter<"ApiKey"> | string | null
   name?: Prisma.StringFilter<"ApiKey"> | string
   active?: Prisma.BoolFilter<"ApiKey"> | boolean
   createdAt?: Prisma.DateTimeFilter<"ApiKey"> | Date | string
   revokedAt?: Prisma.DateTimeNullableFilter<"ApiKey"> | Date | string | null
+  expiresAt?: Prisma.DateTimeNullableFilter<"ApiKey"> | Date | string | null
 }
 
 export type ApiKeyOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   issuerId?: Prisma.SortOrderInput | Prisma.SortOrder
-  key?: Prisma.SortOrder
+  key?: Prisma.SortOrderInput | Prisma.SortOrder
+  keyHash?: Prisma.SortOrderInput | Prisma.SortOrder
+  keyPrefix?: Prisma.SortOrderInput | Prisma.SortOrder
   name?: Prisma.SortOrder
   active?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   revokedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  expiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
 }
 
 export type ApiKeyWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   key?: string
+  keyHash?: string
   AND?: Prisma.ApiKeyWhereInput | Prisma.ApiKeyWhereInput[]
   OR?: Prisma.ApiKeyWhereInput[]
   NOT?: Prisma.ApiKeyWhereInput | Prisma.ApiKeyWhereInput[]
   issuerId?: Prisma.StringNullableFilter<"ApiKey"> | string | null
+  keyPrefix?: Prisma.StringNullableFilter<"ApiKey"> | string | null
   name?: Prisma.StringFilter<"ApiKey"> | string
   active?: Prisma.BoolFilter<"ApiKey"> | boolean
   createdAt?: Prisma.DateTimeFilter<"ApiKey"> | Date | string
   revokedAt?: Prisma.DateTimeNullableFilter<"ApiKey"> | Date | string | null
-}, "id" | "key">
+  expiresAt?: Prisma.DateTimeNullableFilter<"ApiKey"> | Date | string | null
+}, "id" | "key" | "keyHash">
 
 export type ApiKeyOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   issuerId?: Prisma.SortOrderInput | Prisma.SortOrder
-  key?: Prisma.SortOrder
+  key?: Prisma.SortOrderInput | Prisma.SortOrder
+  keyHash?: Prisma.SortOrderInput | Prisma.SortOrder
+  keyPrefix?: Prisma.SortOrderInput | Prisma.SortOrder
   name?: Prisma.SortOrder
   active?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   revokedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  expiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.ApiKeyCountOrderByAggregateInput
   _max?: Prisma.ApiKeyMaxOrderByAggregateInput
   _min?: Prisma.ApiKeyMinOrderByAggregateInput
@@ -242,111 +275,144 @@ export type ApiKeyScalarWhereWithAggregatesInput = {
   NOT?: Prisma.ApiKeyScalarWhereWithAggregatesInput | Prisma.ApiKeyScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"ApiKey"> | string
   issuerId?: Prisma.StringNullableWithAggregatesFilter<"ApiKey"> | string | null
-  key?: Prisma.StringWithAggregatesFilter<"ApiKey"> | string
+  key?: Prisma.StringNullableWithAggregatesFilter<"ApiKey"> | string | null
+  keyHash?: Prisma.StringNullableWithAggregatesFilter<"ApiKey"> | string | null
+  keyPrefix?: Prisma.StringNullableWithAggregatesFilter<"ApiKey"> | string | null
   name?: Prisma.StringWithAggregatesFilter<"ApiKey"> | string
   active?: Prisma.BoolWithAggregatesFilter<"ApiKey"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ApiKey"> | Date | string
   revokedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ApiKey"> | Date | string | null
+  expiresAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ApiKey"> | Date | string | null
 }
 
 export type ApiKeyCreateInput = {
   id: string
   issuerId?: string | null
-  key: string
+  key?: string | null
+  keyHash?: string | null
+  keyPrefix?: string | null
   name: string
   active?: boolean
   createdAt: Date | string
   revokedAt?: Date | string | null
+  expiresAt?: Date | string | null
 }
 
 export type ApiKeyUncheckedCreateInput = {
   id: string
   issuerId?: string | null
-  key: string
+  key?: string | null
+  keyHash?: string | null
+  keyPrefix?: string | null
   name: string
   active?: boolean
   createdAt: Date | string
   revokedAt?: Date | string | null
+  expiresAt?: Date | string | null
 }
 
 export type ApiKeyUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   issuerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  key?: Prisma.StringFieldUpdateOperationsInput | string
+  key?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  keyHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  keyPrefix?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type ApiKeyUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   issuerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  key?: Prisma.StringFieldUpdateOperationsInput | string
+  key?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  keyHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  keyPrefix?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type ApiKeyCreateManyInput = {
   id: string
   issuerId?: string | null
-  key: string
+  key?: string | null
+  keyHash?: string | null
+  keyPrefix?: string | null
   name: string
   active?: boolean
   createdAt: Date | string
   revokedAt?: Date | string | null
+  expiresAt?: Date | string | null
 }
 
 export type ApiKeyUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   issuerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  key?: Prisma.StringFieldUpdateOperationsInput | string
+  key?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  keyHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  keyPrefix?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type ApiKeyUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   issuerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  key?: Prisma.StringFieldUpdateOperationsInput | string
+  key?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  keyHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  keyPrefix?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type ApiKeyCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   issuerId?: Prisma.SortOrder
   key?: Prisma.SortOrder
+  keyHash?: Prisma.SortOrder
+  keyPrefix?: Prisma.SortOrder
   name?: Prisma.SortOrder
   active?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   revokedAt?: Prisma.SortOrder
+  expiresAt?: Prisma.SortOrder
 }
 
 export type ApiKeyMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   issuerId?: Prisma.SortOrder
   key?: Prisma.SortOrder
+  keyHash?: Prisma.SortOrder
+  keyPrefix?: Prisma.SortOrder
   name?: Prisma.SortOrder
   active?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   revokedAt?: Prisma.SortOrder
+  expiresAt?: Prisma.SortOrder
 }
 
 export type ApiKeyMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   issuerId?: Prisma.SortOrder
   key?: Prisma.SortOrder
+  keyHash?: Prisma.SortOrder
+  keyPrefix?: Prisma.SortOrder
   name?: Prisma.SortOrder
   active?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   revokedAt?: Prisma.SortOrder
+  expiresAt?: Prisma.SortOrder
 }
 
 
@@ -355,43 +421,55 @@ export type ApiKeySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   id?: boolean
   issuerId?: boolean
   key?: boolean
+  keyHash?: boolean
+  keyPrefix?: boolean
   name?: boolean
   active?: boolean
   createdAt?: boolean
   revokedAt?: boolean
+  expiresAt?: boolean
 }, ExtArgs["result"]["apiKey"]>
 
 export type ApiKeySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   issuerId?: boolean
   key?: boolean
+  keyHash?: boolean
+  keyPrefix?: boolean
   name?: boolean
   active?: boolean
   createdAt?: boolean
   revokedAt?: boolean
+  expiresAt?: boolean
 }, ExtArgs["result"]["apiKey"]>
 
 export type ApiKeySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   issuerId?: boolean
   key?: boolean
+  keyHash?: boolean
+  keyPrefix?: boolean
   name?: boolean
   active?: boolean
   createdAt?: boolean
   revokedAt?: boolean
+  expiresAt?: boolean
 }, ExtArgs["result"]["apiKey"]>
 
 export type ApiKeySelectScalar = {
   id?: boolean
   issuerId?: boolean
   key?: boolean
+  keyHash?: boolean
+  keyPrefix?: boolean
   name?: boolean
   active?: boolean
   createdAt?: boolean
   revokedAt?: boolean
+  expiresAt?: boolean
 }
 
-export type ApiKeyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "issuerId" | "key" | "name" | "active" | "createdAt" | "revokedAt", ExtArgs["result"]["apiKey"]>
+export type ApiKeyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "issuerId" | "key" | "keyHash" | "keyPrefix" | "name" | "active" | "createdAt" | "revokedAt" | "expiresAt", ExtArgs["result"]["apiKey"]>
 
 export type $ApiKeyPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "ApiKey"
@@ -399,11 +477,18 @@ export type $ApiKeyPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     issuerId: string | null
-    key: string
+    /**
+     * Clear key of rows created before the hash migration. Never written by new
+     * code; dropped in the contraction release once every reader uses keyHash.
+     */
+    key: string | null
+    keyHash: string | null
+    keyPrefix: string | null
     name: string
     active: boolean
     createdAt: Date
     revokedAt: Date | null
+    expiresAt: Date | null
   }, ExtArgs["result"]["apiKey"]>
   composites: {}
 }
@@ -830,10 +915,13 @@ export interface ApiKeyFieldRefs {
   readonly id: Prisma.FieldRef<"ApiKey", 'String'>
   readonly issuerId: Prisma.FieldRef<"ApiKey", 'String'>
   readonly key: Prisma.FieldRef<"ApiKey", 'String'>
+  readonly keyHash: Prisma.FieldRef<"ApiKey", 'String'>
+  readonly keyPrefix: Prisma.FieldRef<"ApiKey", 'String'>
   readonly name: Prisma.FieldRef<"ApiKey", 'String'>
   readonly active: Prisma.FieldRef<"ApiKey", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"ApiKey", 'DateTime'>
   readonly revokedAt: Prisma.FieldRef<"ApiKey", 'DateTime'>
+  readonly expiresAt: Prisma.FieldRef<"ApiKey", 'DateTime'>
 }
     
 

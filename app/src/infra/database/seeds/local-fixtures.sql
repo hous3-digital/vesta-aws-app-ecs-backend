@@ -28,10 +28,16 @@ INSERT INTO "issuer" (
 )
 ON CONFLICT ("issuer_external_id") DO NOTHING;
 
+-- The dev key is a public fixture (it is also in AGENTS.md), not a secret. Hash
+-- and prefix are computed here so the row looks like one the app writes. The
+-- clear column is still filled because the guard reads it until the api-key
+-- module lands; the tasks in tasks/prd-api-key-hash drop it from this insert.
 INSERT INTO "api_keys" (
   "api_key_id",
   "issuer_external_id",
   "key",
+  "key_hash",
+  "key_prefix",
   "name",
   "active",
   "created_at"
@@ -39,11 +45,13 @@ INSERT INTO "api_keys" (
   'ak_local_dev',
   'local_bank',
   'vesta_live_local_dev_do_not_use_in_production',
+  encode(sha256(convert_to('vesta_live_local_dev_do_not_use_in_production', 'UTF8')), 'hex'),
+  left('vesta_live_local_dev_do_not_use_in_production', 19),
   'Local SDK',
   true,
   NOW()
 )
-ON CONFLICT ("key") DO NOTHING;
+ON CONFLICT DO NOTHING;
 
 INSERT INTO "backoffice_users" (
   "backoffice_user_id",

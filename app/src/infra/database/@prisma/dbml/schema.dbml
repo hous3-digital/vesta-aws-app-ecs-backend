@@ -239,11 +239,15 @@ Table egress {
 Table api_keys {
   id String [unique, not null]
   issuerId String
-  key String [unique, not null]
+  key String [unique, note: 'Clear key of rows created before the hash migration. Never written by new
+code; dropped in the contraction release once every reader uses keyHash.']
+  keyHash String [unique]
+  keyPrefix String
   name String [not null]
   active Boolean [not null, default: true]
   createdAt DateTime [not null]
   revokedAt DateTime
+  expiresAt DateTime
 }
 
 Enum CredentialStatus {
