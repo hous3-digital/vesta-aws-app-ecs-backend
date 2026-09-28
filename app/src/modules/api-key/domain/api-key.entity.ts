@@ -4,6 +4,7 @@ import { Id } from "@src/shared/value-objects/id.value-object";
 
 /** Days the previous key keeps authenticating after a rotation. */
 export const ROTATION_GRACE_DAYS = 30;
+const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
 export interface ApiKeyProps {
   id: Id;
@@ -99,6 +100,27 @@ export class ApiKey {
     return new ApiKey(props);
   }
 
+  /**
+   * Replaces this key by a new one for the same issuer and name. This key keeps
+   * authenticating for ROTATION_GRACE_DAYS so the issuer can switch without
+   * downtime; a key already in its grace period cannot be rotated again, or the
+   * old secret would never expire.
+   */
+  public rotate(now: Date): { next: ApiKey; secret: ApiKeySecret; issuerId: string; expiresAt: Date } {
+    this.ensureUsable(now);
+    if (this._expiresAt !== null) {
+      throw new InvalidStateError("API_KEY_ALREADY_ROTATED", "API key is already in its rotation grace period", {
+        apiKeyId: this._id.value,
+      });
+    }
+
+    const issuerId = this.requireIssuerId();
+    const { apiKey: next, secret } = ApiKey.create({ name: this._name, issuerId });
+    const expiresAt = new Date(now.getTime() + ROTATION_GRACE_DAYS * DAY_IN_MS);
+    this._expiresAt = expiresAt;
+    return { next, secret, issuerId, expiresAt };
+  }
+
   public revoke(now: Date): void {
     if (!this._active) {
       throw new InvalidStateError("API_KEY_ALREADY_REVOKED", "API key is already revoked", {
@@ -121,15 +143,20 @@ export class ApiKey {
     if (!this._active) {
       throw new InvalidStateError("API_KEY_REVOKED", "API key is revoked", { apiKeyId: this._id.value });
     }
-    if (this._issuerId === null) {
-      throw new InvalidStateError("API_KEY_WITHOUT_ISSUER", "API key is not linked to an issuer", {
-        apiKeyId: this._id.value,
-      });
-    }
+    this.requireIssuerId();
     if (this.isExpired(now)) {
       throw new InvalidStateError("API_KEY_EXPIRED", "API key expired after rotation; generate a new key", {
         apiKeyId: this._id.value,
       });
     }
+  }
+
+  private requireIssuerId(): string {
+    if (this._issuerId === null) {
+      throw new InvalidStateError("API_KEY_WITHOUT_ISSUER", "API key is not linked to an issuer", {
+        apiKeyId: this._id.value,
+      });
+    }
+    return this._issuerId;
   }
 }

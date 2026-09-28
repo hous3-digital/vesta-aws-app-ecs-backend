@@ -150,6 +150,37 @@ describe("/backoffice/api-keys", () => {
     expect(response.status).toBe(400);
   });
 
+  it("CT-VESTA-AUTH-007 the logged issuer rotates its own key and gets the new one once", async () => {
+    // Arrange
+    const keyA = await createKeyAs(tokenA);
+
+    // Act
+    const response = await withToken(api().post(`/backoffice/api-keys/${keyA.id}/rotate`), tokenA);
+
+    // Assert
+    expect(response.status).toBe(201);
+    createdKeyIds.push(response.body.data.id);
+    expect(response.body.data.issuerId).toBe(FIXTURE_ISSUER_EXTERNAL_ID);
+    expect(response.body.data.key).toMatch(/^vesta_live_[0-9a-f]{48}$/);
+    expect(response.body.data.previous.id).toBe(keyA.id);
+    const challenge = await api().get("/public/auth/challenge").set("X-Api-Key", response.body.data.key);
+    expect(challenge.status).toBe(200);
+  });
+
+  it("CT-VESTA-BO-007 issuer B cannot rotate a key of issuer A", async () => {
+    // Arrange
+    const keyA = await createKeyAs(tokenA);
+
+    // Act
+    const response = await withToken(api().post(`/backoffice/api-keys/${keyA.id}/rotate`), tenantB.token);
+
+    // Assert
+    expect(response.status).toBe(404);
+    expect(response.body.code).toBe("API_KEY_NOT_FOUND");
+    const row = await testApp.prisma.apiKey.findUnique({ where: { id: keyA.id } });
+    expect(row?.expiresAt).toBeNull();
+  });
+
   it("CT-VESTA-BO-007 without a backoffice session the routes answer 401", async () => {
     // Arrange
     const anonymous = api();

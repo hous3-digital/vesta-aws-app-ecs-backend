@@ -7,6 +7,7 @@ import { createTestApp, TestApp } from "@test/helpers/create-test-app.helper";
 interface KeyListItem {
   id: string;
   keyPrefix: string;
+  expiresAt: string | null;
 }
 
 describe("/admin/api-keys", () => {
@@ -16,6 +17,14 @@ describe("/admin/api-keys", () => {
   const api = () => request(testApp.app.getHttpServer());
   const asAdmin = (req: request.Test) => req.set("X-Admin-Secret", adminSecret());
   const challengeWith = (apiKey: string) => api().get("/public/auth/challenge").set("X-Api-Key", apiKey);
+
+  const rotateKey = async (id: string) => asAdmin(api().post(`/admin/api-keys/${id}/rotate`));
+  const listedKey = async (id: string): Promise<KeyListItem> => {
+    const list = await asAdmin(api().get("/admin/api-keys"));
+    const item = (list.body.data as KeyListItem[]).find((row) => row.id === id);
+    if (!item) throw new Error(`key ${id} is not in the admin list`);
+    return item;
+  };
 
   const createKey = async (): Promise<{ id: string; key: string; keyPrefix: string }> => {
     const response = await asAdmin(api().post("/admin/api-keys")).send(
@@ -135,6 +144,74 @@ describe("/admin/api-keys", () => {
     // Assert
     expect(response.status).toBe(404);
     expect(response.body.code).toBe("API_KEY_NOT_FOUND");
+  });
+
+  it("CT-VESTA-AUTH-007 rotating a key returns a new one once and both authenticate on /public", async () => {
+    // Arrange
+    const created = await createKey();
+
+    // Act
+    const rotated = await rotateKey(created.id);
+
+    // Assert
+    expect(rotated.status).toBe(201);
+    createdKeyIds.push(rotated.body.data.id);
+    expect(rotated.body.data.key).toMatch(/^vesta_live_[0-9a-f]{48}$/);
+    expect(rotated.body.data.key).not.toBe(created.key);
+    expect(rotated.body.data.issuerId).toBe(FIXTURE_ISSUER_EXTERNAL_ID);
+    expect(rotated.body.data.previous.id).toBe(created.id);
+    expect((await challengeWith(created.key)).status).toBe(200);
+    expect((await challengeWith(rotated.body.data.key)).status).toBe(200);
+  });
+
+  it("CT-VESTA-AUTH-007 after a rotation the old key lists with expiresAt 30 days ahead and the new one without", async () => {
+    // Arrange
+    const created = await createKey();
+    const rotated = await rotateKey(created.id);
+    createdKeyIds.push(rotated.body.data.id);
+
+    // Act
+    const previous = await listedKey(created.id);
+
+    // Assert
+    expect(previous.expiresAt).toBe(rotated.body.data.previous.expiresAt);
+    const daysAhead = (new Date(rotated.body.data.previous.expiresAt).getTime() - Date.now()) / (24 * 60 * 60 * 1000);
+    expect(daysAhead).toBeGreaterThan(29.9);
+    expect(daysAhead).toBeLessThanOrEqual(30);
+    expect((await listedKey(rotated.body.data.id)).expiresAt).toBeNull();
+  });
+
+  it("CT-VESTA-AUTH-008 a key past its expiry answers 401 API_KEY_EXPIRED on /public", async () => {
+    // Arrange
+    const created = await createKey();
+    await testApp.prisma.apiKey.update({
+      where: { id: created.id },
+      data: { expiresAt: new Date(Date.now() - 60 * 1000) },
+    });
+
+    // Act
+    const response = await challengeWith(created.key);
+
+    // Assert
+    expect(response.status).toBe(401);
+    expect(response.body.code).toBe("API_KEY_EXPIRED");
+  });
+
+  it.each([
+    ["expired", { expiresAt: new Date("2026-01-01T00:00:00.000Z") }, "API_KEY_EXPIRED"],
+    ["revoked", { active: false, revokedAt: new Date() }, "API_KEY_REVOKED"],
+    ["already rotated", { expiresAt: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000) }, "API_KEY_ALREADY_ROTATED"],
+  ])("CT-VESTA-AUTH-007 rotating a key that is %s answers 422 %s", async (_label, data, code) => {
+    // Arrange
+    const created = await createKey();
+    await testApp.prisma.apiKey.update({ where: { id: created.id }, data });
+
+    // Act
+    const response = await rotateKey(created.id);
+
+    // Assert
+    expect(response.status).toBe(422);
+    expect(response.body.code).toBe(code);
   });
 
   it("CT-VESTA-AUTH-010 a public route without key answers 401 API_KEY_MISSING", async () => {
