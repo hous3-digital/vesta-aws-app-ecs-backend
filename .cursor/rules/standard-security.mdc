@@ -16,11 +16,11 @@ alwaysApply: false
 - One secret, one purpose. `BACKOFFICE_JWT_SECRET` falling back to `ADMIN_SECRET` (`env.service.ts`) is legacy: a leaked admin header would forge backoffice sessions. On touch, the fallback goes and the schema requires the JWT secret.
 - Key material is resolved only by the adapter that signs (`standard-chain`). Handlers, services and controllers never hold a `Keypair`, a JWT signing key or the admin secret.
 - Secret comparison is constant-time: `crypto.timingSafeEqual` over equal-length buffers, never `===`. `admin-secret.guard.ts` still uses `!==` (TD-006).
-- Credentials at rest are hashed: a backoffice password with bcrypt (done), an API key as `SHA-256(key)` looked up by hash. Today `api_keys.key` holds the plaintext (TD-005); a new credential type is born hashed.
+- Credentials at rest are hashed: a backoffice password with bcrypt, an API key as `SHA-256(key)` looked up by hash with a displayable prefix (`modules/api-key`, TD-005 paid on 2026-09-28; the clear column is dropped in the contraction release). A new credential type is born hashed.
 
 ## Never in a log
 
-Key material, a signed XDR, a challenge, a VC document, a CPF, an API key, a JWT, a Privy token, a passkey credential, a full request body. Not even a prefix: `api-key.guard.ts` (12 chars of a rejected key), `challenge.service.ts` (16 chars of a challenge) and `wallet.service.ts` (DID prefix) are legacy and lose the prefix on touch. Log ids, hashes, statuses, counts and the `txHash`. The ingress and egress loggers (TD-004) will redact by field name; that never licenses a handler to log what is listed here.
+Key material, a signed XDR, a challenge, a VC document, a CPF, an API key, a JWT, a Privy token, a passkey credential, a full request body. Not even a prefix: `challenge.service.ts` (16 chars of a challenge) and `wallet.service.ts` (DID prefix) are legacy and lose the prefix on touch; `api-key.guard.ts` logs only the event since 2026-09-28. Log ids, hashes, statuses, counts and the `txHash`. The ingress and egress loggers (TD-004) will redact by field name; that never licenses a handler to log what is listed here.
 
 ## PII
 
@@ -30,7 +30,7 @@ Key material, a signed XDR, a challenge, a VC document, a CPF, an API key, a JWT
 
 ## Validation at the edge
 
-- Every `@Body()`, `@Query()` and `@Param()` object is a DTO class with `class-validator` decorators. The global `ValidationPipe` (`configure-app.ts`) runs `whitelist` and `forbidNonWhitelisted`, which only act on classes: an inline type such as `@Body() body: { name: string }` is a bypass. Three controllers still do it (`admin.controller.ts`, `api-keys-backoffice.controller.ts`, `payout-preview.controller.ts`); replacing one is a behavioral change for clients that send extra fields, so it ships with the check in `deploy-checklist.md` (SUB-012).
+- Every `@Body()`, `@Query()` and `@Param()` object is a DTO class with `class-validator` decorators. The global `ValidationPipe` (`configure-app.ts`) runs `whitelist` and `forbidNonWhitelisted`, which only act on classes: an inline type such as `@Body() body: { name: string }` is a bypass. One controller still does it (`commission/payout-preview.controller.ts`); replacing it is a behavioral change for clients that send extra fields, so it ships with the check in `deploy-checklist.md` (SUB-012 is the shape).
 - A value from a request is never typed `any` and never reaches Prisma, a codec or a chain call without passing through the DTO. Ids go through the `Id` value object, DIDs and addresses through theirs.
 - Amounts arrive as strings and are parsed once, at the DTO, into `bigint` or a decimal type.
 
@@ -45,7 +45,7 @@ Key material, a signed XDR, a challenge, a VC document, a CPF, an API key, a JWT
 | `/admin/*`      | `@PublicEndpoint()` + `@AdminSecret()`                                    | none (operator)                                |
 | open            | `@PublicEndpoint()` alone: only health, JWKS and `/backoffice/auth/login` | none                                           |
 
-`@BackofficeAuth()` and `@AdminSecret()` are the composed decorators exported by the guard files; never write `@UseGuards(...)` by hand (`api-keys-backoffice.controller.ts` still does; switch on touch, #357). A controller with `@PublicEndpoint()` and neither of the two, outside the three open routes, is an open route and a finding.
+`@BackofficeAuth()` and `@AdminSecret()` are the composed decorators exported by the guard files; never write `@UseGuards(...)` by hand. A controller with `@PublicEndpoint()` and neither of the two, outside the three open routes, is an open route and a finding.
 
 ## Tenant isolation, the rule behind bugs #354 and #355
 
