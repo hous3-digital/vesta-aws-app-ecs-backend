@@ -7,7 +7,7 @@ Read `prd.md` and `techspec.md` in this folder before starting. Depends on task 
 ## Contempla
 
 - `domain/api-key-secret.value-object.ts`: `generate()` devolve `{ secret, hash, prefix }` (`vesta_live_` + 24 bytes hex, `sha256` hex, 19 primeiros caracteres); `hashOf(raw)`; `matches(hash, candidate)` com `timingSafeEqual`, `false` se os tamanhos diferem. Importa só `node:crypto`.
-- `domain/api-key.entity.ts`: props `id`, `issuerId: string | null`, `keyHash`, `keyPrefix`, `name`, `active`, `createdAt`, `revokedAt: Date | null`, `expiresAt: Date | null`. `create(name, issuerId)` devolve `{ apiKey, secret }` e valida nome (`ValidationError API_KEY_NAME_REQUIRED`), id `Id.create("ak")`. `restore`. `revoke(now)` (`InvalidStateError API_KEY_ALREADY_REVOKED`). `isExpired(now)`, `isUsable(now)`, `ensureUsable(now)` (`API_KEY_REVOKED`, `API_KEY_EXPIRED`), `ensureOwnedBy(issuerId)` (`ForbiddenError API_KEY_ISSUER_MISMATCH`). Constante `ROTATION_GRACE_DAYS = 30` já declarada; `rotate` fica para a task 4.
+- `domain/api-key.entity.ts`: props `id`, `issuerId: string | null`, `keyHash`, `keyPrefix`, `name`, `active`, `createdAt`, `revokedAt: Date | null`, `expiresAt: Date | null`. `create(name, issuerId)` devolve `{ apiKey, secret }` e valida nome (`ValidationError API_KEY_NAME_REQUIRED`), id `Id.create("ak")`. `restore`. `revoke(now)` (`InvalidStateError API_KEY_ALREADY_REVOKED`). `isExpired(now)`, `isUsable(now)`, `ensureUsable(now)` (`API_KEY_REVOKED`, `API_KEY_EXPIRED`). Constante `ROTATION_GRACE_DAYS = 30` já declarada; `rotate` fica para a task 4.
 - `domain/api-key.repository.ts`: `IApiKeyRepository` com `findByHash`, `findByIdOrThrow` (`NotFoundError API_KEY_NOT_FOUND`), `saveOrThrow`, `updateOrThrow`.
 - `infra/api-key.mapper.ts`: `toDomain` lança `InvalidStateError API_KEY_NOT_HASHED` se `keyHash` ou `keyPrefix` vierem nulos; `toCreateInput` não escreve `key`; `toUpdateInput`.
 - `infra/api-key.repository.ts` com `PrismaService`; `infra/api-key.data-access-object.ts` com `listAll()` e `listByIssuer(issuerId)`, `select` sem `key` nem `keyHash`.
@@ -34,4 +34,4 @@ Read `prd.md` and `techspec.md` in this folder before starting. Depends on task 
 
 ## Tests
 
-- `@unit`: segredo no formato, hash é sha256 hex do segredo, prefixo de 19 caracteres, `matches` só para hash igual e falso para tamanho diferente; `create` valida nome e não guarda o segredo; `revoke` duas vezes lança; `ensureUsable` cobre revogada, expirada e sem issuer; `ensureOwnedBy` lança para outro issuer.
+- `@unit`: segredo no formato, hash é sha256 hex do segredo, prefixo de 19 caracteres, `matches` só para hash igual e falso para tamanho diferente; `create` valida nome e não guarda o segredo; `revoke` duas vezes lança; `ensureUsable` cobre revogada, expirada e sem issuer.

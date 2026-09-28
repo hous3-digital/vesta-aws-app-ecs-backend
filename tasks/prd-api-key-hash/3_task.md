@@ -6,7 +6,7 @@ Read `prd.md` and `techspec.md` in this folder before starting. Depends on task 
 
 ## Contempla
 
-- Commands, queries e handlers em `application/{admin,backoffice}/`: criar, listar e revogar por contexto (6 handlers). Backoffice chama `ensureOwnedBy` antes de revogar. Criação devolve `{ id, issuerId, name, key, keyPrefix, createdAt }`; a key inteira sai só aqui.
+- Commands, queries e handlers em `application/{admin,backoffice}/`: criar, listar e revogar por contexto (6 handlers). Backoffice lê com `findByIdForIssuerOrThrow` (novo no token), que filtra pelo issuer na query e responde 404 para key de outro issuer (`standard-security` § Tenant isolation). Criação devolve `{ id, issuerId, name, key, keyPrefix, createdAt }`; a key inteira sai só aqui.
 - Inputs `api-key-{ctx}-create.input.ts` com `class-validator` e `@ApiProperty`; `api/api-key.output.ts`.
 - `infra/auth/admin.controller.ts` move (`git mv`) para `api/admin/api-key-admin.controller.ts`; `backoffice/api-keys/api/api-keys-backoffice.controller.ts` move para `api/backoffice/api-key-backoffice.controller.ts` e troca `@UseGuards(BackofficeAuthGuard)` por `@BackofficeAuth()`. Controllers só montam command ou query e executam no bus. Rotas e paths iguais.
 - `ApiKeyGuard` passa a injetar `IApiKeyRepository`, calcula `ApiKeySecret.hashOf`, chama `findByHash`, `matches` em tempo constante e `isUsable(now)`. Responde `UnauthorizedException` com corpo `{ statusCode: 401, code, message, error }`: `API_KEY_MISSING`, `API_KEY_INVALID` (inclui revogada), `API_KEY_EXPIRED`. Log só "invalid api key attempt", sem nada da key.
@@ -15,7 +15,7 @@ Read `prd.md` and `techspec.md` in this folder before starting. Depends on task 
 
 ## Critério de pronto
 
-- `admin-api-keys.spec.ts` e `backoffice-api-keys.spec.ts` verdes com os códigos novos: validação 400, não encontrado 404 `API_KEY_NOT_FOUND`, key de outro issuer 403 `API_KEY_ISSUER_MISMATCH`, já revogada 422 `API_KEY_ALREADY_REVOKED`, campo extra 400.
+- `admin-api-keys.spec.ts` e `backoffice-api-keys.spec.ts` verdes com os códigos novos: validação 400, não encontrado 404 `API_KEY_NOT_FOUND`, key de outro issuer 404 `API_KEY_NOT_FOUND`, já revogada 422 `API_KEY_ALREADY_REVOKED`, campo extra 400.
 - SEC-004: key criada pela rota tem `key` nula e `key_hash` presente no banco (o spec inspeciona a linha).
 - `__tests__/@integration/http/api-key.guard.spec.ts` cobre os três códigos e a rota `@PublicEndpoint()` sem key.
 - `surface.spec.ts` e `public-*.spec.ts` inalterados e verdes: header e valor da key iguais.
@@ -34,10 +34,10 @@ Read `prd.md` and `techspec.md` in this folder before starting. Depends on task 
 - `app/src/infra/auth/{api-key.guard.ts,auth.module.ts}`; apagar `api-key.service.ts`; mover `admin.controller.ts`
 - `app/src/modules/backoffice/backoffice.module.ts`; apagar `backoffice/api-keys/`
 - `AGENTS.md`, `app/docs/{tech-debt.md,decisions.md,deploy-checklist.md,__test__/cenarios.md}`
-- `app/__tests__/@integration/http/api-key.guard.spec.ts`, `app/__tests__/@integration/handlers/api-key-backoffice-revoke.handler.spec.ts`, `app/__tests__/@e2e/{admin,backoffice}-api-keys.spec.ts`, `app/__tests__/@e2e/fixtures/{admin,backoffice}-api.fixture.ts`
+- `app/__tests__/@integration/http/api-key.guard.spec.ts`, `app/__tests__/@e2e/{admin,backoffice}-api-keys.spec.ts`, `app/__tests__/@e2e/fixtures/{admin,backoffice}-api.fixture.ts`
 
 ## Tests
 
 - `@integration/http`: guard, três códigos e bypass do `@PublicEndpoint()` (`Test.createTestingModule` pelo `Reflector`).
-- `@integration/handlers`: revogar no backoffice rejeita key de outro issuer. Handlers admin e listagens são passthrough, sem spec.
+- `@integration/handlers`: nenhum. Os handlers são passthrough (o escopo por issuer está na query); o isolamento é provado no `@e2e` com dois issuers.
 - `@e2e`: ADMIN-009, AUTH-005, BO-007, SEC-004, ADMIN-010 (campo extra responde 400), AUTH-009 (listagem devolve `keyPrefix` e nunca `key`).

@@ -7,7 +7,7 @@ Read `prd.md` and `techspec.md` in this folder before starting. Depends on task 
 ## Contempla
 
 - `ApiKey.rotate(now)`: exige `ensureUsable(now)`, devolve `{ next, secret }` com `next = ApiKey.create(name, issuerId)` e marca `expiresAt = now + ROTATION_GRACE_DAYS` nesta.
-- Commands e handlers `api-key-{admin,backoffice}-rotate`: `findByIdOrThrow`, backoffice chama `ensureOwnedBy`, `saveOrThrow(next)` e depois `updateOrThrow(current)`, sem transação (falha no segundo write deixa uma key nova válida e a antiga sem prazo; o operador repete). Resultado `{ id, issuerId, name, key, keyPrefix, createdAt, previous: { id, expiresAt } }`.
+- Commands e handlers `api-key-{admin,backoffice}-rotate`: admin lê com `findByIdOrThrow`, backoffice com `findByIdForIssuerOrThrow` (404 para key de outro issuer), `saveOrThrow(next)` e depois `updateOrThrow(current)`, sem transação (falha no segundo write deixa uma key nova válida e a antiga sem prazo; o operador repete). Resultado `{ id, issuerId, name, key, keyPrefix, createdAt, previous: { id, expiresAt } }`.
 - Rotas `/admin/api-keys/:id/rotate` e `/backoffice/api-keys/:id/rotate` (método de criação), sem `@Throttle` por não serem `/public`.
 - Listagens passam a devolver `expiresAt`.
 - `app/docs/api-key-rotation.md`: texto de comunicação ao cliente em produção. Nada muda nesta release; a rotação com prazo será pedida na seguinte pelo canal que a D2 definir.
@@ -17,7 +17,7 @@ Read `prd.md` and `techspec.md` in this folder before starting. Depends on task 
 
 - E2E: após rotacionar, as duas keys autenticam no `/public`; a antiga aparece na listagem com `expiresAt` 30 dias à frente; a nova sem `expiresAt`.
 - E2E: key com `expires_at` no passado (ajustado direto no banco pelo spec) responde 401 `API_KEY_EXPIRED` no `/public`; rotacionar uma key expirada ou revogada responde 422.
-- E2E backoffice: rotacionar key de outro issuer responde 403 `API_KEY_ISSUER_MISMATCH`.
+- E2E backoffice: rotacionar key de outro issuer responde 404 `API_KEY_NOT_FOUND`.
 - Spec unit de `rotate`; spec de integração do handler de backoffice (posse).
 - Gates verdes, `code-reviewer` sem achado bloqueante.
 

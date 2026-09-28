@@ -30,7 +30,6 @@ Decisões: hash SHA-256 sem salt (segredo de 192 bits aleatórios, lookup precis
   - `revoke(now)`: `active = false`, `revokedAt = now`; já revogada → `InvalidStateError API_KEY_ALREADY_REVOKED`.
   - `isExpired(now)`, `isUsable(now)` = `active && issuerId !== null && !isExpired(now)`.
   - `ensureUsable(now)` → `InvalidStateError API_KEY_REVOKED` ou `API_KEY_EXPIRED`.
-  - `ensureOwnedBy(issuerId)` → `ForbiddenError API_KEY_ISSUER_MISMATCH`.
   - `restore(props)` sem validação.
 - Eventos: nenhum. Não há consumidor hoje; `ApiKeyRotatedEvent` nasce quando a trilha de auditoria (F4-007) precisar.
 
@@ -41,15 +40,15 @@ Decisões: hash SHA-256 sem salt (segredo de 192 bits aleatórios, lookup precis
 | Criar key (admin) | command | `ApiKeyAdminCreateHandler` | `name`, `issuerId` | `{ id, issuerId, name, key, keyPrefix, createdAt }` |
 | Criar key (backoffice) | command | `ApiKeyBackofficeCreateHandler` | `name`, `issuerId` da sessão | idem |
 | Rotacionar (admin) | command | `ApiKeyAdminRotateHandler` | `apiKeyId` | `{ id, issuerId, name, key, keyPrefix, createdAt, previous: { id, expiresAt } }` |
-| Rotacionar (backoffice) | command | `ApiKeyBackofficeRotateHandler` | `apiKeyId`, `issuerId` da sessão | idem; `ensureOwnedBy` antes |
+| Rotacionar (backoffice) | command | `ApiKeyBackofficeRotateHandler` | `apiKeyId`, `issuerId` da sessão | idem; lê com `findByIdForIssuerOrThrow` (404 para key de outro issuer) |
 | Revogar (admin) | command | `ApiKeyAdminRevokeHandler` | `apiKeyId` | `{ revoked: true, id }` |
-| Revogar (backoffice) | command | `ApiKeyBackofficeRevokeHandler` | `apiKeyId`, `issuerId` | idem; `ensureOwnedBy` antes |
+| Revogar (backoffice) | command | `ApiKeyBackofficeRevokeHandler` | `apiKeyId`, `issuerId` | idem; lê com `findByIdForIssuerOrThrow` (404 para key de outro issuer) |
 | Listar (admin) | query | `ApiKeyAdminListHandler` | nenhum | linhas do DAO: `id, issuerId, name, keyPrefix, active, createdAt, revokedAt, expiresAt` |
 | Listar (backoffice) | query | `ApiKeyBackofficeListHandler` | `issuerId` | idem, filtrado |
 
 Rotação faz dois writes: `saveOrThrow(next)` e depois `updateOrThrow(current)`. Sem transação: se o segundo falhar, sobra uma key nova válida e a antiga sem prazo, estado inofensivo; o operador repete a rotação. `findByIdOrThrow` lança `NotFoundError API_KEY_NOT_FOUND` (404). Nenhum handler tem mais de duas dependências, então não há `application/services/`. O admin não valida se o issuer existe, igual hoje; fica registrado como fora de escopo.
 
-Repositório (`IApiKeyRepository`): `findByHash(hash): ApiKey | null` (sem filtro de `active`, a regra é da entidade), `findByIdOrThrow(id)`, `saveOrThrow`, `updateOrThrow`. DAO: `listAll()`, `listByIssuer(issuerId)`, `select` sem `key` nem `keyHash`.
+Repositório (`IApiKeyRepository`): `findByHash(hash): ApiKey | null` (sem filtro de `active`, a regra é da entidade), `findByIdOrThrow(id)` (admin), `findByIdForIssuerOrThrow(id, issuerId)` (backoffice: filtra pelo issuer na query e responde `API_KEY_NOT_FOUND`, nunca 403), `saveOrThrow`, `updateOrThrow`. DAO: `listAll()`, `listByIssuer(issuerId)`, `select` sem `key` nem `keyHash`.
 
 ## Infra
 
@@ -69,7 +68,7 @@ Repositório (`IApiKeyRepository`): `findByHash(hash): ApiKey | null` (sem filtr
 | `POST /admin/api-keys/:id/rotate` | admin | idem | Aditiva |
 | `POST /backoffice/api-keys` | backoffice | `@PublicEndpoint()` + `@BackofficeAuth()` (troca o `@UseGuards` manual) | Comportamental: DTO; front envia só `{ name }` |
 | `GET /backoffice/api-keys` | backoffice | idem | Aditiva |
-| `DELETE /backoffice/api-keys/:id` | backoffice | idem | Comportamental: 404, 403 `API_KEY_ISSUER_MISMATCH`, 422 (antes 401) |
+| `DELETE /backoffice/api-keys/:id` | backoffice | idem | Comportamental: 404 `API_KEY_NOT_FOUND` (inclui key de outro issuer, `standard-security` § Tenant isolation), 422 (antes 401) |
 | `POST /backoffice/api-keys/:id/rotate` | backoffice | idem | Aditiva |
 | Todas as `/public/*` | public | `ApiKeyGuard` global | Aditiva: 401 ganha `code` `API_KEY_MISSING`, `API_KEY_INVALID`, `API_KEY_EXPIRED`; header e valor iguais |
 
@@ -78,9 +77,9 @@ O guard lança `UnauthorizedException` com corpo `{ statusCode: 401, code, messa
 ## Tests
 
 - `@unit/value-objects/api-key-secret.spec.ts`: formato do segredo, hash é SHA-256 hex do segredo, prefixo de 19 caracteres, `matches` verdadeiro só para hash igual, falso para tamanho diferente.
-- `@unit/entities/api-key.spec.ts`: `create` valida nome e não guarda o segredo; `rotate` cria key do mesmo issuer e nome e põe `expiresAt` 30 dias à frente; `rotate` de key expirada ou revogada lança; `revoke` duas vezes lança `API_KEY_ALREADY_REVOKED`; `ensureUsable` cobre revogada, expirada, sem issuer; `ensureOwnedBy` lança `API_KEY_ISSUER_MISMATCH`. Sobe o piso de cobertura de `domain/`.
+- `@unit/entities/api-key.spec.ts`: `create` valida nome e não guarda o segredo; `rotate` cria key do mesmo issuer e nome e põe `expiresAt` 30 dias à frente; `rotate` de key expirada ou revogada lança; `revoke` duas vezes lança `API_KEY_ALREADY_REVOKED`; `ensureUsable` cobre revogada, expirada, sem issuer. Sobe o piso de cobertura de `domain/`.
 - `@integration/http/api-key.guard.spec.ts` (com `Test.createTestingModule` pelo `Reflector`): header ausente → `API_KEY_MISSING`; hash sem linha → `API_KEY_INVALID`; linha expirada → `API_KEY_EXPIRED`; rota `@PublicEndpoint()` passa sem key. Mocks: `mocks/repository/api-key.repository.mock.ts`, `mocks/model/api-key.model.ts`.
-- `@integration/handlers/api-key-backoffice-rotate.handler.spec.ts` e `api-key-backoffice-revoke.handler.spec.ts`: key de outro issuer → `API_KEY_ISSUER_MISMATCH`. Os handlers admin e os de listagem são passthrough, sem spec.
+- Handlers de backoffice: o escopo por issuer está na query do repositório, não em branch do handler; criar, revogar e listar são passthrough, sem spec de integração. O isolamento é provado no `@e2e` com dois issuers (404).
 - `@e2e`: `admin-api-keys.spec.ts` e `backoffice-api-keys.spec.ts` ajustados para os códigos novos (ADMIN-009, AUTH-005, BO-007). Linhas novas no catálogo: SEC-004 sai de `red` (inspeciona `api_keys` e prova `key IS NULL` e `key_hash` presente na key criada); AUTH-007 rotação mantém as duas keys autenticando no `/public` e a antiga com `expiresAt`; AUTH-008 key com `expires_at` no passado responde 401 `API_KEY_EXPIRED`; AUTH-009 listagem devolve `keyPrefix` e nunca `key`; ADMIN-010 campo extra no body responde 400. `yarn test:e2e` aplica a migration na base de teste; `yarn db:local` numa base com linhas prova o backfill.
 
 ## Standards
