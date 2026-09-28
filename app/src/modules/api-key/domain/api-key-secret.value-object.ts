@@ -15,7 +15,11 @@ const DISPLAY_PREFIX_LENGTH = SECRET_PREFIX.length + 8;
  * needs an indexed, deterministic hash (`app/docs/decisions.md`, 2026-09-28).
  */
 export class ApiKeySecret {
-  private constructor(private readonly raw: string) {}
+  private readonly hashValue: string;
+
+  private constructor(private readonly raw: string) {
+    this.hashValue = createHash("sha256").update(raw, "utf8").digest("hex");
+  }
 
   /** The clear secret. Read once to build the creation response, never stored or logged. */
   public get value(): string {
@@ -23,7 +27,7 @@ export class ApiKeySecret {
   }
 
   public get hash(): string {
-    return createHash("sha256").update(this.raw, "utf8").digest("hex");
+    return this.hashValue;
   }
 
   public get prefix(): string {

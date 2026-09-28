@@ -11,7 +11,7 @@ Read `prd.md` and `techspec.md` in this folder before starting. Depends on task 
 - `infra/auth/admin.controller.ts` move (`git mv`) para `api/admin/api-key-admin.controller.ts`; `backoffice/api-keys/api/api-keys-backoffice.controller.ts` move para `api/backoffice/api-key-backoffice.controller.ts` e troca `@UseGuards(BackofficeAuthGuard)` por `@BackofficeAuth()`. Controllers só montam command ou query e executam no bus. Rotas e paths iguais.
 - `ApiKeyGuard` passa a injetar `IApiKeyRepository`, calcula `ApiKeySecret.hashOf`, chama `findByHash`, `matches` em tempo constante e `isUsable(now)`. Responde `UnauthorizedException` com corpo `{ statusCode: 401, code, message, error }`: `API_KEY_MISSING`, `API_KEY_INVALID` (inclui revogada), `API_KEY_EXPIRED`. Log só "invalid api key attempt", sem nada da key.
 - `api-key.service.ts` apagado; `AuthModule` importa `ApiKeyModule` e deixa de declarar service e `AdminController`; `BackofficeModule` deixa de declarar o controller; pasta `backoffice/api-keys` some.
-- Docs no mesmo commit: legacy map (`infra/auth` e `backoffice` ajustados), TD-005 fechado com o id da task, `decisions.md` com a linha datada "sha256 sem salt para API key" e o motivo, catálogo de cenários (SEC-004 sai de `red`, ADMIN-009, AUTH-005, BO-007 ajustados, ADMIN-010 novo), SUB-012 marcada como conferida (front envia só `{ name }` e faz logout em 401).
+- Docs no mesmo commit: legacy map (`infra/auth` e `backoffice` ajustados), TD-005 fechado com o id da task, `decisions.md` com a linha datada "sha256 sem salt para API key" e o motivo, catálogo de cenários (SEC-004 sai de `red`, ADMIN-009, AUTH-005, BO-007 ajustados, ADMIN-012 novo; ADMIN-010 e ADMIN-011 já existiam), SUB-012 marcada como conferida (front envia só `{ name }` e faz logout em 401).
 
 ## Critério de pronto
 
@@ -40,4 +40,4 @@ Read `prd.md` and `techspec.md` in this folder before starting. Depends on task 
 
 - `@integration/http`: guard, três códigos e bypass do `@PublicEndpoint()` (`Test.createTestingModule` pelo `Reflector`).
 - `@integration/handlers`: nenhum. Os handlers são passthrough (o escopo por issuer está na query); o isolamento é provado no `@e2e` com dois issuers.
-- `@e2e`: ADMIN-009, AUTH-005, BO-007, SEC-004, ADMIN-010 (campo extra responde 400), AUTH-009 (listagem devolve `keyPrefix` e nunca `key`).
+- `@e2e`: ADMIN-009, AUTH-005, BO-007, SEC-004, ADMIN-012 (campo extra responde 400), AUTH-009 (listagem devolve `keyPrefix` e nunca `key`), AUTH-010 (códigos do guard).

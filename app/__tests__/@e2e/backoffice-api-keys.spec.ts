@@ -9,6 +9,7 @@ interface KeyListItem {
   id: string;
   issuerId: string | null;
   active: boolean;
+  keyPrefix: string;
 }
 
 describe("/backoffice/api-keys", () => {
@@ -55,12 +56,13 @@ describe("/backoffice/api-keys", () => {
     createdKeyIds.push(response.body.data.id);
     expect(response.body.data.issuerId).toBe(FIXTURE_ISSUER_EXTERNAL_ID);
     expect(response.body.data.name).toBe(body.name);
-    expect(response.body.data.key).toMatch(/^vesta_live_/);
+    expect(response.body.data.key).toMatch(/^vesta_live_[0-9a-f]{48}$/);
+    expect(response.body.data.keyPrefix).toBe(response.body.data.key.slice(0, 19));
     const challenge = await api().get("/public/auth/challenge").set("X-Api-Key", response.body.data.key);
     expect(challenge.status).toBe(200);
   });
 
-  it("CT-VESTA-BO-007 the list shows only the logged issuer's keys and never the secret", async () => {
+  it("CT-VESTA-AUTH-009 the list shows only the logged issuer's keys with their prefixes and never the secret", async () => {
     // Arrange
     const keyA = await createKeyAs(tokenA);
     const keyB = await createKeyAs(tenantB.token);
@@ -73,7 +75,8 @@ describe("/backoffice/api-keys", () => {
     expect(listA.map((item) => item.id)).not.toContain(keyB.id);
     expect(listA.every((item) => item.issuerId === FIXTURE_ISSUER_EXTERNAL_ID)).toBe(true);
     expect(JSON.stringify(listA)).not.toContain(keyA.key);
-    expect(listA.some((item) => "key" in item)).toBe(false);
+    expect(listA.some((item) => "key" in item || "keyHash" in item)).toBe(false);
+    expect(listA.find((item) => item.id === keyA.id)?.keyPrefix).toBe(keyA.key.slice(0, 19));
   });
 
   it("CT-VESTA-BO-007 issuer B sees its own keys and none of issuer A's", async () => {
@@ -90,7 +93,7 @@ describe("/backoffice/api-keys", () => {
     expect(listB.every((item) => item.issuerId === tenantB.issuerId)).toBe(true);
   });
 
-  it("CT-VESTA-BO-007 issuer B cannot revoke a key of issuer A", async () => {
+  it("CT-VESTA-BO-007 issuer B cannot revoke a key of issuer A and learns nothing about it", async () => {
     // Arrange
     const keyA = await createKeyAs(tokenA);
 
@@ -98,7 +101,8 @@ describe("/backoffice/api-keys", () => {
     const response = await withToken(api().delete(`/backoffice/api-keys/${keyA.id}`), tenantB.token);
 
     // Assert
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(404);
+    expect(response.body.code).toBe("API_KEY_NOT_FOUND");
     const row = await testApp.prisma.apiKey.findUnique({ where: { id: keyA.id } });
     expect(row?.active).toBe(true);
     const challenge = await api().get("/public/auth/challenge").set("X-Api-Key", keyA.key);
@@ -117,8 +121,33 @@ describe("/backoffice/api-keys", () => {
     expect(response.body.data).toEqual({ revoked: true, id: keyA.id });
     const challenge = await api().get("/public/auth/challenge").set("X-Api-Key", keyA.key);
     expect(challenge.status).toBe(401);
+    expect(challenge.body.code).toBe("API_KEY_INVALID");
     const listed = (await listAs(tokenA)).find((item) => item.id === keyA.id);
     expect(listed?.active).toBe(false);
+  });
+
+  it("CT-VESTA-BO-007 revoking an already revoked key answers 422 API_KEY_ALREADY_REVOKED", async () => {
+    // Arrange
+    const keyA = await createKeyAs(tokenA);
+    await withToken(api().delete(`/backoffice/api-keys/${keyA.id}`), tokenA);
+
+    // Act
+    const response = await withToken(api().delete(`/backoffice/api-keys/${keyA.id}`), tokenA);
+
+    // Assert
+    expect(response.status).toBe(422);
+    expect(response.body.code).toBe("API_KEY_ALREADY_REVOKED");
+  });
+
+  it("CT-VESTA-ADMIN-012 a body with an extra field answers 400", async () => {
+    // Arrange
+    const body = BackofficeApiFixture.createApiKey({ issuerId: tenantB.issuerId });
+
+    // Act
+    const response = await withToken(api().post("/backoffice/api-keys"), tokenA).send(body);
+
+    // Assert
+    expect(response.status).toBe(400);
   });
 
   it("CT-VESTA-BO-007 without a backoffice session the routes answer 401", async () => {

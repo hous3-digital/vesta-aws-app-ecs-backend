@@ -22,6 +22,12 @@ export class ApiKeyRepository implements IApiKeyRepository {
     return ApiKeyMapper.toDomain(record);
   }
 
+  public async findByIdForIssuerOrThrow(id: Id, issuerId: string): Promise<ApiKey> {
+    const record = await this.prismaService.apiKey.findFirst({ where: { id: id.value, issuerId } });
+    if (!record) throw new NotFoundError("API_KEY_NOT_FOUND", "API key not found", { apiKeyId: id.value });
+    return ApiKeyMapper.toDomain(record);
+  }
+
   public async saveOrThrow(apiKey: ApiKey): Promise<ApiKey> {
     await this.prismaService.apiKey.create({ data: ApiKeyMapper.toCreateInput(apiKey) });
     return apiKey;
