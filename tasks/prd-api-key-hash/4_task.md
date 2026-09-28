@@ -6,7 +6,7 @@ Read `prd.md` and `techspec.md` in this folder before starting. Depends on task 
 
 ## Contempla
 
-- `ApiKey.rotate(now)`: exige `ensureUsable(now)`, devolve `{ next, secret }` com `next = ApiKey.create(name, issuerId)` e marca `expiresAt = now + ROTATION_GRACE_DAYS` nesta.
+- `ApiKey.rotate(now)`: exige `ensureUsable(now)`, recusa key já no prazo de convivência (`API_KEY_ALREADY_ROTATED`), devolve `{ next, secret, expiresAt }` com `next = ApiKey.create(name, issuerId)` e marca `expiresAt = now + ROTATION_GRACE_DAYS` nesta.
 - Commands e handlers `api-key-{admin,backoffice}-rotate`: admin lê com `findByIdOrThrow`, backoffice com `findByIdForIssuerOrThrow` (404 para key de outro issuer), `saveOrThrow(next)` e depois `updateOrThrow(current)`, sem transação (falha no segundo write deixa uma key nova válida e a antiga sem prazo; o operador repete). Resultado `{ id, issuerId, name, key, keyPrefix, createdAt, previous: { id, expiresAt } }`.
 - Rotas `/admin/api-keys/:id/rotate` e `/backoffice/api-keys/:id/rotate` (método de criação), sem `@Throttle` por não serem `/public`.
 - Listagens passam a devolver `expiresAt`.
@@ -16,9 +16,9 @@ Read `prd.md` and `techspec.md` in this folder before starting. Depends on task 
 ## Critério de pronto
 
 - E2E: após rotacionar, as duas keys autenticam no `/public`; a antiga aparece na listagem com `expiresAt` 30 dias à frente; a nova sem `expiresAt`.
-- E2E: key com `expires_at` no passado (ajustado direto no banco pelo spec) responde 401 `API_KEY_EXPIRED` no `/public`; rotacionar uma key expirada ou revogada responde 422.
+- E2E: key com `expires_at` no passado (ajustado direto no banco pelo spec) responde 401 `API_KEY_EXPIRED` no `/public`; rotacionar uma key expirada, revogada ou já rotacionada responde 422.
 - E2E backoffice: rotacionar key de outro issuer responde 404 `API_KEY_NOT_FOUND`.
-- Spec unit de `rotate`; spec de integração do handler de backoffice (posse).
+- Spec unit de `rotate`. Handlers passthrough (regra na entidade e na query do repositório), sem spec de integração.
 - Gates verdes, `code-reviewer` sem achado bloqueante.
 
 ## Fora desta task
@@ -33,10 +33,9 @@ Read `prd.md` and `techspec.md` in this folder before starting. Depends on task 
 - `app/src/modules/api-key/application/{admin,backoffice}/{commands,handlers}/api-key-*-rotate.*`
 - `app/src/modules/api-key/api/{admin,backoffice}/api-key-*.controller.ts`, `api/api-key.output.ts`
 - `app/docs/api-key-rotation.md`, `app/docs/__test__/cenarios.md`
-- `app/__tests__/@unit/entities/api-key.spec.ts`, `app/__tests__/@integration/handlers/api-key-backoffice-rotate.handler.spec.ts`, `app/__tests__/@e2e/{admin,backoffice}-api-keys.spec.ts`
+- `app/__tests__/@unit/entities/api-key.spec.ts`, `app/__tests__/@e2e/{admin,backoffice}-api-keys.spec.ts`
 
 ## Tests
 
 - `@unit`: `rotate` cria key do mesmo issuer e nome, marca 30 dias na antiga, lança em key expirada ou revogada.
-- `@integration/handlers`: rotacionar no backoffice rejeita key de outro issuer.
 - `@e2e`: AUTH-007 (duas keys ativas após rotação), AUTH-008 (expirada responde `API_KEY_EXPIRED`).

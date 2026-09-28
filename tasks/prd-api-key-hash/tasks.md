@@ -7,7 +7,7 @@ PRD: `prd.md` · Tech spec: `techspec.md` · Track feature: `feature_01m37qasbne
 | 1   | `1_task.md` | `task_01m3mwrhqpe8pbza1en2wpsq2q` | 2   | —          | in_development |
 | 2   | `2_task.md` | `task_01m3mwrhrme8pbza1g751r16wm` | 2   | 1          | in_development |
 | 3   | `3_task.md` | `task_01m37yf3j4esj953630bp08rby` | 3   | 2          | in_development |
-| 4   | `4_task.md` | `task_01m3mwrhsde8pbza1t2avk8b75` | 2   | 3          | backlog        |
+| 4   | `4_task.md` | `task_01m3mwrhsde8pbza1t2avk8b75` | 2   | 3          | in_development |
 
 Tasks with the same "Depends on" run in parallel. Status mirrors Track: backlog, in_development, in_review, blocked, completed.
 

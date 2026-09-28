@@ -1,4 +1,4 @@
-import { ApiKey, type ApiKeyProps } from "@src/modules/api-key/domain/api-key.entity";
+import { ApiKey, ROTATION_GRACE_DAYS, type ApiKeyProps } from "@src/modules/api-key/domain/api-key.entity";
 import { InvalidStateError, ValidationError } from "@src/shared/errors";
 import { Id } from "@src/shared/value-objects/id.value-object";
 
@@ -81,6 +81,53 @@ describe("ApiKey", () => {
       // Act & Assert
       expect(act).toThrow(InvalidStateError);
       expect(act).toThrow(expect.objectContaining({ code: "API_KEY_ALREADY_REVOKED" }));
+    });
+  });
+
+  describe("rotate", () => {
+    it("creates a key for the same issuer and name and returns its secret once", () => {
+      // Arrange
+      const apiKey = restoreWith();
+
+      // Act
+      const { next, secret } = apiKey.rotate(NOW);
+
+      // Assert
+      expect(next.issuerId).toBe(ISSUER_ID);
+      expect(next.name).toBe(apiKey.name);
+      expect(next.id.equals(apiKey.id)).toBe(false);
+      expect(next.keyHash).toBe(secret.hash);
+      expect(next.expiresAt).toBeNull();
+    });
+
+    it("gives the rotated key a grace period of ROTATION_GRACE_DAYS from now", () => {
+      // Arrange
+      const apiKey = restoreWith();
+      const graceEnd = new Date(NOW.getTime() + ROTATION_GRACE_DAYS * 24 * 60 * 60 * 1000);
+
+      // Act
+      const { expiresAt } = apiKey.rotate(NOW);
+
+      // Assert
+      expect(expiresAt).toEqual(graceEnd);
+      expect(apiKey.expiresAt).toEqual(graceEnd);
+      expect(apiKey.isUsable(NOW)).toBe(true);
+      expect(apiKey.isUsable(graceEnd)).toBe(false);
+    });
+
+    it.each([
+      ["revoked", { active: false, revokedAt: NOW }, "API_KEY_REVOKED"],
+      ["without issuer", { issuerId: null }, "API_KEY_WITHOUT_ISSUER"],
+      ["expired", { expiresAt: new Date("2026-09-01T00:00:00.000Z") }, "API_KEY_EXPIRED"],
+      ["already in its grace period", { expiresAt: new Date("2026-10-20T00:00:00.000Z") }, "API_KEY_ALREADY_ROTATED"],
+    ] as const)("refuses to rotate a key that is %s with %s", (_label, overrides, code) => {
+      // Arrange
+      const apiKey = restoreWith(overrides);
+      const act = () => apiKey.rotate(NOW);
+
+      // Act & Assert
+      expect(act).toThrow(InvalidStateError);
+      expect(act).toThrow(expect.objectContaining({ code }));
     });
   });
 

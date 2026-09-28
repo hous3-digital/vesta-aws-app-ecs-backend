@@ -5,10 +5,15 @@ import type { BackofficeSession } from "@src/infra/auth/auth.types";
 import { BackofficeAuth } from "@src/infra/auth/backoffice-auth.guard";
 import { CurrentBackofficeUser } from "@src/infra/auth/current-backoffice-user.decorator";
 import { PublicEndpoint } from "@src/infra/auth/public.decorator";
-import type { ApiKeyCreatedOutput, ApiKeyRevokedOutput } from "@src/modules/api-key/api/api-key.output";
+import type {
+  ApiKeyCreatedOutput,
+  ApiKeyRevokedOutput,
+  ApiKeyRotatedOutput,
+} from "@src/modules/api-key/api/api-key.output";
 import { ApiKeyBackofficeCreateInput } from "@src/modules/api-key/api/backoffice/inputs/api-key-backoffice-create.input";
 import { ApiKeyBackofficeCreateCommand } from "@src/modules/api-key/application/backoffice/commands/api-key-backoffice-create.command";
 import { ApiKeyBackofficeRevokeCommand } from "@src/modules/api-key/application/backoffice/commands/api-key-backoffice-revoke.command";
+import { ApiKeyBackofficeRotateCommand } from "@src/modules/api-key/application/backoffice/commands/api-key-backoffice-rotate.command";
 import { type ApiKeyBackofficeListResult } from "@src/modules/api-key/application/backoffice/handlers/api-key-backoffice-list.handler";
 import { ApiKeyBackofficeListQuery } from "@src/modules/api-key/application/backoffice/queries/api-key-backoffice-list.query";
 
@@ -37,6 +42,18 @@ export class ApiKeyBackofficeController {
   public async list(@CurrentBackofficeUser() session: BackofficeSession): Promise<ApiKeyBackofficeListResult> {
     const query = new ApiKeyBackofficeListQuery(session.issuerId);
     return this.queryBus.execute<ApiKeyBackofficeListQuery, ApiKeyBackofficeListResult>(query);
+  }
+
+  @ApiOperation({
+    summary: "Rotate one of the logged issuer's API keys: the new one is returned once, the old one works for 30 days",
+  })
+  @Post("/:id/rotate")
+  public async rotate(
+    @CurrentBackofficeUser() session: BackofficeSession,
+    @Param("id") id: string,
+  ): Promise<ApiKeyRotatedOutput> {
+    const command = new ApiKeyBackofficeRotateCommand(id, session.issuerId);
+    return this.commandBus.execute<ApiKeyBackofficeRotateCommand, ApiKeyRotatedOutput>(command);
   }
 
   @ApiOperation({ summary: "Revoke one of the logged issuer's API keys" })
