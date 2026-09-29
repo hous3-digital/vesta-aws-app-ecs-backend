@@ -352,10 +352,13 @@ export const ApiKeyScalarFieldEnum = {
   id: 'id',
   issuerId: 'issuerId',
   key: 'key',
+  keyHash: 'keyHash',
+  keyPrefix: 'keyPrefix',
   name: 'name',
   active: 'active',
   createdAt: 'createdAt',
-  revokedAt: 'revokedAt'
+  revokedAt: 'revokedAt',
+  expiresAt: 'expiresAt'
 } as const
 
 export type ApiKeyScalarFieldEnum = (typeof ApiKeyScalarFieldEnum)[keyof typeof ApiKeyScalarFieldEnum]

@@ -29,19 +29,13 @@ export class ChallengePublicController {
 
   @Post("/passkey/registration/options")
   @Throttle({ default: { ttl: 60000, limit: 5 } })
-  public registrationOptions(
-    @CurrentApiKeyIssuer() issuerId: string,
-    @Body() input: PasskeyRegistrationOptionsInput,
-  ) {
+  public registrationOptions(@CurrentApiKeyIssuer() issuerId: string, @Body() input: PasskeyRegistrationOptionsInput) {
     return this.passkeyAuthService.registrationOptions(issuerId, input.vcHash, input.rpId);
   }
 
   @Post("/passkey/registration/verify")
   @Throttle({ default: { ttl: 60000, limit: 5 } })
-  public verifyRegistration(
-    @CurrentApiKeyIssuer() issuerId: string,
-    @Body() input: PasskeyRegistrationVerifyInput,
-  ) {
+  public verifyRegistration(@CurrentApiKeyIssuer() issuerId: string, @Body() input: PasskeyRegistrationVerifyInput) {
     return this.passkeyAuthService.verifyRegistration({
       issuerId,
       challenge: input.challenge,

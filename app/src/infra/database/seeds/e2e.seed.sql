@@ -1,1 +1,2 @@
--- Seeds para testes e2e. Adicionar fixtures quando existirem testes.
+-- Kept for compatibility with the previous runner.
+-- Actual fixtures: local-fixtures.sql (also under NODE_ENV=test).

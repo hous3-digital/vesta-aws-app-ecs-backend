@@ -14,7 +14,7 @@
     "skipLibCheck": true,
     "types": ["node", "jest"],
     "strictNullChecks": true,
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
@@ -27,7 +27,7 @@
       "@prisma/client": ["infra/database/@prisma/generated/client"]
     }
   },
-  "exclude": ["node_modules", "dist", "*.config.js", "eslint.config.js"],
+  "exclude": ["node_modules", "dist", "*.config.js", "eslint.config.js", "scripts"],
   "watchOptions": {
     "watchFile": "fixedPollingInterval"
   }

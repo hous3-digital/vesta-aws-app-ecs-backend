@@ -1,0 +1,2 @@
+-- Minimal data for every environment. Vesta has no mandatory product fixture here.
+-- Issuer / API key / backoffice live in local-fixtures.sql (local, development and test only).

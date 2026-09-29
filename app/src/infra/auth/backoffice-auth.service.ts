@@ -21,7 +21,10 @@ export class BackofficeAuthService {
     private readonly envService: EnvService,
   ) {}
 
-  public async login(email: string, password: string): Promise<{
+  public async login(
+    email: string,
+    password: string,
+  ): Promise<{
     accessToken: string;
     tokenType: "Bearer";
     expiresIn: number;

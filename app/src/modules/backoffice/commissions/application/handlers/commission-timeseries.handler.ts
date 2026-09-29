@@ -17,9 +17,10 @@ export interface CommissionTimeseriesResult {
 
 @Injectable()
 @QueryHandler(CommissionTimeseriesQuery)
-export class CommissionTimeseriesHandler
-  implements IQueryHandler<CommissionTimeseriesQuery, CommissionTimeseriesResult>
-{
+export class CommissionTimeseriesHandler implements IQueryHandler<
+  CommissionTimeseriesQuery,
+  CommissionTimeseriesResult
+> {
   public constructor(private readonly ledger: CommissionLedgerService) {}
 
   public async execute(query: CommissionTimeseriesQuery): Promise<CommissionTimeseriesResult> {

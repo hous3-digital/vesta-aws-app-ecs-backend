@@ -1,0 +1,80 @@
+---
+description: Target folder tree, naming and dependency rules for every module under src/modules. Applies to new code and to any legacy module a task touches.
+globs: app/src/modules/**/*.ts
+paths:
+  - "app/src/modules/**/*.ts"
+alwaysApply: false
+---
+
+# Module standard
+
+What a module looks like when it is on target. `AGENTS.md` holds the legacy map and the migration policy; this file holds the shape. `credential` is the closest module to this shape today: read it before creating a new one.
+
+## Tree
+
+```
+src/modules/{module}/
+├── api/
+│   ├── public/                      # /public/*    API key (paying client, never changes in place)
+│   ├── backoffice/                  # /backoffice/* backoffice user JWT, scoped to one issuer
+│   ├── admin/                       # /admin/*     ADMIN_SECRET, platform operator
+│   │   ├── inputs/                  # {module}-{context}-{action}.input.ts
+│   │   ├── params/                  # path and query params, when not trivial
+│   │   └── {module}-{context}.controller.ts
+│   └── {module}.output.ts           # output DTOs shared by contexts, when needed
+├── application/
+│   ├── public|backoffice|admin/
+│   │   ├── commands/                # {module}-{context}-{action}.command.ts
+│   │   ├── queries/                 # {module}-{context}-{action}.query.ts
+│   │   └── handlers/                # {module}-{context}-{action}.handler.ts
+│   ├── internal/                    # event consumers, one handler per consumer (TD-001)
+│   │   └── handlers/{module}-internal-{action}.handler.ts
+│   └── services/                    # orchestration reused by several handlers, no I/O of its own
+├── domain/
+│   ├── {entity}.entity.ts           # aggregate root; entities/ when more than one
+│   ├── {entity}.repository.ts       # abstract class, the DI token
+│   ├── {name}.gateway.ts            # abstract class for an external system (chain, KYC provider)
+│   ├── {name}.value-object.ts
+│   └── events/{entity}-{action}.event.ts
+├── infra/
+│   ├── {entity}.repository.ts       # Prisma implementation of the domain token
+│   ├── {entity}.mapper.ts           # Prisma row <-> entity
+│   └── {entity}.data-access-object.ts  # read side, returns Prisma rows
+└── {module}.module.ts
+```
+
+A module owns one aggregate and every context of it. `backoffice` is a context inside the owning module, never a module. Chain adapters do not live here: the abstract gateway is in `domain/`, the Stellar implementation goes to `src/infra/gateways/chain/stellar/`, a target path that F3 creates (TD-002); today it still sits in `src/modules/stellar/`.
+
+## Naming
+
+- Files are kebab-case and carry module, context and action: `proof-public-prepare.handler.ts`, `credential-backoffice-list.query.ts`. The class name is the same in PascalCase.
+- Routes come from `@Controller("/public/proof")` and the method decorator. Moving a file never changes a route.
+- Repository methods say what happens on miss: `findByVcHash` returns `null`, `findByIdOrThrow` throws, `saveOrThrow` and `updateOrThrow` write. No `get*` on repositories.
+- Mappers expose `toDomain` plus `toCreateInput` and `toUpdateInput` (as in `credential`; `toJSON` is the legacy name), mapping field by field in the order of the Prisma model. No spread, no `as unknown as` outside a Prisma `Json` column, and that cast lives only in the mapper.
+- Events are named after the fact in the past tense: `credential-issued.event.ts`, `proof-verified.event.ts`. They extend `BaseEvent` from `@src/shared/events`.
+
+## Layers and dependency direction
+
+`api -> application -> domain <- infra`. `domain` imports nothing from Nest, Prisma, the chain SDK or another module.
+
+- **Controller** maps input to a command or query and executes it on the bus. No repository, no service, no branching, no private helpers. One `@ApiOperation({ summary })` per route.
+- **Handler** orchestrates: loads entities through repositories, calls entity methods, persists, publishes events. It does not call another handler, does not execute the bus, does not read files or `process.env`, and holds no rule that belongs to the entity. When a handler needs more than four dependencies, move the orchestration to `application/services/`.
+- **Entity** owns the rules: `create` validates, `restore` rebuilds from persistence without validating, `isX()` answers, `ensureX()` throws a domain error, transitions change state and return an event when there is one.
+- **Repository** writes and loads aggregates. **DAO** reads for listing, search and reports, returning Prisma rows, and is never used to load an aggregate that will be mutated.
+- **Command handlers** return the entity output; **query handlers** return the DAO row or a projection of it. A query never goes through a repository.
+
+## Wiring in Nest
+
+- Every dependency is injected by an **abstract class token** declared in `domain/` and bound in the module: `{ provide: ICredentialRepository, useClass: CredentialRepository }`. Never inject a concrete `infra/` class or a service from another module.
+- A module exports only its tokens and DAOs. Another module imports the Nest module and injects the token. Importing a file from another module's `application/` or `infra/` is forbidden; from `domain/` only entities, tokens and value objects.
+- `forwardRef` is forbidden. A cycle means the aggregate boundary is wrong: extract a domain service or a gateway.
+- Guards are set at the controller by context: `public` is covered by the global `ApiKeyGuard`, `backoffice` carries `@PublicEndpoint()` + `@BackofficeAuth()`, `admin` carries `@PublicEndpoint()` + `@AdminSecret()`, all from `@src/infra/auth` (the pairing table is in `standard-security`). Every public route also carries `@Throttle`. A handler never re-checks auth, but a backoffice handler always checks that the resource belongs to the issuer of the request.
+- Events are published on `EventBus` by the handler after the write succeeds, in process, with no outbox (TD-001). Each consumer is one `@EventsHandler` in `application/internal/handlers/` of the consuming module, and it must be idempotent because delivery is not guaranteed.
+
+## Touching a legacy module
+
+- A new file in a flat module (`challenge`, `commission`, `stellar`, `vc`, `wallet`, `zk`, `backoffice/*`) is created in the target tree above, never at the flat root, even if it is the only file there.
+- When a task changes a flat file, move it to its target folder in the same commit and update imports. Do not move files the task does not change; a formatting-only pass is not a change (`standard-code`, "What counts as a touch").
+- A `*.service.ts` at the module root is the legacy shape. Do not add methods to it: put the new behaviour in a handler, a domain service or a gateway and call it from there.
+- Status enums that drive business rules exist only in `schema.prisma` in modules without an entity (`commission`, `wallet`). When the first entity of such a module is created, the enum gets a twin in `domain/` with the same values and the mapper converts between them. Until then a legacy service may keep using the Prisma row, but no new file in `domain/` or `application/` may depend on a Prisma type.
+- `modules/backoffice/{x}` is a context that belongs to the module owning `{x}`. New backoffice endpoints go to `modules/{x}/api/backoffice/`; the first task touching `backoffice/verifiers` creates `modules/verifier`.

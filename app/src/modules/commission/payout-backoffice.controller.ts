@@ -15,10 +15,7 @@ export class PayoutBackofficeController {
   @ApiOperation({ summary: "Reserva e solicita o repasse integral disponível" })
   @Post()
   @HttpCode(202)
-  public request(
-    @CurrentIssuer() issuerId: string,
-    @Headers("idempotency-key") idempotencyKey?: string,
-  ) {
+  public request(@CurrentIssuer() issuerId: string, @Headers("idempotency-key") idempotencyKey?: string) {
     return this.payouts.requestAllAvailable(issuerId, idempotencyKey ?? "");
   }
 

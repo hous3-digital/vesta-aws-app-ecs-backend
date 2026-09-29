@@ -1,0 +1,1 @@
+../../.cursor/rules/standard-chain.mdc

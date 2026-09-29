@@ -29,9 +29,7 @@ export class CredentialMapper {
     return {
       id: domain.id.value,
       vcHash: domain.vcHash,
-      vcDocument: domain.vcDocument === null
-        ? Prisma.DbNull
-        : domain.vcDocument as unknown as Prisma.InputJsonValue,
+      vcDocument: domain.vcDocument === null ? Prisma.DbNull : (domain.vcDocument as unknown as Prisma.InputJsonValue),
       cpfDedupKey: domain.cpfDedupKey,
       issuerDid: domain.issuerDid,
       issuerId: domain.issuerId,
@@ -49,9 +47,7 @@ export class CredentialMapper {
 
   public static toUpdateInput(domain: Credential): Prisma.CredentialUpdateInput {
     return {
-      vcDocument: domain.vcDocument === null
-        ? Prisma.DbNull
-        : domain.vcDocument as unknown as Prisma.InputJsonValue,
+      vcDocument: domain.vcDocument === null ? Prisma.DbNull : (domain.vcDocument as unknown as Prisma.InputJsonValue),
       kycLevel: domain.kycLevel as KycLevel,
       status: domain.status as unknown as Prisma.CredentialUpdateInput["status"],
       sorobanTxHash: domain.sorobanTxHash,

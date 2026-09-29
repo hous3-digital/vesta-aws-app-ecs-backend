@@ -31,16 +31,11 @@ const config: Config.InitialOptions = {
   moduleNameMapper: {
     "^@prisma/client$": "<rootDir>/src/infra/database/@prisma/generated/client",
     "^@src/(.*)$": "<rootDir>/src/$1",
-    "^@core/(.*)$": "<rootDir>/src/modules/$1",
-    "^@supporting/(.*)$": "<rootDir>/src/supporting/$1",
-    "^@generic/(.*)$": "<rootDir>/src/generic/$1",
-    "^@shared/(.*)$": "<rootDir>/src/shared/$1",
-    "^@providers/(.*)$": "<rootDir>/src/providers/$1",
-    "^@infra/(.*)$": "<rootDir>/src/infra/$1",
     "^@test/(.*)$": "<rootDir>/__tests__/$1",
-    "^@artifacts/(.*)$": "<rootDir>/artifacts/$1",
   },
   collectCoverageFrom: ["src/**/domain/**/*.ts", "!src/**/*.d.ts", "!src/**/*.spec.ts", "!src/**/*.test.ts"],
+  // Floor of the domain coverage measured on 2026-09-25; only goes up, one task at a time.
+  coverageThreshold: { global: { statements: 68, branches: 66, functions: 55, lines: 68 } },
   coverageReporters: ["text", "lcov", "html", "json-summary"],
   setupFilesAfterEnv: ["<rootDir>/config/test-setup.ts"],
   testTimeout: 20000,

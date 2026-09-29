@@ -33,9 +33,7 @@ export class CommissionsBackofficeController {
   @ApiOperation({ summary: "Saldo total acumulado do issuer, independente de periodo" })
   @Get("/balance")
   public async balance(@CurrentIssuer() issuerId: string): Promise<CommissionBalanceResult> {
-    return this.queryBus.execute<CommissionBalanceQuery, CommissionBalanceResult>(
-      new CommissionBalanceQuery(issuerId),
-    );
+    return this.queryBus.execute<CommissionBalanceQuery, CommissionBalanceResult>(new CommissionBalanceQuery(issuerId));
   }
 
   @ApiOperation({ summary: "Extrato persistido de comissões do issuer atual" })
@@ -84,8 +82,6 @@ export class CommissionsBackofficeController {
   @ApiOperation({ summary: "Comissões registradas no período atual" })
   @Get("/pending")
   public async pending(@CurrentIssuer() issuerId: string): Promise<CommissionPendingResult> {
-    return this.queryBus.execute<CommissionPendingQuery, CommissionPendingResult>(
-      new CommissionPendingQuery(issuerId),
-    );
+    return this.queryBus.execute<CommissionPendingQuery, CommissionPendingResult>(new CommissionPendingQuery(issuerId));
   }
 }

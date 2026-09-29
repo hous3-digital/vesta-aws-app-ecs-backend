@@ -44,11 +44,27 @@
 - [ ] ✅ Testes de integração passando (quando aplicável)
 - [ ] ✅ Testes e2e passando (quando aplicável)
 
+## Classe da mudança
+
+<!-- AGENTS.md: aditiva (ship), comportamental (checar uso em produção), breaking (nunca in place em /public/*) -->
+
+- [ ] Aditiva
+- [ ] Comportamental (uso em produção verificado, descrito abaixo)
+- [ ] Breaking (nova versão ou feature flag)
+
+## Subida
+
+<!-- app/docs/deploy-checklist.md é o único lugar para o que precisa ser feito fora do repo -->
+
+- [ ] `yarn deploy:check` sem ERROR para o ambiente alvo (colar a saída em Logs/Testes)
+- [ ] Pendências desta mudança registradas em `app/docs/deploy-checklist.md` (ou "nenhuma")
+- [ ] Migrations novas listadas aqui: <!-- nomes, ou "nenhuma" -->
+
 ## Checklist
 
 <!-- Verificações gerais antes do merge -->
 
-- [ ] Testes adicionados/atualizados
+- [ ] Testes adicionados/atualizados na camada certa (`app/docs/__test__/cenarios.md`)
 - [ ] Documentação atualizada (se necessário)
-- [ ] Branch atualizada com a develop (se necessário)
-- [ ] Variáveis de ambiente documentadas (se novas)
+- [ ] Branch atualizada com a `staging` (se necessário)
+- [ ] Variáveis de ambiente novas em `env.schema.ts`, `.env.local.example` e nos tfvars

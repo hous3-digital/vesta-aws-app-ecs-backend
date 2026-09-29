@@ -1,6 +1,6 @@
 # Módulos
 
-Padrão de estrutura de módulos e referências. Use o módulo **User** como base para novos módulos de domínio.
+Padrão de estrutura de módulos e referências. A fonte é a rule `.cursor/rules/standard-module.mdc` (três contextos: `public`, `backoffice`, `admin`, mais `internal` para eventos) e o procedimento está na skill `.cursor/skills/new-module/SKILL.md`. Use o módulo **credential** como base para novos módulos de domínio.
 
 ## Estrutura de pastas
 
@@ -8,7 +8,8 @@ Padrão de estrutura de módulos e referências. Use o módulo **User** como bas
 modules/[nome]/
 ├── api/                         # Contratos HTTP
 │   ├── public/                  # Endpoints públicos
-│   ├── backoffice/              # Endpoints admin/backoffice
+│   ├── backoffice/              # Endpoints do backoffice do emissor
+│   ├── admin/                   # Endpoints do operador Vesta
 │   └── common/                  # DTOs, decorators, outputs compartilhados
 ├── application/                 # Orquestração (handlers, sagas)
 │   ├── public/                  # Fluxos iniciados por usuário via API pública

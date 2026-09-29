@@ -5,16 +5,15 @@
   "compilerOptions": {
     "deleteOutDir": true,
     "watchAssets": true,
-    "assets": [
-      "**/*.hbs"
-    ],
+    "assets": ["**/*.hbs"],
     "watchOptions": {
       "ignored": [
         "**/node_modules/**",
         "**/dist/**",
         "**/*.spec.ts",
         "**/test/**",
-        "constructor-args-*.js"
+        "constructor-args-*.js",
+        "**/scripts/**"
       ]
     }
   }

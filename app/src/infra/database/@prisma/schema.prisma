@@ -355,11 +355,17 @@ model Egress {
 model ApiKey {
   id        String    @unique @map("api_key_id")
   issuerId  String?   @map("issuer_external_id")
-  key       String    @unique
+  /// Clear key of rows created before the hash migration. Not written once the
+  /// api-key module lands; dropped in the contraction release once every reader
+  /// uses keyHash.
+  key       String?   @unique
+  keyHash   String?   @unique @map("key_hash")
+  keyPrefix String?   @map("key_prefix")
   name      String
   active    Boolean   @default(true)
   createdAt DateTime  @map("created_at")
   revokedAt DateTime? @map("revoked_at")
+  expiresAt DateTime? @map("expires_at")
 
   @@index([issuerId])
   @@index([key, active])

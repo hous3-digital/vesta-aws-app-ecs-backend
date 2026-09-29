@@ -29,10 +29,7 @@ export class CredentialsBackofficeController {
 
   @ApiOperation({ summary: "Detalhe de uma credencial" })
   @Get("/:id")
-  public async detail(
-    @CurrentIssuer() issuerId: string,
-    @Param("id") id: string,
-  ): Promise<CredentialDetailResult> {
+  public async detail(@CurrentIssuer() issuerId: string, @Param("id") id: string): Promise<CredentialDetailResult> {
     return this.queryBus.execute<CredentialDetailQuery, CredentialDetailResult>(
       new CredentialDetailQuery(issuerId, id),
     );

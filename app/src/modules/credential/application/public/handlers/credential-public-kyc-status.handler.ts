@@ -1,11 +1,5 @@
 import { createHmac } from "crypto";
-import {
-  ConflictException,
-  ForbiddenException,
-  Injectable,
-  Logger,
-  NotFoundException,
-} from "@nestjs/common";
+import { ConflictException, ForbiddenException, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 import { EnvService } from "@src/infra/env/env.service";
 import { CredentialPublicKycStatusCommand } from "@src/modules/credential/application/public/commands/credential-public-kyc-status.command";
@@ -20,9 +14,10 @@ export interface CredentialKycStatusResult {
 
 @Injectable()
 @CommandHandler(CredentialPublicKycStatusCommand)
-export class CredentialPublicKycStatusHandler
-  implements ICommandHandler<CredentialPublicKycStatusCommand, CredentialKycStatusResult>
-{
+export class CredentialPublicKycStatusHandler implements ICommandHandler<
+  CredentialPublicKycStatusCommand,
+  CredentialKycStatusResult
+> {
   private readonly logger = new Logger(CredentialPublicKycStatusHandler.name);
 
   public constructor(
@@ -30,12 +25,8 @@ export class CredentialPublicKycStatusHandler
     private readonly envService: EnvService,
   ) {}
 
-  public async execute(
-    command: CredentialPublicKycStatusCommand,
-  ): Promise<CredentialKycStatusResult> {
-    const cpfDedupKey = createHmac("sha256", this.envService.CPF_HMAC_SECRET)
-      .update(command.cpf)
-      .digest("hex");
+  public async execute(command: CredentialPublicKycStatusCommand): Promise<CredentialKycStatusResult> {
+    const cpfDedupKey = createHmac("sha256", this.envService.CPF_HMAC_SECRET).update(command.cpf).digest("hex");
 
     const credential = await this.credentialRepository.findByCpfDedupKey(cpfDedupKey);
     if (!credential) {

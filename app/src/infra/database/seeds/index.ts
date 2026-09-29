@@ -34,85 +34,52 @@ async function executeFunctions() {
   }
 }
 
+async function executeSqlFile(fileName: string): Promise<void> {
+  const filePath = join(__dirname, fileName);
+  if (!fs.existsSync(filePath)) {
+    console.log(`${GREEN}seed skipped (file missing): ${RESET}${fileName}`);
+    return;
+  }
+
+  const inserts = fs
+    .readFileSync(filePath)
+    .toString()
+    .split("\n")
+    .filter((line) => line.indexOf("--") !== 0)
+    .join("\n")
+    .replace(/(\r\n|\n|\r)/gm, " ")
+    .replace(/\s+/g, " ")
+    .split(";");
+
+  for (const insert of inserts) {
+    if (!insert.trim()) continue;
+    console.log(`${GREEN}inserting query: ${RESET}${insert}`);
+    await prisma.$queryRawUnsafe(insert);
+  }
+}
+
 async function executeBaseSeed() {
-  const inserts = fs
-    .readFileSync(join(__dirname, "base.seed.sql"))
-    .toString()
-    .split("\n")
-    .filter((line) => line.indexOf("--") !== 0)
-    .join("\n")
-    .replace(/(\r\n|\n|\r)/gm, " ")
-    .replace(/\s+/g, " ")
-    .split(";");
-
-  for (const insert of inserts) {
-    const isLastLine = insert.trim() === "";
-    if (!isLastLine) {
-      console.log(`${GREEN}inserting query: ${RESET}${insert}`);
-      await prisma.$queryRawUnsafe(insert);
-    }
-  }
+  await executeSqlFile("base.seed.sql");
 }
 
-async function executeDevSeed() {
-  const isLocal = process.env.NODE_ENV === "local";
-  const isDevelopment = process.env.NODE_ENV === "development";
-  const canExecute = isLocal || isDevelopment;
+async function executeLocalFixtures() {
+  const env = process.env.NODE_ENV;
+  // "test" is the deployed staging profile (see .env.test.example), never a local fixture target.
+  const canExecute = env === "local" || env === "development";
+  if (!canExecute) return;
 
-  if (!canExecute) {
-    return;
-  }
-
-  const inserts = fs
-    .readFileSync(join(__dirname, "dev.seed.sql"))
-    .toString()
-    .split("\n")
-    .filter((line) => line.indexOf("--") !== 0)
-    .join("\n")
-    .replace(/(\r\n|\n|\r)/gm, " ")
-    .replace(/\s+/g, " ")
-    .split(";");
-
-  for (const insert of inserts) {
-    const isLastLine = insert.trim() === "";
-    if (!isLastLine) {
-      console.log(`${GREEN}inserting query: ${RESET}${insert}`);
-      await prisma.$queryRawUnsafe(insert);
-    }
-  }
-}
-
-async function executeE2eSeed() {
-  const canExecute = process.env.NODE_ENV === "test";
-
-  if (!canExecute) {
-    return;
-  }
-
-  const inserts = fs
-    .readFileSync(join(__dirname, "e2e.seed.sql"))
-    .toString()
-    .split("\n")
-    .filter((line) => line.indexOf("--") !== 0)
-    .join("\n")
-    .replace(/(\r\n|\n|\r)/gm, " ")
-    .replace(/\s+/g, " ")
-    .split(";");
-
-  for (const insert of inserts) {
-    const isLastLine = insert.trim() === "";
-    if (!isLastLine) {
-      console.log(`${GREEN}inserting query: ${RESET}${insert}`);
-      await prisma.$queryRawUnsafe(insert);
-    }
-  }
+  await executeSqlFile("local-fixtures.sql");
+  console.log(`${GREEN}local fixtures:${RESET}`);
+  console.log("  issuer     local_bank");
+  console.log("  api key    vesta_live_local_dev_do_not_use_in_production");
+  console.log("  backoffice dev@localhost / vesta_local");
+  console.log("  verifier   verifier_local");
 }
 
 async function main() {
   await executeFunctions();
   await executeBaseSeed();
-  await executeDevSeed();
-  await executeE2eSeed();
+  await executeLocalFixtures();
 }
 
 main()

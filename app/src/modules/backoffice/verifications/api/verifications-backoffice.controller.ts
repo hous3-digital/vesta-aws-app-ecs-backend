@@ -56,10 +56,7 @@ export class VerificationsBackofficeController {
 
   @ApiOperation({ summary: "Detalhe de uma verificacao" })
   @Get("/:id")
-  public async detail(
-    @CurrentIssuer() issuerId: string,
-    @Param("id") id: string,
-  ): Promise<VerificationDetailResult> {
+  public async detail(@CurrentIssuer() issuerId: string, @Param("id") id: string): Promise<VerificationDetailResult> {
     return this.queryBus.execute<VerificationDetailQuery, VerificationDetailResult>(
       new VerificationDetailQuery(issuerId, id),
     );
