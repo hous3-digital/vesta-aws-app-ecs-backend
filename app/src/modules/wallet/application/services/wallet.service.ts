@@ -175,7 +175,7 @@ export class WalletService implements OnModuleInit {
       this.logger.error(
         `Privy user ${user.id} created without a Stellar wallet in linkedAccounts (count=${user.linkedAccounts?.length ?? 0})`,
       );
-      throw new Error(`Privy nao retornou endereco Stellar para subjectDid ${params.subjectDid}`);
+      throw new Error(`Privy user ${user.id} returned no Stellar wallet`);
     }
 
     this.logger.log(`Privy Stellar wallet created for user ${user.id}`);
