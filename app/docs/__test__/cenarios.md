@@ -29,6 +29,7 @@ A coluna é verificada por `yarn catalog:check` (parte de `yarn lint`): todo CT 
 | AUTH-008 key com `expires_at` no passado responde 401 `API_KEY_EXPIRED`                                                                                                         | e2e               | `@e2e/admin-api-keys.spec.ts`                                            | ok (2026-09-28)                                                                        |
 | AUTH-009 listagem de API keys devolve `keyPrefix` e nunca `key`                                                                                                                 | e2e               | `@e2e/admin-api-keys.spec.ts`, `@e2e/backoffice-api-keys.spec.ts`        | ok (2026-09-28)                                                                        |
 | AUTH-010 guard responde 401 com `code`: `API_KEY_MISSING`, `API_KEY_INVALID` (inclui revogada) ou `API_KEY_EXPIRED`                                                             | integration + e2e | `@integration/http/api-key.guard.spec.ts`; `@e2e/admin-api-keys.spec.ts` | ok (2026-09-28)                                                                        |
+| AUTH-011 token sem `exp` recusado fora de `local`; expiração em número puro conta em segundos                                                                                   | integration       | `@integration/services/backoffice-auth.service.spec.ts`                  | ok (2026-09-30)                                                                        |
 
 ## Admin e onboarding do emissor
 

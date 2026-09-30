@@ -28,7 +28,7 @@ const tokenWithoutExp = (jwtService: JwtService, secret: string): Promise<string
   jwtService.signAsync({ issuerId: user.issuerId, email: user.email, name: user.name }, { secret, subject: user.id });
 
 describe("BackofficeAuthService", () => {
-  it("CT-VESTA-AUTH-010 signs a digit-only BACKOFFICE_JWT_EXPIRES_IN as seconds, matching expiresIn", async () => {
+  it("CT-VESTA-AUTH-011 signs a digit-only BACKOFFICE_JWT_EXPIRES_IN as seconds, matching expiresIn", async () => {
     // Arrange
     const { sut } = await makeSut({ BACKOFFICE_JWT_EXPIRES_IN: "3600" });
 
@@ -42,7 +42,7 @@ describe("BackofficeAuthService", () => {
     expect(exp).toBe(Number(iat) + 3600);
   });
 
-  it("CT-VESTA-AUTH-010 refuses a token without exp outside local", async () => {
+  it("CT-VESTA-AUTH-011 refuses a token without exp outside local", async () => {
     // Arrange
     const { sut, jwtService, envService } = await makeSut({ NODE_ENV: "test" });
     const token = await tokenWithoutExp(jwtService, envService.BACKOFFICE_JWT_SECRET);
@@ -55,7 +55,7 @@ describe("BackofficeAuthService", () => {
     await expect(act).rejects.toMatchObject({ message: "Backoffice session expired" });
   });
 
-  it("CT-VESTA-AUTH-010 still accepts a token without exp in local, where never is allowed", async () => {
+  it("CT-VESTA-AUTH-011 still accepts a token without exp in local, where never is allowed", async () => {
     // Arrange
     const { sut, jwtService, envService } = await makeSut({ NODE_ENV: "local" });
     const token = await tokenWithoutExp(jwtService, envService.BACKOFFICE_JWT_SECRET);
