@@ -55,8 +55,7 @@ export class BackofficeAuthService {
   }
 
   public async verifyBearer(token: string): Promise<BackofficeSession> {
-    const secret = this.getSecret();
-    const payload = await this.verifyToken(token, secret);
+    const payload = await this.verifyToken(token, this.envService.BACKOFFICE_JWT_SECRET);
     const user = await this.prisma.backofficeUser.findFirst({
       where: { id: payload.sub, issuerId: payload.issuerId, active: true },
       select: { id: true, issuerId: true, email: true, name: true },
@@ -78,8 +77,9 @@ export class BackofficeAuthService {
     const expiresIn = this.envService.BACKOFFICE_JWT_EXPIRES_IN;
     const options: JwtSignOptions = {
       subject: session.userId,
-      secret: this.getSecret(),
+      secret: this.envService.BACKOFFICE_JWT_SECRET,
     };
+    // "never" only reaches here with NODE_ENV=local: env.schema.ts refuses it everywhere else.
     if (expiresIn !== "never") {
       options.expiresIn = expiresIn as JwtSignOptions["expiresIn"];
     }
@@ -106,18 +106,12 @@ export class BackofficeAuthService {
     }
   }
 
-  private getSecret(): string {
-    const secret = this.envService.BACKOFFICE_JWT_SECRET ?? this.envService.ADMIN_SECRET;
-    if (!secret) throw new UnauthorizedException("BACKOFFICE_JWT_SECRET is not configured");
-    return secret;
-  }
-
   private getExpiresInSeconds(): number {
     const expiresIn = this.envService.BACKOFFICE_JWT_EXPIRES_IN;
     if (expiresIn === "never") return 0;
     if (/^\d+$/.test(expiresIn)) return Number(expiresIn);
     const match = expiresIn.match(/^(\d+)([smhd])$/);
-    if (!match) return 8 * 60 * 60;
+    if (!match) throw new Error("BACKOFFICE_JWT_EXPIRES_IN has a format env.schema.ts should have refused");
 
     const value = Number(match[1]);
     const unit = match[2];

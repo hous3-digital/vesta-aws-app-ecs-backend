@@ -7,6 +7,9 @@
  * Errors (exit 1): a required variable missing from an environment; a name declared twice.
  * Warnings: a tfvars name the schema does not know (dead variable), an optional variable
  * left to its default.
+ * Rules the schema enforces in superRefine (PRIVY_APP_SECRET required in production,
+ * BACKOFFICE_JWT_EXPIRES_IN=never allowed only in local) are not read here: the script
+ * sees field declarations only.
  *
  * Usage: node scripts/env-diff.mjs [staging|prod]
  */

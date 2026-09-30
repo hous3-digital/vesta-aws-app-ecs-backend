@@ -70,11 +70,11 @@ export class EnvService {
   }
 
   public get ADMIN_SECRET() {
-    return this.configService.get("ADMIN_SECRET") as string | undefined;
+    return this.configService.get("ADMIN_SECRET") as string;
   }
 
   public get BACKOFFICE_JWT_SECRET() {
-    return (this.configService.get("BACKOFFICE_JWT_SECRET") ?? this.ADMIN_SECRET) as string | undefined;
+    return this.configService.get("BACKOFFICE_JWT_SECRET") as string;
   }
 
   public get BACKOFFICE_JWT_EXPIRES_IN() {

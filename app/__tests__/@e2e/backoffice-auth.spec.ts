@@ -42,7 +42,11 @@ describe("/backoffice/auth", () => {
     expect(response.status).toBe(201);
     expect(response.body.data.accessToken).toEqual(expect.any(String));
     expect(response.body.data.tokenType).toBe("Bearer");
-    expect(response.body.data.expiresIn).toEqual(expect.any(Number));
+    expect(response.body.data.expiresIn).toBeGreaterThan(0);
+    const claims = JSON.parse(
+      Buffer.from(String(response.body.data.accessToken).split(".")[1], "base64url").toString("utf8"),
+    ) as { exp?: number };
+    expect(claims.exp).toEqual(expect.any(Number));
     expect(response.body.data.user.email).toBe(FIXTURE_BACKOFFICE_EMAIL);
     expect(response.body.data.user.issuerId).toBe(FIXTURE_ISSUER_EXTERNAL_ID);
     expect(JSON.stringify(response.body)).not.toContain("passwordHash");

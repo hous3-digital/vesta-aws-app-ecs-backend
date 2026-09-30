@@ -63,7 +63,7 @@ environment = [
   },
   {
     name  = "BACKOFFICE_JWT_EXPIRES_IN",
-    value = "never"
+    value = "8h"
   },
   {
     name  = "COMMISSION_SECURITY_MINUTES",

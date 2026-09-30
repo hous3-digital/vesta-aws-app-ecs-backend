@@ -5,7 +5,28 @@ const envConfig = (config: Record<string, unknown>) => {
   return result;
 };
 
-const envSchema = z.object({
+/**
+ * Rules that depend on more than one variable. Declared before the object so the
+ * text parser of scripts/env-diff.mjs keeps reading the field declarations only.
+ */
+function refineEnv(env: z.infer<typeof envObject>, ctx: z.RefinementCtx): void {
+  if (env.NODE_ENV === "production" && !env.PRIVY_APP_SECRET) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["PRIVY_APP_SECRET"],
+      message: "PRIVY_APP_SECRET is required when NODE_ENV=production",
+    });
+  }
+  if (env.BACKOFFICE_JWT_EXPIRES_IN === "never" && env.NODE_ENV !== "local") {
+    ctx.addIssue({
+      code: "custom",
+      path: ["BACKOFFICE_JWT_EXPIRES_IN"],
+      message: "BACKOFFICE_JWT_EXPIRES_IN=never is allowed only when NODE_ENV=local",
+    });
+  }
+}
+
+const envObject = z.object({
   NODE_ENV: z.enum(["local", "test", "development", "production"]),
 
   PORT: z
@@ -33,9 +54,12 @@ const envSchema = z.object({
 
   REDIS_URL: z.string().optional(),
 
-  ADMIN_SECRET: z.string().min(32, "ADMIN_SECRET must be at least 32 characters").optional(),
-  BACKOFFICE_JWT_SECRET: z.string().min(32, "BACKOFFICE_JWT_SECRET must be at least 32 characters").optional(),
-  BACKOFFICE_JWT_EXPIRES_IN: z.string().min(1).optional().default("8h"),
+  ADMIN_SECRET: z.string().min(32, "ADMIN_SECRET must be at least 32 characters"),
+  BACKOFFICE_JWT_SECRET: z.string().min(32, "BACKOFFICE_JWT_SECRET must be at least 32 characters"),
+  BACKOFFICE_JWT_EXPIRES_IN: z
+    .string()
+    .regex(/^(\d+[smhd]?|never)$/, "BACKOFFICE_JWT_EXPIRES_IN must be a number with an optional s, m, h or d unit")
+    .default("8h"),
 
   PRIVY_APP_ID: z.string().min(1).optional(),
   PRIVY_APP_SECRET: z.string().min(32, "PRIVY_APP_SECRET must be at least 32 characters").optional(),
@@ -74,5 +98,7 @@ const envSchema = z.object({
     .transform((v) => parseInt(v, 10))
     .pipe(z.number().int().min(1000)),
 });
+
+const envSchema = envObject.superRefine(refineEnv);
 
 export const validate = { validate: envConfig };
