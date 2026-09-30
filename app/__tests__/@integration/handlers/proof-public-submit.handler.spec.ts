@@ -9,7 +9,7 @@ import type { ZkService } from "@src/modules/zk/application/services/zk.service"
 import { encodeFr, encodeProof } from "@src/modules/zk/infra/zk-encoder";
 import type { Groth16Proof } from "@src/shared/types/vesta-vc.types";
 import type { StellarService } from "@src/modules/stellar/stellar.service";
-import type { WalletService } from "@src/modules/wallet/wallet.service";
+import type { WalletService } from "@src/modules/wallet/application/services/wallet.service";
 import type { PrepareSessionService } from "@src/modules/proof/application/services/prepare-session.service";
 
 const stellarResult = { txHash: "tx", ledger: 10, onChainResult: true, mock: true };

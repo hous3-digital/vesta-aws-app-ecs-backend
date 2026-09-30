@@ -7,7 +7,7 @@ import {
   SettlementUnknownError,
   SettlementRejectedError,
 } from "@src/modules/commission/payout-settlement.gateway";
-import { WalletService } from "@src/modules/wallet/wallet.service";
+import { WalletService } from "@src/modules/wallet/application/services/wallet.service";
 import { commissionBeneficiaryId } from "@src/modules/commission/commission-onchain-identifiers";
 
 @Injectable()

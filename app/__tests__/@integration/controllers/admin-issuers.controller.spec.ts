@@ -5,7 +5,7 @@ import type { PrismaService } from "@src/infra/database/@prisma/prisma.service";
 import { IssuerDid } from "@src/modules/issuer/domain/issuer-did.value-object";
 import { Issuer } from "@src/modules/issuer/domain/issuer.entity";
 import { VcService } from "@src/modules/vc/vc.service";
-import type { WalletService } from "@src/modules/wallet/wallet.service";
+import type { WalletService } from "@src/modules/wallet/application/services/wallet.service";
 import type { IssuerRegistryService } from "@src/modules/issuer/issuer-registry.service";
 
 describe("issuer identity", () => {

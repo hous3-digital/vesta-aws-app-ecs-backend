@@ -15,7 +15,7 @@ import { randomBytes } from "crypto";
 import { AdminSecret } from "@src/infra/auth/admin-secret.guard";
 import { PublicEndpoint } from "@src/infra/auth/public.decorator";
 import { PrismaService } from "@src/infra/database/@prisma/prisma.service";
-import { WalletService } from "@src/modules/wallet/wallet.service";
+import { WalletService } from "@src/modules/wallet/application/services/wallet.service";
 import { IssuerDid } from "@src/modules/issuer/domain/issuer-did.value-object";
 import type { IssuerRole } from "@src/modules/issuer/domain/issuer.entity";
 import { IssuerRegistryService } from "@src/modules/issuer/issuer-registry.service";

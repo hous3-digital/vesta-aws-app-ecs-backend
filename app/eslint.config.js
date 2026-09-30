@@ -27,7 +27,7 @@ const CHAIN_SDK_ALLOWLIST = [
   "src/modules/commission/soroban-payout-settlement.gateway.ts",
   "src/modules/issuer/domain/issuer-did.value-object.ts",
   "src/modules/issuer/soroban-issuer-registry.gateway.ts",
-  "src/modules/wallet/wallet.service.ts",
+  "src/modules/wallet/application/services/wallet.service.ts",
   "src/scripts/deploy-payout-vault.ts",
   "__tests__/@integration/controllers/admin-issuers.controller.spec.ts",
   "__tests__/@integration/services/wallet.service.spec.ts",

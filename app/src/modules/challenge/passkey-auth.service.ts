@@ -16,7 +16,7 @@ import { PrismaService } from "@src/infra/database/@prisma/prisma.service";
 import { EnvService } from "@src/infra/env/env.service";
 import { ChallengeService } from "@src/modules/challenge/challenge.service";
 import { ICredentialRepository } from "@src/modules/credential/domain/credential.repository";
-import { WalletService } from "@src/modules/wallet/wallet.service";
+import { WalletService } from "@src/modules/wallet/application/services/wallet.service";
 import { createHash } from "crypto";
 
 // O browser recebe timeout de 60s. O servidor mantém uma margem adicional

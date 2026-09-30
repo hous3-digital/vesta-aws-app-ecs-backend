@@ -1,4 +1,4 @@
-import type { WalletService } from "@src/modules/wallet/wallet.service";
+import type { WalletService } from "@src/modules/wallet/application/services/wallet.service";
 
 export type WalletServiceDouble = jest.Mocked<Pick<WalletService, "isEnabledForIssuer" | "precreateForCredential">>;
 

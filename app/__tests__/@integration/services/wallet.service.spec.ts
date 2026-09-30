@@ -1,4 +1,4 @@
-import { WalletService } from "@src/modules/wallet/wallet.service";
+import { WalletService } from "@src/modules/wallet/application/services/wallet.service";
 import type { PrismaService } from "@src/infra/database/@prisma/prisma.service";
 import type { EnvService } from "@src/infra/env/env.service";
 import type { IIssuerRepository } from "@src/modules/issuer/domain/issuer.repository";

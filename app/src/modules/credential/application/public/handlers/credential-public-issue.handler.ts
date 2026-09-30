@@ -6,7 +6,7 @@ import { Credential } from "@src/modules/credential/domain/credential.entity";
 import { ICredentialRepository } from "@src/modules/credential/domain/credential.repository";
 import { EnvService } from "@src/infra/env/env.service";
 import { VcService } from "@src/modules/vc/vc.service";
-import { WalletService } from "@src/modules/wallet/wallet.service";
+import { WalletService } from "@src/modules/wallet/application/services/wallet.service";
 import { IIssuerRepository } from "@src/modules/issuer/domain/issuer.repository";
 import type { VestaVC } from "@src/shared/types/vesta-vc.types";
 

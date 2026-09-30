@@ -8,7 +8,7 @@ import { ProofPublicPrepareCommand } from "@src/modules/proof/application/public
 import { PrepareSessionService } from "@src/modules/proof/application/services/prepare-session.service";
 import { StellarService } from "@src/modules/stellar/stellar.service";
 import { VcService } from "@src/modules/vc/vc.service";
-import { WalletService } from "@src/modules/wallet/wallet.service";
+import { WalletService } from "@src/modules/wallet/application/services/wallet.service";
 import { ZkService } from "@src/modules/zk/application/services/zk.service";
 import type { KycLevel, VestaVC, ZkProofResult } from "@src/shared/types/vesta-vc.types";
 import * as fs from "fs";
