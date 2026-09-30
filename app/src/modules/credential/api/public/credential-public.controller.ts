@@ -54,8 +54,11 @@ export class CredentialPublicController {
   @ApiOperation({ summary: "Revoke a Verifiable Credential" })
   @Throttle({ default: { ttl: 60000, limit: 5 } })
   @Post("/revoke")
-  public async revoke(@Body() input: CredentialPublicRevokeInput): Promise<CredentialRevokeResult> {
-    const command = new CredentialPublicRevokeCommand(input.vcHash, input.reason);
+  public async revoke(
+    @CurrentApiKeyIssuer() issuerId: string,
+    @Body() input: CredentialPublicRevokeInput,
+  ): Promise<CredentialRevokeResult> {
+    const command = new CredentialPublicRevokeCommand(issuerId, input.vcHash, input.reason);
     return this.commandBus.execute<CredentialPublicRevokeCommand, CredentialRevokeResult>(command);
   }
 

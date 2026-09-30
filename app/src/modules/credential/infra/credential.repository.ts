@@ -3,6 +3,7 @@ import { PrismaService } from "@src/infra/database/@prisma/prisma.service";
 import { Credential } from "@src/modules/credential/domain/credential.entity";
 import { ICredentialRepository } from "@src/modules/credential/domain/credential.repository";
 import { CredentialMapper } from "@src/modules/credential/infra/credential.mapper";
+import { NotFoundError } from "@src/shared/errors";
 import { Id } from "@src/shared/value-objects/id.value-object";
 
 @Injectable()
@@ -12,6 +13,12 @@ export class CredentialRepository implements ICredentialRepository {
   public async findByVcHash(vcHash: string): Promise<Credential | null> {
     const record = await this.prismaService.credential.findUnique({ where: { vcHash } });
     if (!record) return null;
+    return CredentialMapper.toDomain(record);
+  }
+
+  public async findByVcHashForIssuerOrThrow(vcHash: string, issuerId: string): Promise<Credential> {
+    const record = await this.prismaService.credential.findFirst({ where: { vcHash, issuerId } });
+    if (!record) throw new NotFoundError("CREDENTIAL_NOT_FOUND", "Credential not found", { vcHash, issuerId });
     return CredentialMapper.toDomain(record);
   }
 

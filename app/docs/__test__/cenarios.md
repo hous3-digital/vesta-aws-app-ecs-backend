@@ -61,7 +61,7 @@ A coluna é verificada por `yarn catalog:check` (parte de `yarn lint`): todo CT 
 | CRED-008 verify de ACTIVE retorna valid true e challengeNonce        | e2e                | `@e2e/public-credential.spec.ts`                                                                  | ok                              |
 | CRED-009 verify de pending, revoked, rejected, expired retorna false | unit + e2e         | `@unit/entities/credential.spec.ts` (`isApproved`, `isExpired`…); e2e por status                  | parcial (unit ok; e2e pendente) |
 | CRED-010 revogar a própria VC                                        | e2e + unit         | `@e2e/public-credential.spec.ts`; `@unit/entities/credential.spec.ts` (`revoke` duas vezes)       | ok                              |
-| CRED-011 revoke não checa dono da VC                                 | e2e + integration  | `@e2e/public-credential.spec.ts`; handler de revoke                                               | red (#354)                      |
+| CRED-011 key de outro issuer recebe 404, credencial continua ativa   | e2e                | `@e2e/public-credential.spec.ts` (outro issuer e `vcHash` inexistente: mesmo 404)                 | ok                              |
 
 ## KYC assíncrono (`/public/credential/kyc-status`)
 
