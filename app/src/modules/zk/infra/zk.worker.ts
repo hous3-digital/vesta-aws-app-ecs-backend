@@ -16,7 +16,7 @@ import { createHash } from "crypto";
 // eslint-disable-next-line no-restricted-imports
 import { encodeProof, encodeFr } from "./zk-encoder";
 // eslint-disable-next-line no-restricted-imports
-import type { Groth16Proof } from "../../shared/types/vesta-vc.types";
+import type { Groth16Proof } from "../../../shared/types/vesta-vc.types";
 
 interface ZkWorkerInput {
   circuitInput: Record<string, string>;

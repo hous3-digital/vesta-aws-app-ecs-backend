@@ -12,8 +12,7 @@ import { IAttestationRepository } from "@src/modules/proof/domain/attestation.re
 import { ICredentialRepository } from "@src/modules/credential/domain/credential.repository";
 import { IIssuerRepository } from "@src/modules/issuer/domain/issuer.repository";
 import { StellarService } from "@src/modules/stellar/stellar.service";
-import { ZkService } from "@src/modules/zk/zk.service";
-import { encodeProof, encodeFr } from "@src/modules/zk/zk-encoder";
+import { ZkService } from "@src/modules/zk/application/services/zk.service";
 import type { Groth16Proof } from "@src/shared/types/vesta-vc.types";
 import { createHash } from "crypto";
 
@@ -60,8 +59,7 @@ export class ProofPublicSubmitHandler implements ICommandHandler<ProofPublicSubm
       curve: command.proof.curve ?? "bn128",
     };
 
-    const encodedProof = encodeProof(proof);
-    const encodedPublicSignals = command.publicSignals.map((s) => encodeFr(s));
+    const { encodedProof, encodedPublicSignals } = this.zkService.encodeSubmittedProof(proof, command.publicSignals);
 
     let encodedVk;
     try {

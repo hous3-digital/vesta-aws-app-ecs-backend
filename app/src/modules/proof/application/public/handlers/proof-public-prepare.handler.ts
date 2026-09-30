@@ -9,7 +9,7 @@ import { PrepareSessionService } from "@src/modules/proof/application/services/p
 import { StellarService } from "@src/modules/stellar/stellar.service";
 import { VcService } from "@src/modules/vc/vc.service";
 import { WalletService } from "@src/modules/wallet/wallet.service";
-import { ZkService } from "@src/modules/zk/zk.service";
+import { ZkService } from "@src/modules/zk/application/services/zk.service";
 import type { KycLevel, VestaVC, ZkProofResult } from "@src/shared/types/vesta-vc.types";
 import * as fs from "fs";
 import * as path from "path";

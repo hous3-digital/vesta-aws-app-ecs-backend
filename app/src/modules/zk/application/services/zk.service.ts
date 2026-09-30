@@ -6,7 +6,7 @@ import type {
   ZkProofInput,
   ZkProofResult,
 } from "@src/shared/types/vesta-vc.types";
-import { encodeProof, encodeFr, encodeVerificationKey } from "@src/modules/zk/zk-encoder";
+import { encodeProof, encodeFr, encodeVerificationKey } from "@src/modules/zk/infra/zk-encoder";
 import { createHash } from "crypto";
 import { fork } from "child_process";
 import * as fs from "fs";
@@ -79,6 +79,14 @@ export class ZkService implements OnModuleInit {
     return encodeVerificationKey(vk);
   }
 
+  /** Encodes a proof produced outside this service (the legacy submit route) the way `generateProof` encodes its own. */
+  public encodeSubmittedProof(
+    proof: Groth16Proof,
+    publicSignals: string[],
+  ): Pick<ZkProofResult, "encodedProof" | "encodedPublicSignals"> {
+    return { encodedProof: encodeProof(proof), encodedPublicSignals: publicSignals.map((signal) => encodeFr(signal)) };
+  }
+
   private buildRealProof(input: ZkProofInput): Promise<ZkProofResult> {
     return new Promise<ZkProofResult>((resolve, reject) => {
       const wasmPath = path.join(this.artifactsDir, "vesta_kyc_js", "vesta_kyc.wasm");
@@ -102,7 +110,7 @@ export class ZkService implements OnModuleInit {
       };
 
       const ext = path.extname(__filename);
-      const workerFile = path.join(__dirname, `zk.worker${ext}`);
+      const workerFile = path.join(__dirname, "..", "..", "infra", `zk.worker${ext}`);
       const execArgv = ext === ".ts" ? ["-r", "ts-node/register/transpile-only"] : [];
 
       this.logger.log(`Gerando prova Groth16 via child process — arquivo: zk.worker${ext}`);

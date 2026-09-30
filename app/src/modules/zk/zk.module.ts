@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common";
-import { ZkService } from "@src/modules/zk/zk.service";
+import { ZkService } from "@src/modules/zk/application/services/zk.service";
 
 @Module({
   providers: [ZkService],
