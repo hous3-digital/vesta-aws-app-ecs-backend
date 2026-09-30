@@ -1,22 +1,28 @@
 import request = require("supertest");
 import { FIXTURE_API_KEY } from "@test/constants";
 import { CredentialApiFixture } from "@test/@e2e/fixtures/credential-api.fixture";
+import { createTestTenant, deleteTestTenant, TestTenant } from "@test/helpers/admin-tenant.helper";
 import { createTestApp, TestApp } from "@test/helpers/create-test-app.helper";
 
 describe("/public/credential", () => {
   let testApp: TestApp;
+  let tenantB: TestTenant;
   const issuedVcHashes: string[] = [];
 
   const api = () => request(testApp.app.getHttpServer());
   const issue = (body: Record<string, unknown>) =>
     api().post("/public/credential").set("X-Api-Key", FIXTURE_API_KEY).send(body);
+  const revokeAs = (apiKey: string, vcHash: string) =>
+    api().post("/public/credential/revoke").set("X-Api-Key", apiKey).send({ vcHash });
 
   beforeAll(async () => {
     testApp = await createTestApp();
+    tenantB = await createTestTenant(testApp);
   });
 
   afterAll(async () => {
     await testApp.prisma.credential.deleteMany({ where: { vcHash: { in: issuedVcHashes } } });
+    await deleteTestTenant(testApp, tenantB.issuerId);
     await testApp.close();
   });
 
@@ -103,5 +109,33 @@ describe("/public/credential", () => {
     expect(revoke.status).toBeLessThan(300);
     expect(revoke.body.data.status).toBe("REVOKED");
     expect(verify.body.data.valid).toBe(false);
+  });
+
+  it("CT-VESTA-CRED-011 issuer B cannot revoke a credential of issuer A and learns nothing about it", async () => {
+    // Arrange
+    const issued = await issue(CredentialApiFixture.issue());
+    const vcHash = issued.body.data.vcHash as string;
+    issuedVcHashes.push(vcHash);
+
+    // Act
+    const response = await revokeAs(tenantB.apiKey, vcHash);
+
+    // Assert
+    expect(response.status).toBe(404);
+    expect(response.body.code).toBe("CREDENTIAL_NOT_FOUND");
+    const row = await testApp.prisma.credential.findUnique({ where: { vcHash } });
+    expect(row?.status).toBe("ACTIVE");
+    const byOwner = await revokeAs(FIXTURE_API_KEY, vcHash);
+    expect(byOwner.status).toBeLessThan(300);
+    expect(byOwner.body.data.status).toBe("REVOKED");
+  });
+
+  it("CT-VESTA-CRED-011 an unknown vcHash answers the same 404 CREDENTIAL_NOT_FOUND as another issuer's credential", async () => {
+    // Act
+    const response = await revokeAs(tenantB.apiKey, "0".repeat(64));
+
+    // Assert
+    expect(response.status).toBe(404);
+    expect(response.body.code).toBe("CREDENTIAL_NOT_FOUND");
   });
 });
