@@ -125,9 +125,21 @@ describe("/public/credential", () => {
     expect(response.body.code).toBe("CREDENTIAL_NOT_FOUND");
     const row = await testApp.prisma.credential.findUnique({ where: { vcHash } });
     expect(row?.status).toBe("ACTIVE");
-    const byOwner = await revokeAs(FIXTURE_API_KEY, vcHash);
-    expect(byOwner.status).toBeLessThan(300);
-    expect(byOwner.body.data.status).toBe("REVOKED");
+  });
+
+  it("CT-VESTA-CRED-011 the owning issuer still revokes its credential after another issuer was refused", async () => {
+    // Arrange
+    const issued = await issue(CredentialApiFixture.issue());
+    const vcHash = issued.body.data.vcHash as string;
+    issuedVcHashes.push(vcHash);
+    await revokeAs(tenantB.apiKey, vcHash);
+
+    // Act
+    const response = await revokeAs(FIXTURE_API_KEY, vcHash);
+
+    // Assert
+    expect(response.status).toBeLessThan(300);
+    expect(response.body.data.status).toBe("REVOKED");
   });
 
   it("CT-VESTA-CRED-011 an unknown vcHash answers the same 404 CREDENTIAL_NOT_FOUND as another issuer's credential", async () => {
