@@ -131,7 +131,7 @@ A coluna é verificada por `yarn catalog:check` (parte de `yarn lint`): todo CT 
 | SEC-002 CORS métodos e headers                                             | unit                            | `@unit/builders/cors.config.spec.ts`       | red (#356)                                                            |
 | SEC-003 campos extras rejeitados                                           | e2e                             | `@e2e/public-credential.spec.ts`           | —                                                                     |
 | SEC-004 API key em claro no banco                                          | e2e (inspeciona `api_keys.key`) | `@e2e/admin-api-keys.spec.ts`              | ok (2026-09-28, #357: `key` nula e `key_hash` presente na key criada) |
-| SEC-005 boot falha sem artefato ZK com mock desligado                      | integration                     | `@integration/services/zk.service.spec.ts` | ok                                                                    |
+| SEC-005 boot falha sem artefato ZK com mock desligado                      | integration                     | `@integration/services/zk.service.spec.ts` | ok (2026-09-30, #358)                                                 |
 | SEC-006 comparação de segredo em tempo constante (`secretsMatch`)          | unit                            | `@unit/crypto/secrets-match.spec.ts`       | ok                                                                    |
 
 ## Regras de entidade sem CT (só `@unit`)

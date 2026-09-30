@@ -105,7 +105,7 @@ export class ZkService implements OnModuleInit {
 
       const ext = path.extname(__filename);
       const workerFile = path.join(__dirname, "..", "..", "infra", `zk.worker${ext}`);
-      const execArgv = ext === ".ts" ? ["-r", "ts-node/register/transpile-only"] : [];
+      const execArgv = ext === ".ts" ? ["-r", "ts-node/register/transpile-only", "-r", "tsconfig-paths/register"] : [];
 
       this.logger.log(`Gerando prova Groth16 via child process — arquivo: zk.worker${ext}`);
 
