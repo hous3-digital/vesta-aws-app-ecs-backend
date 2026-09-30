@@ -89,7 +89,7 @@ export class WalletService implements OnModuleInit {
     private readonly prisma: PrismaService,
     private readonly issuerRepository: IIssuerRepository,
     private readonly stellarService: StellarService,
-    private readonly jwtService: JwtService = new JwtService(),
+    private readonly jwtService: JwtService,
   ) {}
 
   public onModuleInit(): void {
@@ -107,7 +107,7 @@ export class WalletService implements OnModuleInit {
 
     this.client = new PrivyClient(appId, appSecret);
     this.enabled = true;
-    this.logger.log(`Privy client inicializado — appId=${appId.slice(0, 8)}...`);
+    this.logger.log("Privy client initialized");
   }
 
   /**
@@ -149,7 +149,7 @@ export class WalletService implements OnModuleInit {
 
     const client = this.client as unknown as PrivyClientLike;
 
-    this.logger.log(`[Privy] importUser start — subjectDid=${params.subjectDid.slice(0, 24)}..., wallets=[stellar]`);
+    this.logger.debug("Privy importUser started, wallets=[stellar]");
 
     const user = await client.importUser({
       customMetadata: {
@@ -173,16 +173,12 @@ export class WalletService implements OnModuleInit {
 
     if (!stellarWallet) {
       this.logger.error(
-        `[Privy] user criado sem wallet Stellar em linkedAccounts — subjectDid=${params.subjectDid.slice(0, 24)}..., ` +
-          `linkedAccounts=${JSON.stringify(user.linkedAccounts ?? [])}`,
+        `Privy user ${user.id} created without a Stellar wallet in linkedAccounts (count=${user.linkedAccounts?.length ?? 0})`,
       );
       throw new Error(`Privy nao retornou endereco Stellar para subjectDid ${params.subjectDid}`);
     }
 
-    this.logger.log(
-      `[Privy] wallet Stellar criada — subjectDid=${params.subjectDid.slice(0, 24)}..., ` +
-        `address=${stellarWallet.address.slice(0, 8)}...`,
-    );
+    this.logger.log(`Privy Stellar wallet created for user ${user.id}`);
 
     // Privy só devolve o keypair; a conta só existe on-chain depois de um
     // createAccount financiado. Ativa agora pra que a primeira auth já

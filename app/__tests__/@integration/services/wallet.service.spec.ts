@@ -1,3 +1,4 @@
+import { JwtService } from "@nestjs/jwt";
 import { WalletService } from "@src/modules/wallet/application/services/wallet.service";
 import type { PrismaService } from "@src/infra/database/@prisma/prisma.service";
 import type { EnvService } from "@src/infra/env/env.service";
@@ -50,7 +51,7 @@ describe("WalletService organization wallet", () => {
       ensureAccountExists: jest.fn().mockResolvedValue(undefined),
       getAccountReadiness: jest.fn().mockResolvedValue({ accountActivated: true, trustlineReady: false }),
     } as unknown as StellarService;
-    const service = new WalletService(env, prisma, issuerRepository, stellar);
+    const service = new WalletService(env, prisma, issuerRepository, stellar, new JwtService());
     (service as unknown as { client: unknown }).client = { importUser };
 
     const result = await service.provisionForOrganization("issuer_a");
@@ -96,6 +97,7 @@ describe("WalletService organization wallet", () => {
       {
         getAccountReadiness: jest.fn().mockResolvedValue({ accountActivated: true, trustlineReady: true }),
       } as unknown as StellarService,
+      new JwtService(),
     );
     await expect(service.provisionForOrganization("issuer_a")).resolves.toEqual(
       expect.objectContaining({ address: "GEXISTING" }),
@@ -137,6 +139,7 @@ describe("WalletService organization wallet", () => {
       prisma,
       {} as IIssuerRepository,
       { getAccountReadiness } as unknown as StellarService,
+      new JwtService(),
     );
 
     await expect(service.refreshOrganizationWalletReadiness("issuer_a")).resolves.toEqual(
