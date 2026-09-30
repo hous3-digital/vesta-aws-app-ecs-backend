@@ -11,6 +11,7 @@ interface BackofficeJwtPayload {
   issuerId: string;
   email: string;
   name: string | null;
+  exp?: number;
 }
 
 @Injectable()
@@ -81,7 +82,8 @@ export class BackofficeAuthService {
     };
     // "never" only reaches here with NODE_ENV=local: env.schema.ts refuses it everywhere else.
     if (expiresIn !== "never") {
-      options.expiresIn = expiresIn as JwtSignOptions["expiresIn"];
+      // jsonwebtoken reads a digit-only string as milliseconds; a number is seconds, as getExpiresInSeconds reports it.
+      options.expiresIn = /^\d+$/.test(expiresIn) ? Number(expiresIn) : (expiresIn as JwtSignOptions["expiresIn"]);
     }
 
     return this.jwtService.signAsync(
@@ -95,8 +97,9 @@ export class BackofficeAuthService {
   }
 
   private async verifyToken(token: string, secret: string): Promise<BackofficeJwtPayload> {
+    let payload: BackofficeJwtPayload;
     try {
-      return await this.jwtService.verifyAsync<BackofficeJwtPayload>(token, { secret });
+      payload = await this.jwtService.verifyAsync<BackofficeJwtPayload>(token, { secret });
     } catch (cause) {
       if (isJwtExpiredError(cause)) {
         throw new UnauthorizedException("Backoffice session expired");
@@ -104,6 +107,13 @@ export class BackofficeAuthService {
 
       throw new UnauthorizedException("Invalid backoffice bearer token");
     }
+
+    // A token signed under BACKOFFICE_JWT_EXPIRES_IN=never carries no exp; only local may still present one (env.schema.ts).
+    if (typeof payload.exp !== "number" && this.envService.NODE_ENV !== "local") {
+      throw new UnauthorizedException("Backoffice session expired");
+    }
+
+    return payload;
   }
 
   private getExpiresInSeconds(): number {
