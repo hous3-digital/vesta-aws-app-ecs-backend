@@ -16,7 +16,7 @@ import * as path from "path";
 export class ZkService implements OnModuleInit {
   private readonly logger = new Logger(ZkService.name);
   private readonly artifactsDir: string;
-  private mockMode: boolean;
+  private readonly mockMode: boolean;
 
   public constructor(private readonly envService: EnvService) {
     this.artifactsDir = path.resolve(envService.ZK_ARTIFACTS_DIR);
@@ -25,29 +25,23 @@ export class ZkService implements OnModuleInit {
   }
 
   public onModuleInit(): void {
-    const wasmPath = path.join(this.artifactsDir, "vesta_kyc_js", "vesta_kyc.wasm");
     const zkeyPath = path.join(this.artifactsDir, "vesta_kyc_final.zkey");
-
-    this.logger.log(`Verificando artefatos ZK em: ${this.artifactsDir}`);
-    this.logger.log(`  wasm: ${wasmPath} — existe=${fs.existsSync(wasmPath)}`);
-    this.logger.log(`  zkey: ${zkeyPath} — existe=${fs.existsSync(zkeyPath)}`);
+    const wasmPath = path.join(this.artifactsDir, "vesta_kyc_js", "vesta_kyc.wasm");
 
     if (this.mockMode) {
-      this.logger.warn("ZK_MOCK_MODE=true — usando prova fake (sem verificação real)");
+      this.logger.warn("ZK_MOCK_MODE=true: proofs are mocked and never valid for on-chain verification");
       return;
     }
 
-    if (!fs.existsSync(wasmPath) || !fs.existsSync(zkeyPath)) {
-      this.logger.error(
-        `ZK_MOCK_MODE=false mas artefatos não encontrados em ${this.artifactsDir}. ` +
-          `Ativando mock mode — provas mock NÃO são válidas para verificação on-chain Soroban. ` +
-          `Defina ZK_MOCK_MODE=true explicitamente ou forneça os artefatos compilados.`,
+    const missing = [zkeyPath, wasmPath].filter((file) => !fs.existsSync(file));
+    if (missing.length > 0) {
+      throw new Error(
+        `ZK artifacts missing in ${this.artifactsDir} with ZK_MOCK_MODE=false (expected ${zkeyPath} and ${wasmPath}). ` +
+          "Ship the artifacts with the image or set ZK_MOCK_MODE=true explicitly.",
       );
-      this.mockMode = true;
-      return;
     }
 
-    this.logger.log("Artefatos ZK encontrados — modo real ativado");
+    this.logger.log(`ZK artifacts found in ${this.artifactsDir}: real mode enabled`);
   }
 
   public isMockMode(): boolean {

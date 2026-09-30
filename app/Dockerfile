@@ -58,6 +58,8 @@ COPY --from=builder /app/yarn.lock ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/zk-artifacts ./zk-artifacts
+# The API refuses to boot with ZK_MOCK_MODE=false and no artifacts (SEC-005): fail the build, not the deploy.
+RUN test -f zk-artifacts/vesta_kyc_final.zkey -a -f zk-artifacts/vesta_kyc_js/vesta_kyc.wasm
 COPY --from=contract-builder \
   /contract/vesta-payout-vault/target/wasm32v1-none/release/vesta_payout_vault.wasm \
   ./contract-artifacts/vesta_payout_vault.wasm
