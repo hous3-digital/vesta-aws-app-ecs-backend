@@ -5,16 +5,16 @@ description: How to write a @unit spec for an entity, value object, codec, build
 
 # Unit testing
 
-Applies `standard-test.mdc` (tree, naming, AAA, no factories in `@unit`) and `standard-code.mdc` (errors by class and code). Unit specs live in `__tests__/@unit/{entities,value-objects,codecs,builders,formatters}/` and run with `yarn test:unit`.
+Applies `standard-test.mdc` (tree, naming, AAA, no factories in `@unit`) and `standard-code.mdc` (errors by class and code). Unit specs live in `__tests__/@unit/{entities,value-objects,codecs,builders,formatters,crypto}/` and run with `yarn test:unit`.
 
 ## Scope check, before writing
 
-| Asked to unit test                                                 | Answer                                                                       |
-| ------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
-| Entity, value object                                               | Yes. `@unit/entities/{entity}.spec.ts`, `@unit/value-objects/{name}.spec.ts` |
-| Pure codec (XDR, ScVal, proof encoding), config builder, formatter | Yes. `@unit/codecs`, `@unit/builders`, `@unit/formatters`                    |
-| Handler, service, controller, filter, guard                        | No. Point to the `integration-testing` skill                                 |
-| Repository, mapper, DAO, gateway                                   | No. `@e2e` proves the round trip; say so and stop                            |
+| Asked to unit test                                                                | Answer                                                                       |
+| --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Entity, value object                                                              | Yes. `@unit/entities/{entity}.spec.ts`, `@unit/value-objects/{name}.spec.ts` |
+| Pure codec (XDR, ScVal, proof encoding), config builder, formatter, crypto helper | Yes. `@unit/codecs`, `@unit/builders`, `@unit/formatters`, `@unit/crypto`    |
+| Handler, service, controller, filter, guard                                       | No. Point to the `integration-testing` skill                                 |
+| Repository, mapper, DAO, gateway                                                  | No. `@e2e` proves the round trip; say so and stop                            |
 
 ## Procedure
 

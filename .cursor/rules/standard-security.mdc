@@ -13,14 +13,14 @@ alwaysApply: false
 ## Secrets
 
 - A secret is read once, in `EnvService`, validated by `env.schema.ts`. No `process.env.X` outside `src/infra/env/`, no secret as a default value, no secret in a fixture, a spec or a Swagger example.
-- One secret, one purpose. `BACKOFFICE_JWT_SECRET` falling back to `ADMIN_SECRET` (`env.service.ts`) is legacy: a leaked admin header would forge backoffice sessions. On touch, the fallback goes and the schema requires the JWT secret.
+- One secret, one purpose. `BACKOFFICE_JWT_SECRET` signs backoffice sessions and `ADMIN_SECRET` guards `/admin/*`; `env.schema.ts` requires both in every environment and `PRIVY_APP_SECRET` in production (2026-09-30, task 2 of `prd-issuer-isolation-and-secrets`), so a leaked admin header cannot forge a backoffice session. A fallback from one secret to another is never reintroduced.
 - Key material is resolved only by the adapter that signs (`standard-chain`). Handlers, services and controllers never hold a `Keypair`, a JWT signing key or the admin secret.
-- Secret comparison is constant-time: `crypto.timingSafeEqual` over equal-length buffers, never `===`. `admin-secret.guard.ts` still uses `!==` (TD-006).
+- Secret comparison is constant-time: `secretsMatch` in `src/shared/crypto` (length first, then `crypto.timingSafeEqual`), never `===`. `admin-secret.guard.ts` and `ApiKeySecret.matchesHash` use it (TD-006 closed on 2026-09-30); a new comparison calls the helper.
 - Credentials at rest are hashed: a backoffice password with bcrypt, an API key as `SHA-256(key)` looked up by hash with a displayable prefix (`modules/api-key`, TD-005 paid on 2026-09-28; the clear column is dropped in the contraction release). A new credential type is born hashed.
 
 ## Never in a log
 
-Key material, a signed XDR, a challenge, a VC document, a CPF, an API key, a JWT, a Privy token, a passkey credential, a full request body. Not even a prefix: `challenge.service.ts` (16 chars of a challenge) and `wallet.service.ts` (DID prefix) are legacy and lose the prefix on touch; `api-key.guard.ts` logs only the event since 2026-09-28. Log ids, hashes, statuses, counts and the `txHash`. The ingress and egress loggers (TD-004) will redact by field name; that never licenses a handler to log what is listed here.
+Key material, a signed XDR, a challenge, a VC document, a CPF, an API key, a JWT, a Privy token, a passkey credential, a full request body. Not even a prefix: `challenge.service.ts` (16 chars of a challenge) is legacy and loses the prefix on touch; `wallet.service.ts` (since 2026-09-30) and `api-key.guard.ts` (since 2026-09-28) log only the event. Log ids, hashes, statuses, counts and the `txHash`. The ingress and egress loggers (TD-004) will redact by field name; that never licenses a handler to log what is listed here.
 
 ## PII
 

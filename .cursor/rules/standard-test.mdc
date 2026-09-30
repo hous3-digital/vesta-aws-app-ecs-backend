@@ -19,7 +19,8 @@ __tests__/
 │   ├── value-objects/        # {name}.spec.ts
 │   ├── formatters/           # pure output shaping
 │   ├── builders/             # pure construction with logic (configs, tx args)
-│   └── codecs/               # pure encode/decode (XDR, ScVal, proof encoding)
+│   ├── codecs/               # pure encode/decode (XDR, ScVal, proof encoding)
+│   └── crypto/               # pure helpers over node:crypto (secrets-match)
 ├── @integration/             # one class under test, dependencies mocked, no database
 │   ├── handlers/             # {module}-{context}-{action}.handler.spec.ts
 │   ├── services/             # {name}.service.spec.ts
