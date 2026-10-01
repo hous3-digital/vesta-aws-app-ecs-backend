@@ -76,15 +76,16 @@ A coluna é verificada por `yarn catalog:check` (parte de `yarn lint`): todo CT 
 
 ## Passkey e challenge (`/public/auth`)
 
-| CT                                                                      | Camada            | Spec                                                                                              | Hoje       |
-| ----------------------------------------------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------- | ---------- |
-| PASS-001 challenge one-time de 60 s                                     | e2e               | `@e2e/public-auth.spec.ts`                                                                        | —          |
-| PASS-002 challenge não reutilizável                                     | e2e               | `@e2e/public-auth.spec.ts`                                                                        | —          |
-| PASS-003 registration options exige VC do issuer, aprovada, sem passkey | integration       | `@integration/services/passkey-auth.service.spec.ts`                                              | parcial    |
-| PASS-004 registrar passkey e autenticar; counter antigo                 | integration + e2e | passkey-auth service; e2e precisa de **helper WebAuthn** (gerar credencial e assinatura em teste) | red (#361) |
-| PASS-005 verify devolve proofChallenge, recoveryToken e JWT Privy       | e2e               | `@e2e/public-auth.spec.ts` com helper WebAuthn                                                    | —          |
-| PASS-006 recusa VC revogada, expirada, não aprovada                     | integration       | passkey-auth service                                                                              | parcial    |
-| RECOV-001 recover devolve a VC e recusa token reusado                   | integration + e2e | `@integration/services/credential-recovery.service.spec.ts`; `@e2e/public-auth.spec.ts`           | parcial    |
+| CT                                                                                      | Camada            | Spec                                                                                              | Hoje       |
+| --------------------------------------------------------------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------- | ---------- |
+| PASS-001 challenge one-time de 60 s                                                     | e2e               | `@e2e/public-auth.spec.ts`                                                                        | —          |
+| PASS-002 challenge não reutilizável                                                     | e2e               | `@e2e/public-auth.spec.ts`                                                                        | —          |
+| PASS-003 registration options exige VC do issuer, aprovada, sem passkey                 | integration       | `@integration/services/passkey-auth.service.spec.ts`                                              | parcial    |
+| PASS-004 registrar passkey e autenticar; counter antigo                                 | integration + e2e | passkey-auth service; e2e precisa de **helper WebAuthn** (gerar credencial e assinatura em teste) | red (#361) |
+| PASS-005 verify devolve proofChallenge, recoveryToken e JWT Privy                       | e2e               | `@e2e/public-auth.spec.ts` com helper WebAuthn                                                    | —          |
+| PASS-006 recusa VC revogada, expirada, não aprovada                                     | integration       | passkey-auth service                                                                              | parcial    |
+| PASS-007 corrida na escrita otimista do counter responde 409 `PASSKEY_COUNTER_CONFLICT` | integration       | `@integration/services/passkey-auth.service.spec.ts`                                              | red        |
+| RECOV-001 recover devolve a VC e recusa token reusado                                   | integration + e2e | `@integration/services/credential-recovery.service.spec.ts`; `@e2e/public-auth.spec.ts`           | parcial    |
 
 ## Prova e atestação (`/public/proof`, `/public/attestations`)
 
@@ -147,6 +148,7 @@ A coluna é verificada por `yarn catalog:check` (parte de `yarn lint`): todo CT 
 | `IssuerDid`    | formato `did:stellar:`; rejeita endereço inválido (hoje importa o SDK: F3)                                                                                                                                                                                                                                                                     |
 | `ApiKey`       | `create` cria ativa com hash e prefixo do segredo, sem guardar o segredo, nome obrigatório; `revoke` grava `revokedAt` e recusa repetição; `isExpired` por `expiresAt`; `ensureUsable` recusa revogada, sem issuer e expirada; `rotate` cria key do mesmo issuer e nome, marca 30 dias na antiga e recusa revogada, expirada ou já rotacionada |
 | `ApiKeySecret` | `generate` no formato `vesta_live_` + 48 hex; `hash` é sha256 hex; `prefix` de 19 caracteres; `matchesHash` só para o mesmo hash, falso para tamanho diferente                                                                                                                                                                                 |
+| `Passkey`      | `authenticate` avança o counter; igual ou menor lança `PASSKEY_COUNTER_REGRESSION` com issuer e passkey em `details`; zero e zero passa (passkey sincronizada nunca incrementa)                                                                                                                                                                |
 
 ## Ordem sugerida (TDD antes das frentes F3 e F4)
 
