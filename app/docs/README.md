@@ -16,3 +16,4 @@ Para navegar, **abra a pasta ou o arquivo** que corresponda ao que está a imple
 | `glossario.md`        | Os termos da plataforma (issuer, VC, passkey, circuito, attestation) com o estado de hoje e o alvo |
 | `deploy-checklist.md` | Tudo que precisa ser feito fora do repo ao subir para staging ou produção, e o que trazer de lá    |
 | `__test__/`           | Estratégia de testes e o catálogo de cenários                                                      |
+| `as-is/`              | Fotos datadas do que roda fora do repo: `uso-prod.md` é o mapa de uso do cliente em produção (D6)  |
