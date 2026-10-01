@@ -24,6 +24,14 @@ function refineEnv(env: z.infer<typeof envObject>, ctx: z.RefinementCtx): void {
       message: "BACKOFFICE_JWT_EXPIRES_IN=never is allowed only when NODE_ENV=local",
     });
   }
+  // One secret, one purpose: with equal values a leaked admin header forges backoffice sessions.
+  if (env.BACKOFFICE_JWT_SECRET === env.ADMIN_SECRET) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["BACKOFFICE_JWT_SECRET"],
+      message: "BACKOFFICE_JWT_SECRET must differ from ADMIN_SECRET",
+    });
+  }
 }
 
 const envObject = z.object({
