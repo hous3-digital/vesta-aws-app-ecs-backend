@@ -7,7 +7,7 @@ import { type BackofficeProfileResult } from "@src/modules/backoffice/profile/ap
 import { BackofficeProfileQuery } from "@src/modules/backoffice/profile/application/queries/backoffice-profile.query";
 import { CurrentIssuer } from "@src/modules/backoffice/shared/current-issuer.decorator";
 import { WalletService } from "@src/modules/wallet/application/services/wallet.service";
-import { ChallengeService } from "@src/modules/challenge/challenge.service";
+import { ChallengeService } from "@src/modules/challenge/application/services/challenge.service";
 import { CurrentBackofficeUser } from "@src/modules/backoffice/shared/current-backoffice-user.decorator";
 import type { BackofficeSession } from "@src/infra/auth/auth.types";
 import {

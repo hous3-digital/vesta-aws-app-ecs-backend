@@ -4,7 +4,7 @@ import {
   generateRegistrationOptions,
   verifyAuthenticationResponse,
 } from "@simplewebauthn/server";
-import { PasskeyAuthService } from "@src/modules/challenge/passkey-auth.service";
+import { PasskeyAuthService } from "@src/modules/challenge/application/services/passkey-auth.service";
 import { Credential } from "@src/modules/credential/domain/credential.entity";
 
 jest.mock("@simplewebauthn/server", () => {

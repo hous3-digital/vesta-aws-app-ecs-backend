@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, Logger, UnprocessableEntityException } from "@nestjs/common";
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
-import { ChallengeService } from "@src/modules/challenge/challenge.service";
+import { ChallengeService } from "@src/modules/challenge/application/services/challenge.service";
 import { Credential, CredentialStatus } from "@src/modules/credential/domain/credential.entity";
 import { ICredentialRepository } from "@src/modules/credential/domain/credential.repository";
 import { IIssuerRepository } from "@src/modules/issuer/domain/issuer.repository";
