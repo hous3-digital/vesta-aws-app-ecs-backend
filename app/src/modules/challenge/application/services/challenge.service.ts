@@ -111,7 +111,7 @@ export class ChallengeService implements OnModuleInit, OnModuleDestroy {
       const transaction = await this.redis.multi().get(key).del(key).exec();
       const raw = transaction?.[0]?.[1];
       if (typeof raw !== "string") {
-        this.logger.warn(`Challenge inválido ou já consumido: ${challenge.slice(0, 16)}...`);
+        this.logger.warn("Challenge invalid or already consumed");
         return null;
       }
       const stored = JSON.parse(raw) as StoredChallenge;
@@ -122,12 +122,12 @@ export class ChallengeService implements OnModuleInit, OnModuleDestroy {
     const stored = await this.prisma.authChallenge.findUnique({ where: { challengeHash } });
     if (!stored || stored.expiresAt.getTime() < Date.now()) {
       if (stored) await this.prisma.authChallenge.deleteMany({ where: { challengeHash } });
-      this.logger.warn(`Challenge inválido ou já consumido: ${challenge.slice(0, 16)}...`);
+      this.logger.warn("Challenge invalid or already consumed");
       return null;
     }
     const consumed = await this.prisma.authChallenge.deleteMany({ where: { challengeHash } });
     if (consumed.count !== 1) {
-      this.logger.warn(`Challenge já consumido concorrentemente: ${challenge.slice(0, 16)}...`);
+      this.logger.warn("Challenge already consumed concurrently");
       return null;
     }
     return stored.context as ChallengeContext;

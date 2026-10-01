@@ -11,18 +11,29 @@ import {
   verifyAuthenticationResponse,
   verifyRegistrationResponse,
 } from "@simplewebauthn/server";
-import type { AuthenticationResponseJSON, RegistrationResponseJSON } from "@simplewebauthn/server";
+import type {
+  AuthenticationResponseJSON,
+  RegistrationResponseJSON,
+  VerifiedAuthenticationResponse,
+  VerifiedRegistrationResponse,
+} from "@simplewebauthn/server";
 import { PrismaService } from "@src/infra/database/@prisma/prisma.service";
 import { EnvService } from "@src/infra/env/env.service";
 import { ChallengeService } from "@src/modules/challenge/application/services/challenge.service";
+import { Passkey } from "@src/modules/challenge/domain/passkey.entity";
 import { ICredentialRepository } from "@src/modules/credential/domain/credential.repository";
 import { WalletService } from "@src/modules/wallet/application/services/wallet.service";
+import { ConflictError, ForbiddenError, ValidationError } from "@src/shared/errors";
 import { createHash } from "crypto";
 
 // O browser recebe timeout de 60s. O servidor mantém uma margem adicional
 // para que latência de rede/serialização após a biometria não invalide uma
 // ceremony que o autenticador concluiu dentro do prazo.
 const WEBAUTHN_SERVER_CHALLENGE_TTL_SECONDS = 120;
+// WebAuthn L2 6.1: authenticatorData starts with rpIdHash (32 bytes) and flags (1 byte),
+// followed by the 4-byte big-endian signature counter.
+const SIGN_COUNT_OFFSET = 33;
+const SIGN_COUNT_LENGTH = 4;
 
 @Injectable()
 export class PasskeyAuthService {
@@ -85,21 +96,34 @@ export class PasskeyAuthService {
   }): Promise<{ verified: true; passkeyCredentialId: string; vcHash: string }> {
     const context = await this.challengeService.consumeContext(params.challenge);
     if (!context || context.kind !== "passkey-registration" || context.issuerId !== params.issuerId) {
-      throw new BadRequestException("Challenge de registro inválido, expirado ou já utilizado");
+      throw new ValidationError(
+        "PASSKEY_CHALLENGE_INVALID",
+        "Registration challenge is invalid, expired or already used",
+        { issuerId: params.issuerId },
+      );
     }
+    const expectedOrigin = this.assertAllowedOrigin(this.clientDataOf(params.response, params.issuerId));
 
-    const verification = await verifyRegistrationResponse({
-      response: params.response,
-      expectedChallenge: params.challenge,
-      expectedOrigin: this.assertAllowedOrigin(params.response.response.clientDataJSON),
-      expectedRPID: context.rpId,
-      requireUserVerification: true,
-    });
-    if (!verification.verified) throw new BadRequestException("Registro do Passkey não pôde ser verificado");
+    let verification: VerifiedRegistrationResponse;
+    try {
+      verification = await verifyRegistrationResponse({
+        response: params.response,
+        expectedChallenge: params.challenge,
+        expectedOrigin,
+        expectedRPID: context.rpId,
+        requireUserVerification: true,
+      });
+    } catch {
+      throw this.verificationFailed("registration", { issuerId: params.issuerId });
+    }
+    if (!verification.verified) throw this.verificationFailed("registration", { issuerId: params.issuerId });
 
     const credential = await this.credentialRepository.findByVcHash(context.vcHash);
     if (!credential || credential.issuerId !== params.issuerId) {
-      throw new ForbiddenException("Credencial inválida para o issuer autenticado");
+      throw new ForbiddenError("CREDENTIAL_ISSUER_MISMATCH", "Credential does not belong to the authenticated issuer", {
+        issuerId: params.issuerId,
+        vcHash: context.vcHash,
+      });
     }
 
     const info = verification.registrationInfo;
@@ -156,44 +180,78 @@ export class PasskeyAuthService {
   }> {
     const context = await this.challengeService.consumeContext(params.challenge);
     if (!context || context.kind !== "passkey-authentication" || context.issuerId !== params.issuerId) {
-      throw new BadRequestException("Challenge de autenticação inválido, expirado ou já utilizado");
+      throw new ValidationError(
+        "PASSKEY_CHALLENGE_INVALID",
+        "Authentication challenge is invalid, expired or already used",
+        { issuerId: params.issuerId },
+      );
     }
+    const assertion = this.readAssertion(params.response, params.issuerId);
 
-    const passkey = await this.prisma.passkeyCredential.findUnique({ where: { id: params.response.id } });
-    if (!passkey || passkey.issuerId !== params.issuerId || passkey.rpId !== context.rpId) {
-      throw new ForbiddenException("Passkey não registrado para este issuer e RP ID");
+    const record = await this.prisma.passkeyCredential.findUnique({ where: { id: assertion.credentialId } });
+    if (!record || record.issuerId !== params.issuerId || record.rpId !== context.rpId) {
+      throw new ForbiddenError("PASSKEY_NOT_REGISTERED", "Passkey is not registered for this issuer and RP ID", {
+        issuerId: params.issuerId,
+        passkeyId: assertion.credentialId,
+      });
     }
-    const credential = await this.credentialRepository.findByVcHash(passkey.vcHash);
+    const credential = await this.credentialRepository.findByVcHash(record.vcHash);
     if (!credential || !credential.isApproved() || credential.isExpired() || credential.isRevoked()) {
-      throw new ForbiddenException("Credencial revogada, expirada ou não aprovada");
+      throw new ForbiddenError("CREDENTIAL_NOT_ACTIVE", "Credential is revoked, expired or not approved", {
+        issuerId: params.issuerId,
+        vcHash: record.vcHash,
+      });
     }
 
-    const verification = await verifyAuthenticationResponse({
-      response: params.response,
-      expectedChallenge: params.challenge,
-      expectedOrigin: this.assertAllowedOrigin(params.response.response.clientDataJSON),
-      expectedRPID: context.rpId,
-      credential: {
-        id: passkey.id,
-        publicKey: Buffer.from(passkey.publicKey, "base64url"),
-        counter: passkey.counter,
-        transports: this.toTransports(passkey.transports),
-      },
-      requireUserVerification: true,
+    // The entity applies the counter rule before the verifier runs, so a cloned authenticator
+    // answers a stable code; the verifier's own counter check stays on and is never reached.
+    const passkey = Passkey.restore({
+      id: record.id,
+      issuerId: record.issuerId,
+      vcHash: record.vcHash,
+      rpId: record.rpId,
+      counter: record.counter,
     });
-    if (!verification.verified) throw new BadRequestException("Assertion do Passkey não pôde ser verificada");
+    const storedCounter = passkey.counter;
+    passkey.authenticate(assertion.signCount);
+    const expectedOrigin = this.assertAllowedOrigin(this.clientDataOf(params.response, params.issuerId));
+
+    let verification: VerifiedAuthenticationResponse;
+    try {
+      verification = await verifyAuthenticationResponse({
+        response: params.response,
+        expectedChallenge: params.challenge,
+        expectedOrigin,
+        expectedRPID: context.rpId,
+        credential: {
+          id: passkey.id,
+          publicKey: Buffer.from(record.publicKey, "base64url"),
+          counter: storedCounter,
+          transports: this.toTransports(record.transports),
+        },
+        requireUserVerification: true,
+      });
+    } catch {
+      throw this.verificationFailed("authentication", { issuerId: params.issuerId, passkeyId: passkey.id });
+    }
+    if (!verification.verified) {
+      throw this.verificationFailed("authentication", { issuerId: params.issuerId, passkeyId: passkey.id });
+    }
 
     const counterUpdated = await this.prisma.passkeyCredential.updateMany({
-      where: { id: passkey.id, counter: passkey.counter },
+      where: { id: passkey.id, counter: storedCounter },
       data: {
-        counter: verification.authenticationInfo.newCounter,
+        counter: passkey.counter,
         backedUp: verification.authenticationInfo.credentialBackedUp,
         deviceType: verification.authenticationInfo.credentialDeviceType,
         updatedAt: new Date(),
       },
     });
     if (counterUpdated.count !== 1) {
-      throw new ConflictException("O contador da Passkey mudou durante a autenticação; tente novamente");
+      throw new ConflictError("PASSKEY_COUNTER_CONFLICT", "Passkey counter changed during authentication; try again", {
+        issuerId: params.issuerId,
+        passkeyId: passkey.id,
+      });
     }
 
     const proof = await this.challengeService.generate({
@@ -208,7 +266,7 @@ export class PasskeyAuthService {
       vcHash: passkey.vcHash,
     });
     const privyEnabled = await this.walletService.isEnabledForIssuer(params.issuerId);
-    const customAuth = privyEnabled ? await this.walletService.issueCustomAuthToken(passkey.subjectDid) : null;
+    const customAuth = privyEnabled ? await this.walletService.issueCustomAuthToken(record.subjectDid) : null;
 
     return {
       verified: true,
@@ -218,6 +276,43 @@ export class PasskeyAuthService {
       privyCustomAuthToken: customAuth?.token ?? null,
       expiresAt: customAuth?.expiresAt ?? null,
     };
+  }
+
+  /**
+   * The controller forwards the DTO's `response` object as is, so the fields the service
+   * reads before the verifier runs are checked here: a malformed body answers 400, never
+   * 500. The signature counter is the big-endian integer at SIGN_COUNT_OFFSET of
+   * authenticatorData, the same bytes the verifier reads.
+   */
+  private readAssertion(
+    response: AuthenticationResponseJSON,
+    issuerId: string,
+  ): { credentialId: string; signCount: number } {
+    const authenticatorData: unknown = response.response?.authenticatorData;
+    const authData = typeof authenticatorData === "string" ? Buffer.from(authenticatorData, "base64url") : null;
+    if (typeof response.id !== "string" || response.id.length === 0 || !authData) {
+      throw new ValidationError("PASSKEY_VERIFICATION_FAILED", "Passkey assertion is malformed", { issuerId });
+    }
+    if (authData.byteLength < SIGN_COUNT_OFFSET + SIGN_COUNT_LENGTH) {
+      throw new ValidationError("PASSKEY_VERIFICATION_FAILED", "Passkey assertion is malformed", { issuerId });
+    }
+    return { credentialId: response.id, signCount: authData.readUInt32BE(SIGN_COUNT_OFFSET) };
+  }
+
+  private clientDataOf(response: RegistrationResponseJSON | AuthenticationResponseJSON, issuerId: string): string {
+    const clientDataJSON: unknown = response.response?.clientDataJSON;
+    if (typeof clientDataJSON !== "string") {
+      throw new ValidationError("PASSKEY_VERIFICATION_FAILED", "Passkey response is malformed", { issuerId });
+    }
+    return clientDataJSON;
+  }
+
+  /** The verifier's reason is dropped on purpose: its messages quote the challenge and the origin. */
+  private verificationFailed(
+    stage: "registration" | "authentication",
+    details: Record<string, unknown>,
+  ): ValidationError {
+    return new ValidationError("PASSKEY_VERIFICATION_FAILED", `Passkey ${stage} could not be verified`, details);
   }
 
   private allowedOrigins(): string[] {
