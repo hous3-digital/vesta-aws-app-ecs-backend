@@ -9,7 +9,7 @@ Applies `standard-module.mdc` (mapper field by field, twin enum in `domain/`, Ty
 
 ## Why every migration must be backwards compatible
 
-`staging-workflow.yml` has a `migrate-database` job that runs `yarn prisma:deploy` **before** the new image is rolled out, and ECS keeps the old tasks alive until the new ones are healthy. For those minutes the previous version of the app runs against the new schema. Rolling the app back does not roll the schema back. So:
+`staging-deploy.yml` has a `migrate-database` job that runs `yarn prisma:deploy` **before** the new image is rolled out, and ECS keeps the old tasks alive until the new ones are healthy. For those minutes the previous version of the app runs against the new schema. Rolling the app back does not roll the schema back. So:
 
 - The running version must keep working after the migration: nothing it reads disappears, nothing it writes becomes invalid.
 - A change that the old code cannot survive (rename, drop, `NOT NULL` on a column it does not fill) is split in two releases: **expand** now, **contract** after the code that depended on the old shape is gone from prod.

@@ -9,7 +9,7 @@ O harness de agentes (`AGENTS.md`, hooks, commitlint) cobra padrão na máquina 
 | Workflow           | Dispara em                                         | O que roda                                                                                                      | O que bloqueia o passo seguinte                                                                    |
 | ------------------ | -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
 | `feature-workflow` | push em `feat/**`, `chore/**`, `fix/**`, `task/**` | cargo test + build dos 2 contratos, install, lint, audit-ci, `test:cov` + threshold 10%, abre PR para `staging` | Só o **lint** condiciona o PR (`pull-request: needs: lint`)                                        |
-| `staging-workflow` | push em `staging`                                  | os mesmos jobs + terraform ci/cd, **`yarn prisma:deploy` automático**, build da imagem, blue/green              | Imagem depende de `[migrate-database, lint]`. **Teste não entra na cadeia**                        |
+| `staging-deploy` | push em `staging`                                  | os mesmos jobs + terraform ci/cd, **`yarn prisma:deploy` automático**, build da imagem, blue/green              | Imagem depende de `[migrate-database, lint]`. **Teste não entra na cadeia**                        |
 | `main-workflow`    | push em `main`                                     | os mesmos jobs + terraform prod, build, blue/green, confirm-release                                             | Terraform CD depende de `[terraform-ci, lint]`. **Teste não entra na cadeia**. Não roda migrations |
 | `release-workflow` | manual                                             | cria branch de release                                                                                          | —                                                                                                  |
 
@@ -56,7 +56,7 @@ Esforço: **P** até meio dia · **M** 1 a 3 dias.
 
 ## 3. Nota sobre migrations
 
-O `staging-workflow` aplica `yarn prisma:deploy` automaticamente (job `migrate-database`, antes do build da imagem). O `main-workflow` não aplica: em produção a migration é manual. O README foi corrigido para dizer isso; antes afirmava que nenhum pipeline rodava migrations.
+O `staging-deploy` aplica `yarn prisma:deploy` automaticamente (job `migrate-database`, antes do build da imagem). O `main-workflow` não aplica: em produção a migration é manual. O README foi corrigido para dizer isso; antes afirmava que nenhum pipeline rodava migrations.
 
 ## 4. O que já mudou no repo e não precisa de pedido
 
