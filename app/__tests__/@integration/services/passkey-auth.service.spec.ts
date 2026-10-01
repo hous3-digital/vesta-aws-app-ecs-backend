@@ -255,7 +255,7 @@ describe("PasskeyAuthService", () => {
       expect(prisma.passkeyCredential.create).not.toHaveBeenCalled();
     });
 
-    it("answers 404 CREDENTIAL_NOT_FOUND and creates nothing when the issuer-scoped read finds no credential", async () => {
+    it("CT-VESTA-PASS-008 answers 404 CREDENTIAL_NOT_FOUND and creates nothing when the issuer-scoped read finds no credential", async () => {
       // Arrange
       const { sut, challengeService, credentialRepository, prisma } = makeSut();
       challengeService.consumeContext.mockResolvedValue(registrationContext);
@@ -449,7 +449,7 @@ describe("PasskeyAuthService", () => {
       expect(mocks.prisma.passkeyCredential.updateMany).not.toHaveBeenCalled();
     });
 
-    it("answers 404 PASSKEY_NOT_FOUND when the issuer-scoped read finds no passkey for this issuer and RP ID", async () => {
+    it("CT-VESTA-PASS-008 answers 404 PASSKEY_NOT_FOUND when the issuer-scoped read finds no passkey for this issuer and RP ID", async () => {
       // Arrange
       const mocks = makeSut();
       arrangeAuthentication(mocks);
