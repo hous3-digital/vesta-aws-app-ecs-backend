@@ -1,0 +1,44 @@
+name: Render tfvars
+description: Replaces the placeholders of an environment tfvars with values kept outside the public repository (AWS account id, client domains)
+inputs:
+  env:
+    description: Environment folder under infra/terraform/envs
+    required: true
+  aws-account-id:
+    description: AWS account id of the environment
+    required: true
+  client-origins:
+    description: Comma-separated client origins appended to CORS and WebAuthn origins (may be empty)
+    required: false
+    default: ""
+  client-rp-ids:
+    description: Comma-separated client WebAuthn rp ids (may be empty)
+    required: false
+    default: ""
+runs:
+  using: composite
+  steps:
+    - name: Render placeholders
+      shell: bash
+      env:
+        TARGET_ENV: ${{ inputs.env }}
+        AWS_ACCOUNT_ID: ${{ inputs.aws-account-id }}
+        CLIENT_ORIGINS: ${{ inputs.client-origins }}
+        CLIENT_RP_IDS: ${{ inputs.client-rp-ids }}
+      run: |
+        file="infra/terraform/envs/${TARGET_ENV}/variables.tfvars"
+        test -f "$file"
+        if [ -z "$AWS_ACCOUNT_ID" ]; then echo "::error::AWS account id input is empty"; exit 1; fi
+        echo "::add-mask::${AWS_ACCOUNT_ID}"
+        sed -i "s|__AWS_ACCOUNT_ID__|${AWS_ACCOUNT_ID}|g" "$file"
+        if [ -n "$CLIENT_ORIGINS" ]; then
+          sed -i "s|__CLIENT_ORIGINS__|${CLIENT_ORIGINS}|g" "$file"
+        else
+          sed -i "s|,__CLIENT_ORIGINS__||g; s|__CLIENT_ORIGINS__||g" "$file"
+        fi
+        if [ -n "$CLIENT_RP_IDS" ]; then
+          sed -i "s|__CLIENT_RP_IDS__|${CLIENT_RP_IDS}|g" "$file"
+        else
+          sed -i "s|,__CLIENT_RP_IDS__||g; s|__CLIENT_RP_IDS__||g" "$file"
+        fi
+        if grep -qE "__[A-Z_]+__" "$file"; then echo "::error::placeholder left in $file"; exit 1; fi

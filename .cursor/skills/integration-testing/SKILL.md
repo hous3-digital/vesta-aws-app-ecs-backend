@@ -27,29 +27,44 @@ Decision in one line: **can you name the rule?** If the `it` would be "calls sav
 
 ```ts
 const makeSut = () => {
+  const challengeService = mockChallengeService();
   const credentialRepository = mockCredentialRepository();
-  const sut = new CredentialPublicRevokeHandler(credentialRepository);
-  return { sut, credentialRepository };
+  const prisma = mockPrismaService();
+  const sut = new PasskeyAuthService(
+    challengeService as unknown as ChallengeService,
+    credentialRepository,
+    mockEnvService() as unknown as EnvService,
+    prisma as unknown as PrismaService,
+    mockWalletService() as unknown as WalletService,
+  );
+  return { sut, challengeService, credentialRepository, prisma };
 };
 
-it("CT-VESTA-CRED-011 rejects revoking a credential owned by another issuer", async () => {
+it("CT-VESTA-PASS-008 answers 404 PASSKEY_NOT_FOUND when the issuer-scoped read finds no passkey", async () => {
   // Arrange
-  const { sut, credentialRepository } = makeSut();
-  credentialRepository.findByVcHash.mockResolvedValue(
-    credentialModel({ issuerId: "issuer_other" }),
-  );
+  const { sut, challengeService, prisma } = makeSut();
+  challengeService.consumeContext.mockResolvedValue({
+    kind: "passkey-authentication",
+    issuerId: "issuer_local_dev",
+    rpId: "app.example.com",
+  });
+  prisma.passkeyCredential.findFirst.mockResolvedValue(null);
 
   // Act
-  const act = sut.execute(
-    new CredentialPublicRevokeCommand("0xabc", "issuer_local_dev"),
-  );
+  const act = sut.verifyAuthentication({
+    issuerId: "issuer_local_dev",
+    challenge: RECORDED_ASSERTION.challenge,
+    response: RECORDED_ASSERTION.response,
+  });
 
   // Assert
-  await expect(act).rejects.toMatchObject({
-    code: "CREDENTIAL_ISSUER_MISMATCH",
-  });
+  await expect(act).rejects.toBeInstanceOf(NotFoundError);
+  await expect(act).rejects.toMatchObject({ code: "PASSKEY_NOT_FOUND" });
+  expect(prisma.passkeyCredential.updateMany).not.toHaveBeenCalled();
 });
 ```
+
+The read is scoped by the issuer in the query, so the spec never arranges "a passkey of another issuer": it arranges the scoped read finding nothing and asserts the 404 (`standard-security`, tenant isolation). A handler that only loads through a scoped repository and persists, as `credential-public-revoke.handler.ts` does since CRED-011, is passthrough and gets no spec.
 
 ## Refuse
 

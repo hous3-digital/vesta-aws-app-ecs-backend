@@ -5,9 +5,11 @@ import { ProofPublicSubmitSignedCommand } from "@src/modules/proof/application/p
 import type { IAttestationRepository } from "@src/modules/proof/domain/attestation.repository";
 import type { ICredentialRepository } from "@src/modules/credential/domain/credential.repository";
 import type { IIssuerRepository } from "@src/modules/issuer/domain/issuer.repository";
-import type { ZkService } from "@src/modules/zk/zk.service";
+import type { ZkService } from "@src/modules/zk/application/services/zk.service";
+import { encodeFr, encodeProof } from "@src/modules/zk/infra/zk-encoder";
+import type { Groth16Proof } from "@src/shared/types/vesta-vc.types";
 import type { StellarService } from "@src/modules/stellar/stellar.service";
-import type { WalletService } from "@src/modules/wallet/wallet.service";
+import type { WalletService } from "@src/modules/wallet/application/services/wallet.service";
 import type { PrepareSessionService } from "@src/modules/proof/application/services/prepare-session.service";
 
 const stellarResult = { txHash: "tx", ledger: 10, onChainResult: true, mock: true };
@@ -34,6 +36,10 @@ describe("proof issuer propagation", () => {
         }),
       } as unknown as IIssuerRepository,
       {
+        encodeSubmittedProof: jest.fn((proof: Groth16Proof, publicSignals: string[]) => ({
+          encodedProof: encodeProof(proof),
+          encodedPublicSignals: publicSignals.map((signal) => encodeFr(signal)),
+        })),
         loadVerificationKey: jest.fn().mockReturnValue({
           alpha: Buffer.alloc(64),
           beta: Buffer.alloc(128),

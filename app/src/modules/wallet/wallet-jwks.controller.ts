@@ -1,7 +1,7 @@
 import { Controller, Get, Res } from "@nestjs/common";
 import { ApiExcludeController } from "@nestjs/swagger";
 import { PublicEndpoint } from "@src/infra/auth/public.decorator";
-import { WalletService } from "@src/modules/wallet/wallet.service";
+import { WalletService } from "@src/modules/wallet/application/services/wallet.service";
 import type { Response } from "express";
 
 @ApiExcludeController()

@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Post } from "@nestjs/common";
 import { ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
-import { ChallengeService } from "@src/modules/challenge/challenge.service";
+import { ChallengeService } from "@src/modules/challenge/application/services/challenge.service";
 import { CurrentApiKeyIssuer } from "@src/infra/auth/current-api-key-issuer.decorator";
-import { PasskeyAuthService } from "@src/modules/challenge/passkey-auth.service";
+import { PasskeyAuthService } from "@src/modules/challenge/application/services/passkey-auth.service";
 import {
   PasskeyAuthenticationOptionsInput,
   PasskeyAuthenticationVerifyInput,

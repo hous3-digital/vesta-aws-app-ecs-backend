@@ -8,10 +8,9 @@ Para navegar, **abra a pasta ou o arquivo** que corresponda ao que está a imple
 
 ## Na raiz desta pasta
 
-| Arquivo               | O que é                                                                                         |
-| --------------------- | ----------------------------------------------------------------------------------------------- |
-| `architecture.md`     | Princípios (DDD pragmático, CQRS) e a estrutura alvo de módulo                                  |
-| `decisions.md`        | Registro vivo de decisões e pendências, com data                                                |
-| `tech-debt.md`        | Débitos técnicos com gatilho de pagamento e as frentes até o alvo                               |
-| `deploy-checklist.md` | Tudo que precisa ser feito fora do repo ao subir para staging ou produção, e o que trazer de lá |
-| `__test__/`           | Estratégia de testes e o catálogo de cenários                                                   |
+| Arquivo           | O que é                                                                                            |
+| ----------------- | -------------------------------------------------------------------------------------------------- |
+| `architecture.md` | Princípios (DDD pragmático, CQRS) e a estrutura alvo de módulo                                     |
+| `PRIVATE.md`      | Onde vivem decisões, dívidas, checklist de deploy, auditorias e mapa de produção (fora do repo)    |
+| `glossario.md`    | Os termos da plataforma (issuer, VC, passkey, circuito, attestation) com o estado de hoje e o alvo |
+| `__test__/`       | Estratégia de testes e o catálogo de cenários                                                      |

@@ -3,7 +3,7 @@ import { createHash } from "crypto";
 import { PrismaService } from "@src/infra/database/@prisma/prisma.service";
 import { EnvService } from "@src/infra/env/env.service";
 import { Id } from "@src/shared/value-objects/id.value-object";
-import { WalletService } from "@src/modules/wallet/wallet.service";
+import { WalletService } from "@src/modules/wallet/application/services/wallet.service";
 import { commissionBeneficiaryId, minorToAtomicUnits } from "@src/modules/commission/commission-onchain-identifiers";
 
 @Injectable()

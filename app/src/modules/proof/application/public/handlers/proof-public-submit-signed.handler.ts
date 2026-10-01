@@ -5,7 +5,7 @@ import { IAttestationRepository } from "@src/modules/proof/domain/attestation.re
 import { ProofPublicSubmitSignedCommand } from "@src/modules/proof/application/public/commands/proof-public-submit-signed.command";
 import { PrepareSessionService } from "@src/modules/proof/application/services/prepare-session.service";
 import { StellarService } from "@src/modules/stellar/stellar.service";
-import { WalletService } from "@src/modules/wallet/wallet.service";
+import { WalletService } from "@src/modules/wallet/application/services/wallet.service";
 
 export interface ProofPublicSubmitSignedResult {
   verified: boolean;

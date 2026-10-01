@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable } from "@nestjs/common";
-import { ChallengeService } from "@src/modules/challenge/challenge.service";
+import { ChallengeService } from "@src/modules/challenge/application/services/challenge.service";
 import { ICredentialRepository } from "@src/modules/credential/domain/credential.repository";
 import { VcService } from "@src/modules/vc/vc.service";
 import type { VestaVC } from "@src/shared/types/vesta-vc.types";

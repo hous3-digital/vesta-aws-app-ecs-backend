@@ -1,6 +1,6 @@
 # Tech spec: [feature name]
 
-PRD: `tasks/prd-[slug]/prd.md`
+PRD: `../private/backend/tasks/prd-[slug]/prd.md`
 
 ## Summary
 
@@ -44,7 +44,7 @@ Rules that apply and any deviation with its reason: `standard-module`, `standard
 
 ## Outside the repo
 
-Rows that go to `app/docs/deploy-checklist.md`: [env, secret, migration on prod, data fix, contract, ZK artifact]. "None" is a valid answer.
+Rows that go to `../private/backend/docs/deploy-checklist.md`: [env, secret, migration on prod, data fix, contract, ZK artifact]. "None" is a valid answer.
 
 ## Risks
 

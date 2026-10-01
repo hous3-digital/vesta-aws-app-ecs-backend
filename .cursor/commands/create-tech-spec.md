@@ -1,6 +1,6 @@
 # /create-tech-spec
 
-Write the tech spec of a feature in `tasks/prd-{feature}/techspec.md` from `app/.templates/tech-spec.template.md`. Requires `tasks/prd-{feature}/prd.md`; stop and say so if it is missing.
+Write the tech spec of a feature in `../private/backend/tasks/prd-{feature}/techspec.md` from `app/.templates/tech-spec.template.md`. Requires `../private/backend/tasks/prd-{feature}/prd.md`; stop and say so if it is missing.
 
 ## Before writing
 
@@ -11,7 +11,7 @@ Write the tech spec of a feature in `tasks/prd-{feature}/techspec.md` from `app/
 
 ## Writing
 
-Fill every section of the template. In "Modules and files" every legacy file that the feature touches gets its target path (the file moves in the task that touches it, never in a separate refactor). In "Infra" every schema change names its two-step pattern from the `prisma-migration` skill. In "API" every route carries its context and its auth pairing from `standard-security`. In "Outside the repo" list the rows that will go to `app/docs/deploy-checklist.md`, or write "None". Keep it under 2000 words and do not repeat the PRD.
+Fill every section of the template. In "Modules and files" every legacy file that the feature touches gets its target path (the file moves in the task that touches it, never in a separate refactor). In "Infra" every schema change names its two-step pattern from the `prisma-migration` skill. In "API" every route carries its context and its auth pairing from `standard-security`. In "Outside the repo" list the rows that will go to `../private/backend/docs/deploy-checklist.md`, or write "None". Keep it under 2000 words and do not repeat the PRD.
 
 ## After writing
 

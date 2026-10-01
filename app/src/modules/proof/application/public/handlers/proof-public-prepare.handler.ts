@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, Logger, UnprocessableEntityException } from "@nestjs/common";
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
-import { ChallengeService } from "@src/modules/challenge/challenge.service";
+import { ChallengeService } from "@src/modules/challenge/application/services/challenge.service";
 import { Credential, CredentialStatus } from "@src/modules/credential/domain/credential.entity";
 import { ICredentialRepository } from "@src/modules/credential/domain/credential.repository";
 import { IIssuerRepository } from "@src/modules/issuer/domain/issuer.repository";
@@ -8,8 +8,8 @@ import { ProofPublicPrepareCommand } from "@src/modules/proof/application/public
 import { PrepareSessionService } from "@src/modules/proof/application/services/prepare-session.service";
 import { StellarService } from "@src/modules/stellar/stellar.service";
 import { VcService } from "@src/modules/vc/vc.service";
-import { WalletService } from "@src/modules/wallet/wallet.service";
-import { ZkService } from "@src/modules/zk/zk.service";
+import { WalletService } from "@src/modules/wallet/application/services/wallet.service";
+import { ZkService } from "@src/modules/zk/application/services/zk.service";
 import type { KycLevel, VestaVC, ZkProofResult } from "@src/shared/types/vesta-vc.types";
 import * as fs from "fs";
 import * as path from "path";

@@ -8,7 +8,7 @@ export enum VerificationStatusFilter {
 }
 
 export class VerificationListInput {
-  @ApiPropertyOptional({ example: "verifier_example-verifier" })
+  @ApiPropertyOptional({ example: "verifier_example" })
   @IsOptional()
   @IsString()
   public verifierId?: string;

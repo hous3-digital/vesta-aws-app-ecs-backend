@@ -1,4 +1,4 @@
--- CreateTable: verifier (parceiros consumidores de credenciais, ex: example-verifier)
+-- CreateTable: verifier (parceiros consumidores de credenciais)
 CREATE TABLE "verifier" (
     "verifier_id" TEXT NOT NULL,
     "name" TEXT NOT NULL,

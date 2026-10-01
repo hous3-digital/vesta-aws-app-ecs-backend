@@ -1,4 +1,5 @@
-import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
+import { secretsMatch } from "@src/shared/crypto/secrets-match";
 
 const SECRET_PREFIX = "vesta_live_";
 const SECRET_RANDOM_BYTES = 24;
@@ -45,9 +46,6 @@ export class ApiKeySecret {
 
   /** Constant-time comparison of this secret's hash with a stored hash; lengths that differ are a mismatch. */
   public matchesHash(storedHash: string): boolean {
-    const candidate = Buffer.from(this.hash, "utf8");
-    const stored = Buffer.from(storedHash, "utf8");
-    if (candidate.length !== stored.length) return false;
-    return timingSafeEqual(candidate, stored);
+    return secretsMatch(storedHash, this.hash);
   }
 }

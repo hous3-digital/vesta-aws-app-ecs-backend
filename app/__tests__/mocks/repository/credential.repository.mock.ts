@@ -5,6 +5,9 @@ import type { ICredentialRepository } from "@src/modules/credential/domain/crede
 export function mockCredentialRepository(): jest.Mocked<ICredentialRepository> {
   return {
     findByVcHash: jest.fn().mockResolvedValue(null),
+    findByVcHashForIssuerOrThrow: jest
+      .fn()
+      .mockRejectedValue(new Error("findByVcHashForIssuerOrThrow has no default; set it in the spec")),
     findByCpfDedupKey: jest.fn().mockResolvedValue(null),
     findByIdOrThrow: jest.fn().mockRejectedValue(new Error("findByIdOrThrow has no default; set it in the spec")),
     saveOrThrow: jest.fn(async (credential: Credential) => credential),

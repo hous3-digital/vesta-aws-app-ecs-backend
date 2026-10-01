@@ -1,15 +1,15 @@
 name    = "vesta-app-backend"
 service = "vesta-app-backend"
-image   = "014468369894.dkr.ecr.us-east-1.amazonaws.com/hous3-vesta:latest"
+image   = "__AWS_ACCOUNT_ID__.dkr.ecr.us-east-1.amazonaws.com/hous3-vesta:latest"
 env     = "staging"
 
 subnet_ids     = ["subnet-0b406cbbc6ee3553d", "subnet-01f9808dec32cda2c"]
 lb_subnet_ids  = ["subnet-0b406cbbc6ee3553d", "subnet-01f9808dec32cda2c"]
 service-vpc-id = "vpc-04fc6ff69b649dfa9"
 
-certificate-arn = "arn:aws:acm:us-east-1:014468369894:certificate/9a12f755-bd47-4676-97b1-1e3b59470c9b"
+certificate-arn = "arn:aws:acm:us-east-1:__AWS_ACCOUNT_ID__:certificate/9a12f755-bd47-4676-97b1-1e3b59470c9b"
 
-cluster_arn = "arn:aws:ecs:us-east-1:014468369894:cluster/hous3-trust-ecs-cluster"
+cluster_arn = "arn:aws:ecs:us-east-1:__AWS_ACCOUNT_ID__:cluster/hous3-trust-ecs-cluster"
 
 cpu           = 1024
 memory        = 2048
@@ -51,19 +51,19 @@ environment = [
   },
   {
     name  = "CORS_ALLOWED_ORIGINS",
-    value = "https://backoffice.trust-staging.com,https://vesta-demo-stellar.vercel.app,http://localhost:5173,https://*.example-client.com"
+    value = "https://backoffice.trust-staging.com,https://vesta-demo-stellar.vercel.app,http://localhost:5173,__CLIENT_ORIGINS__"
   },
   {
     name  = "WEBAUTHN_ALLOWED_ORIGINS",
-    value = "https://vesta-demo-stellar.vercel.app,http://localhost:5173,https://*.example-client.com"
+    value = "https://vesta-demo-stellar.vercel.app,http://localhost:5173,__CLIENT_ORIGINS__"
   },
   {
     name  = "WEBAUTHN_ALLOWED_RP_IDS",
-    value = "vesta-demo-stellar.vercel.app,localhost,*.example-client.com"
+    value = "vesta-demo-stellar.vercel.app,localhost,__CLIENT_RP_IDS__"
   },
   {
     name  = "BACKOFFICE_JWT_EXPIRES_IN",
-    value = "never"
+    value = "8h"
   },
   {
     name  = "COMMISSION_SECURITY_MINUTES",
@@ -110,38 +110,38 @@ environment = [
 secrets = [
   {
     name      = "DATABASE_URL",
-    valueFrom = "arn:aws:secretsmanager:us-east-1:014468369894:secret:DATABASE_URL-89PrmK"
+    valueFrom = "arn:aws:secretsmanager:us-east-1:__AWS_ACCOUNT_ID__:secret:DATABASE_URL-89PrmK"
   },
   {
     name      = "VESTA_CONTRACT_ID",
-    valueFrom = "arn:aws:secretsmanager:us-east-1:014468369894:secret:VESTA_CONTRACT_ID-N8iRaA"
+    valueFrom = "arn:aws:secretsmanager:us-east-1:__AWS_ACCOUNT_ID__:secret:VESTA_CONTRACT_ID-N8iRaA"
   },
   {
     name      = "VESTA_DEPLOYER_SECRET",
-    valueFrom = "arn:aws:secretsmanager:us-east-1:014468369894:secret:VESTA_DEPLOYER_SECRET-NuPUJR"
+    valueFrom = "arn:aws:secretsmanager:us-east-1:__AWS_ACCOUNT_ID__:secret:VESTA_DEPLOYER_SECRET-NuPUJR"
   },
   {
     name      = "STELLAR_PAYOUT_OPERATOR_SECRET",
-    valueFrom = "arn:aws:secretsmanager:us-east-1:014468369894:secret:VESTA_DEPLOYER_SECRET-NuPUJR"
+    valueFrom = "arn:aws:secretsmanager:us-east-1:__AWS_ACCOUNT_ID__:secret:VESTA_DEPLOYER_SECRET-NuPUJR"
   },
   {
     name      = "CPF_HMAC_SECRET",
-    valueFrom = "arn:aws:secretsmanager:us-east-1:014468369894:secret:CPF_HMAC_SECRET-DGhmXY"
+    valueFrom = "arn:aws:secretsmanager:us-east-1:__AWS_ACCOUNT_ID__:secret:CPF_HMAC_SECRET-DGhmXY"
   },
   {
     name      = "ADMIN_SECRET",
-    valueFrom = "arn:aws:secretsmanager:us-east-1:014468369894:secret:ADMIN_SECRET-OFuCSK"
+    valueFrom = "arn:aws:secretsmanager:us-east-1:__AWS_ACCOUNT_ID__:secret:ADMIN_SECRET-OFuCSK"
   },
   {
     name      = "BACKOFFICE_JWT_SECRET",
-    valueFrom = "arn:aws:secretsmanager:us-east-1:014468369894:secret:BACKOFFICE_JWT_SECRET-8qbacm"
+    valueFrom = "arn:aws:secretsmanager:us-east-1:__AWS_ACCOUNT_ID__:secret:BACKOFFICE_JWT_SECRET-8qbacm"
   },
   {
     name      = "PRIVY_APP_SECRET",
-    valueFrom = "arn:aws:secretsmanager:us-east-1:014468369894:secret:PRIVY_APP_SECRET-pqOmBK"
+    valueFrom = "arn:aws:secretsmanager:us-east-1:__AWS_ACCOUNT_ID__:secret:PRIVY_APP_SECRET-pqOmBK"
   },
   {
     name      = "PRIVY_APP_ID",
-    valueFrom = "arn:aws:secretsmanager:us-east-1:014468369894:secret:PRIVY_APP_ID-Q3bsf0"
+    valueFrom = "arn:aws:secretsmanager:us-east-1:__AWS_ACCOUNT_ID__:secret:PRIVY_APP_ID-Q3bsf0"
   }
 ]

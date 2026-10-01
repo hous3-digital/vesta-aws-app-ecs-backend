@@ -64,7 +64,7 @@ Steps 7, 8, 10 and 12 of mode A. Add a repository method or a DAO method only if
 
 The task is something else (a fix, a feature). The move is a side effect and stays small.
 
-1. Find the target folder for the file using the tree in `standard-module.mdc`: a `*.service.ts` with orchestration goes to `application/services/`, one with persistence goes to `infra/`, a gateway abstract class goes to `domain/`, its Soroban implementation stays where it is until F3 (`app/docs/tech-debt.md`).
+1. Find the target folder for the file using the tree in `standard-module.mdc`: a `*.service.ts` with orchestration goes to `application/services/`, one with persistence goes to `infra/`, a gateway abstract class goes to `domain/`, its Soroban implementation stays where it is until F3 (`../private/backend/docs/tech-debt.md`).
 2. `git mv` the file. Do not rename the class in the same commit unless the name breaks `standard-module` naming.
 3. Fix imports: `grep -rn "old/path" src __tests__`. Absolute paths only.
 4. Move its spec to the matching test folder if one exists.

@@ -2,7 +2,7 @@ import { Module } from "@nestjs/common";
 import { EnvModule } from "@src/infra/env/env.module";
 import { IssuerModule } from "@src/modules/issuer/issuer.module";
 import { StellarModule } from "@src/modules/stellar/stellar.module";
-import { WalletService } from "@src/modules/wallet/wallet.service";
+import { WalletService } from "@src/modules/wallet/application/services/wallet.service";
 import { DatabaseModule } from "@src/infra/database/database.module";
 import { JwtModule } from "@nestjs/jwt";
 import { WalletJwksController } from "@src/modules/wallet/wallet-jwks.controller";

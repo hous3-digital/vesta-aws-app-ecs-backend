@@ -6,7 +6,7 @@ import type {
   ZkProofInput,
   ZkProofResult,
 } from "@src/shared/types/vesta-vc.types";
-import { encodeProof, encodeFr, encodeVerificationKey } from "@src/modules/zk/zk-encoder";
+import { encodeProof, encodeFr, encodeVerificationKey } from "@src/modules/zk/infra/zk-encoder";
 import { createHash } from "crypto";
 import { fork } from "child_process";
 import * as fs from "fs";
@@ -16,7 +16,7 @@ import * as path from "path";
 export class ZkService implements OnModuleInit {
   private readonly logger = new Logger(ZkService.name);
   private readonly artifactsDir: string;
-  private mockMode: boolean;
+  private readonly mockMode: boolean;
 
   public constructor(private readonly envService: EnvService) {
     this.artifactsDir = path.resolve(envService.ZK_ARTIFACTS_DIR);
@@ -25,29 +25,23 @@ export class ZkService implements OnModuleInit {
   }
 
   public onModuleInit(): void {
-    const wasmPath = path.join(this.artifactsDir, "vesta_kyc_js", "vesta_kyc.wasm");
     const zkeyPath = path.join(this.artifactsDir, "vesta_kyc_final.zkey");
-
-    this.logger.log(`Verificando artefatos ZK em: ${this.artifactsDir}`);
-    this.logger.log(`  wasm: ${wasmPath} — existe=${fs.existsSync(wasmPath)}`);
-    this.logger.log(`  zkey: ${zkeyPath} — existe=${fs.existsSync(zkeyPath)}`);
+    const wasmPath = path.join(this.artifactsDir, "vesta_kyc_js", "vesta_kyc.wasm");
 
     if (this.mockMode) {
-      this.logger.warn("ZK_MOCK_MODE=true — usando prova fake (sem verificação real)");
+      this.logger.warn("ZK_MOCK_MODE=true: proofs are mocked and never valid for on-chain verification");
       return;
     }
 
-    if (!fs.existsSync(wasmPath) || !fs.existsSync(zkeyPath)) {
-      this.logger.error(
-        `ZK_MOCK_MODE=false mas artefatos não encontrados em ${this.artifactsDir}. ` +
-          `Ativando mock mode — provas mock NÃO são válidas para verificação on-chain Soroban. ` +
-          `Defina ZK_MOCK_MODE=true explicitamente ou forneça os artefatos compilados.`,
+    const missing = [zkeyPath, wasmPath].filter((file) => !fs.existsSync(file));
+    if (missing.length > 0) {
+      throw new Error(
+        `ZK artifacts missing in ${this.artifactsDir} with ZK_MOCK_MODE=false (expected ${zkeyPath} and ${wasmPath}). ` +
+          "Ship the artifacts with the image or set ZK_MOCK_MODE=true explicitly.",
       );
-      this.mockMode = true;
-      return;
     }
 
-    this.logger.log("Artefatos ZK encontrados — modo real ativado");
+    this.logger.log(`ZK artifacts found in ${this.artifactsDir}: real mode enabled`);
   }
 
   public isMockMode(): boolean {
@@ -79,6 +73,14 @@ export class ZkService implements OnModuleInit {
     return encodeVerificationKey(vk);
   }
 
+  /** Encodes a proof produced outside this service (the legacy submit route) the way `generateProof` encodes its own. */
+  public encodeSubmittedProof(
+    proof: Groth16Proof,
+    publicSignals: string[],
+  ): Pick<ZkProofResult, "encodedProof" | "encodedPublicSignals"> {
+    return { encodedProof: encodeProof(proof), encodedPublicSignals: publicSignals.map((signal) => encodeFr(signal)) };
+  }
+
   private buildRealProof(input: ZkProofInput): Promise<ZkProofResult> {
     return new Promise<ZkProofResult>((resolve, reject) => {
       const wasmPath = path.join(this.artifactsDir, "vesta_kyc_js", "vesta_kyc.wasm");
@@ -87,8 +89,6 @@ export class ZkService implements OnModuleInit {
       const normalized = input.fullName.toUpperCase().trim().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\s+/g, " ");
       const fullNameHex = Buffer.from(normalized).toString("hex").slice(0, 60);
       const fullNameBigInt = String(BigInt("0x" + fullNameHex));
-
-      this.logger.log(`fullName normalizado: "${normalized}" → bigint: ${fullNameBigInt.slice(0, 20)}...`);
 
       const circuitInput = {
         cpf: input.cpf,
@@ -102,8 +102,8 @@ export class ZkService implements OnModuleInit {
       };
 
       const ext = path.extname(__filename);
-      const workerFile = path.join(__dirname, `zk.worker${ext}`);
-      const execArgv = ext === ".ts" ? ["-r", "ts-node/register/transpile-only"] : [];
+      const workerFile = path.join(__dirname, "..", "..", "infra", `zk.worker${ext}`);
+      const execArgv = ext === ".ts" ? ["-r", "ts-node/register/transpile-only", "-r", "tsconfig-paths/register"] : [];
 
       this.logger.log(`Gerando prova Groth16 via child process — arquivo: zk.worker${ext}`);
 

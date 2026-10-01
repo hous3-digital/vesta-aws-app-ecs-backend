@@ -4,7 +4,7 @@ import { CredentialPublicIssueHandler } from "@src/modules/credential/applicatio
 import { CredentialStatus } from "@src/modules/credential/domain/credential.entity";
 import type { EnvService } from "@src/infra/env/env.service";
 import type { VcService } from "@src/modules/vc/vc.service";
-import type { WalletService } from "@src/modules/wallet/wallet.service";
+import type { WalletService } from "@src/modules/wallet/application/services/wallet.service";
 import { Id } from "@src/shared/value-objects/id.value-object";
 import { FIXTURE_ISSUER_EXTERNAL_ID } from "@test/constants";
 import { generateCpf } from "@test/helpers/generate-cpf.helper";

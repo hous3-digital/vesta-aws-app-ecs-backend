@@ -2,7 +2,7 @@ import { JwtService } from "@nestjs/jwt";
 import { generateKeyPairSync } from "node:crypto";
 import type { Response } from "express";
 import { WalletJwksController } from "@src/modules/wallet/wallet-jwks.controller";
-import { WalletService } from "@src/modules/wallet/wallet.service";
+import { WalletService } from "@src/modules/wallet/application/services/wallet.service";
 
 const makeService = () => {
   const { privateKey, publicKey } = generateKeyPairSync("ec", {
