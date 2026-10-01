@@ -2,7 +2,7 @@ name: release-workflow
 
 on:
   workflow_run:
-    workflows: ["staging-workflow"]
+    workflows: ["staging-deploy"]
     types: ["completed"]
 
 permissions:
