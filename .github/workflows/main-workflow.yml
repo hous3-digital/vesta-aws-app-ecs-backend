@@ -173,6 +173,14 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           persist-credentials: false
 
+      - name: Render tfvars with values kept outside the repository
+        uses: ./.github/actions/render-tfvars
+        with:
+          env: prod
+          aws-account-id: ${{ secrets.AWS_ACCOUNT_ID_PROD }}
+          client-origins: ${{ vars.CLIENT_WEBAUTHN_ORIGINS_PROD }}
+          client-rp-ids: ${{ vars.CLIENT_WEBAUTHN_RP_IDS_PROD }}
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -214,6 +222,14 @@ jobs:
           repository: hous3-digital/vesta-aws-app-ecs-backend
           token: ${{ secrets.GITHUB_TOKEN }}
           persist-credentials: false
+
+      - name: Render tfvars with values kept outside the repository
+        uses: ./.github/actions/render-tfvars
+        with:
+          env: prod
+          aws-account-id: ${{ secrets.AWS_ACCOUNT_ID_PROD }}
+          client-origins: ${{ vars.CLIENT_WEBAUTHN_ORIGINS_PROD }}
+          client-rp-ids: ${{ vars.CLIENT_WEBAUTHN_RP_IDS_PROD }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -337,6 +353,14 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           persist-credentials: false
+
+      - name: Render tfvars with values kept outside the repository
+        uses: ./.github/actions/render-tfvars
+        with:
+          env: prod
+          aws-account-id: ${{ secrets.AWS_ACCOUNT_ID_PROD }}
+          client-origins: ${{ vars.CLIENT_WEBAUTHN_ORIGINS_PROD }}
+          client-rp-ids: ${{ vars.CLIENT_WEBAUTHN_RP_IDS_PROD }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4

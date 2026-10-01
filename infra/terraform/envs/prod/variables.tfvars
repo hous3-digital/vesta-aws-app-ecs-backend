@@ -1,15 +1,15 @@
 name    = "vesta-app-backend"
 service = "vesta-app-backend"
-image   = "694580672968.dkr.ecr.us-east-1.amazonaws.com/hous3-vesta:latest"
+image   = "__AWS_ACCOUNT_ID__.dkr.ecr.us-east-1.amazonaws.com/hous3-vesta:latest"
 env     = "prod"
 
 subnet_ids     = ["subnet-0bd4dff1f355cd922", "subnet-0fbc51e8bc5bab39f"]
 lb_subnet_ids  = ["subnet-0bd4dff1f355cd922", "subnet-0fbc51e8bc5bab39f"]
 service-vpc-id = "vpc-012c476eb6d6bb5df"
 
-certificate-arn = "arn:aws:acm:us-east-1:694580672968:certificate/2f716fe4-9ec4-4668-9a6b-e86784436b57"
+certificate-arn = "arn:aws:acm:us-east-1:__AWS_ACCOUNT_ID__:certificate/2f716fe4-9ec4-4668-9a6b-e86784436b57"
 
-cluster_arn = "arn:aws:ecs:us-east-1:694580672968:cluster/hous3-trust-ecs-cluster"
+cluster_arn = "arn:aws:ecs:us-east-1:__AWS_ACCOUNT_ID__:cluster/hous3-trust-ecs-cluster"
 
 cpu           = 2048
 memory        = 4096
@@ -46,15 +46,15 @@ environment = [
   },
   {
     name  = "CORS_ALLOWED_ORIGINS",
-    value = "https://backoffice.hous3-trust.com,https://backoffice.vestazk.com,https://vesta-demo-stellar.vercel.app,http://localhost:5173,https://*.example-client.com"
+    value = "https://backoffice.hous3-trust.com,https://backoffice.vestazk.com,https://vesta-demo-stellar.vercel.app,http://localhost:5173,__CLIENT_ORIGINS__"
   },
   {
     name  = "WEBAUTHN_ALLOWED_ORIGINS",
-    value = "https://vesta-demo-stellar.vercel.app,https://*.example-client.com"
+    value = "https://vesta-demo-stellar.vercel.app,__CLIENT_ORIGINS__"
   },
   {
     name  = "WEBAUTHN_ALLOWED_RP_IDS",
-    value = "vesta-demo-stellar.vercel.app,*.example-client.com"
+    value = "vesta-demo-stellar.vercel.app,__CLIENT_RP_IDS__"
   },
   {
     name  = "BACKOFFICE_JWT_EXPIRES_IN",
@@ -97,38 +97,38 @@ environment = [
 secrets = [
   {
     name      = "DATABASE_URL",
-    valueFrom = "arn:aws:secretsmanager:us-east-1:694580672968:secret:DATABASE_URL-gosGZq"
+    valueFrom = "arn:aws:secretsmanager:us-east-1:__AWS_ACCOUNT_ID__:secret:DATABASE_URL-gosGZq"
   },
   {
     name      = "VESTA_CONTRACT_ID",
-    valueFrom = "arn:aws:secretsmanager:us-east-1:694580672968:secret:VESTA_CONTRACT_ID-r4YQDg"
+    valueFrom = "arn:aws:secretsmanager:us-east-1:__AWS_ACCOUNT_ID__:secret:VESTA_CONTRACT_ID-r4YQDg"
   },
   {
     name      = "VESTA_DEPLOYER_SECRET",
-    valueFrom = "arn:aws:secretsmanager:us-east-1:694580672968:secret:VESTA_DEPLOYER_SECRET-0CiEeP"
+    valueFrom = "arn:aws:secretsmanager:us-east-1:__AWS_ACCOUNT_ID__:secret:VESTA_DEPLOYER_SECRET-0CiEeP"
   },
   {
     name      = "CPF_HMAC_SECRET",
-    valueFrom = "arn:aws:secretsmanager:us-east-1:694580672968:secret:CPF_HMAC_SECRET-vPl0WV"
+    valueFrom = "arn:aws:secretsmanager:us-east-1:__AWS_ACCOUNT_ID__:secret:CPF_HMAC_SECRET-vPl0WV"
   },
   {
     name      = "ADMIN_SECRET",
-    valueFrom = "arn:aws:secretsmanager:us-east-1:694580672968:secret:ADMIN_SECRET-VPvnPW"
+    valueFrom = "arn:aws:secretsmanager:us-east-1:__AWS_ACCOUNT_ID__:secret:ADMIN_SECRET-VPvnPW"
   },
   {
     name      = "BACKOFFICE_JWT_SECRET",
-    valueFrom = "arn:aws:secretsmanager:us-east-1:694580672968:secret:BACKOFFICE_JWT_SECRET-Jx25DJ"
+    valueFrom = "arn:aws:secretsmanager:us-east-1:__AWS_ACCOUNT_ID__:secret:BACKOFFICE_JWT_SECRET-Jx25DJ"
   },
   {
     name      = "COMMISSION_PER_VERIFICATION_BRL",
-    valueFrom = "arn:aws:secretsmanager:us-east-1:694580672968:secret:COMMISSION_PER_VERIFICATION_BRL-eGiaMo"
+    valueFrom = "arn:aws:secretsmanager:us-east-1:__AWS_ACCOUNT_ID__:secret:COMMISSION_PER_VERIFICATION_BRL-eGiaMo"
   },
   {
     name      = "PRIVY_APP_SECRET",
-    valueFrom = "arn:aws:secretsmanager:us-east-1:694580672968:secret:PRIVY_APP_SECRET-jGPt35"
+    valueFrom = "arn:aws:secretsmanager:us-east-1:__AWS_ACCOUNT_ID__:secret:PRIVY_APP_SECRET-jGPt35"
   },
   {
     name      = "PRIVY_APP_ID",
-    valueFrom = "arn:aws:secretsmanager:us-east-1:694580672968:secret:PRIVY_APP_ID-b1Co0C"
+    valueFrom = "arn:aws:secretsmanager:us-east-1:__AWS_ACCOUNT_ID__:secret:PRIVY_APP_ID-b1Co0C"
   }
 ]

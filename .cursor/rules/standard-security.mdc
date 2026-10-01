@@ -10,6 +10,10 @@ alwaysApply: false
 
 `AGENTS.md` rule 4 (PII only as a hash) and "Environments and secrets" are the contract. The hooks `guard-secrets` and `guard-shell` in `.cursor/hooks/` keep secrets out of the agent's context and block destructive shell; this file covers what hooks cannot see: the code the agent writes. Where the code does something else today, the line says so and the fix happens on touch (`standard-code`, Legacy map).
 
+## Public repository
+
+The repository is public (`AGENTS.md`, "Private documentation"). Nothing committed names a client, a partner, a person of the project, a commercial term, an AWS account id or a client domain: not a Swagger `example`, a fixture, a migration comment, a log line, a test name or a commit message. Write the role ("the client in production") and neutral example values (`verifier_example`, `example.com`); an infra identifier is a `__PLACEHOLDER__` that `.github/actions/render-tfvars` fills from GitHub secrets and variables. Anything that needs the real name goes to `../private/backend/`.
+
 ## Secrets
 
 - A secret is read once, in `EnvService`, validated by `env.schema.ts`. No `process.env.X` outside `src/infra/env/`, no secret as a default value, no secret in a fixture, a spec or a Swagger example.

@@ -11,7 +11,7 @@ alwaysApply: false
 
 # Chain standard
 
-`AGENTS.md` rule 2 says the chain SDK lives only inside the adapter and rule 3 says the chain owns what a third party verifies. This file says what that looks like in code. The boundary is agnostic in vocabulary, not in infrastructure: one Stellar adapter today, ports written so a second network would be a new adapter and nothing else (TD-002, `app/docs/tech-debt.md`).
+`AGENTS.md` rule 2 says the chain SDK lives only inside the adapter and rule 3 says the chain owns what a third party verifies. This file says what that looks like in code. The boundary is agnostic in vocabulary, not in infrastructure: one Stellar adapter today, ports written so a second network would be a new adapter and nothing else (TD-002, `../private/backend/docs/tech-debt.md`).
 
 ## Ports speak our vocabulary
 

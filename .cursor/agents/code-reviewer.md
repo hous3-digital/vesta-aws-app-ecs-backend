@@ -44,6 +44,7 @@ Read the rule file before reviewing the block; the file is the source, this chec
 - **Logging**: `Logger` with the class name; `console.*` only in `main.ts` and `src/scripts/`; nothing from the "never in a log" list of `standard-security`; no hand-rolled request logging in handlers or controllers (TD-004).
 - **DTOs and outputs**: inputs are classes with `class-validator` and `@ApiProperty` on every field; validation never in the handler; `/public/*` handlers return an explicit output type, never an entity or a Prisma row; trim and normalize at the DTO.
 - **Comments**: no narration, no `TODO`/`FIXME`/`later`/`for now` (the work goes to `tech-debt.md` or a Track task); JSDoc on ports and on wrappers of external libraries.
+- **Names that never enter the repository**: a client, partner, person of the project, commercial term, AWS account id or client domain anywhere in the diff (identifiers, comments, Swagger examples, fixtures, migrations, docs, commit messages) is a **blocking** finding; the role or a neutral example replaces it.
 
 ### `standard-test.mdc` (everything under `app/__tests__`)
 
@@ -88,8 +89,8 @@ For every route under `/public/*` and every SDK-facing shape the diff touches, c
 
 - A module that moved in the diff has its row updated in the legacy map table; a module the table says is "On target" that received a flat file is a finding.
 - The ESLint chain allowlist did not grow.
-- A rule or a section of `AGENTS.md` changed: a dated line in `app/docs/decisions.md`, and an ADR when structural.
-- Anything the change needs outside the repo (env var, secret, migration on prod, data fix, contract or ZK artifact): a row in `app/docs/deploy-checklist.md` in the same commit; a new env var also in `env.schema.ts` and `.env.local.example`.
+- A rule or a section of `AGENTS.md` changed: a dated line in `../private/backend/docs/decisions.md`, and an ADR when structural.
+- Anything the change needs outside the repo (env var, secret, migration on prod, data fix, contract or ZK artifact): a row in `../private/backend/docs/deploy-checklist.md` in the same commit; a new env var also in `env.schema.ts` and `.env.local.example`.
 - Deferred work found in the diff (`TODO`, a skipped test, a partial move) has a `TD-` id or a Track task, not a comment.
 - Commit messages follow Conventional Commits in English with the `Track: task_...` footer.
 

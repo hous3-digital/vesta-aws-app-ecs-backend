@@ -54,10 +54,10 @@
 
 ## Subida
 
-<!-- app/docs/deploy-checklist.md é o único lugar para o que precisa ser feito fora do repo -->
+<!-- ../private/backend/docs/deploy-checklist.md é o único lugar para o que precisa ser feito fora do repo -->
 
 - [ ] `yarn deploy:check` sem ERROR para o ambiente alvo (colar a saída em Logs/Testes)
-- [ ] Pendências desta mudança registradas em `app/docs/deploy-checklist.md` (ou "nenhuma")
+- [ ] Pendências desta mudança registradas em `../private/backend/docs/deploy-checklist.md` (ou "nenhuma")
 - [ ] Migrations novas listadas aqui: <!-- nomes, ou "nenhuma" -->
 
 ## Checklist

@@ -179,6 +179,14 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           persist-credentials: false
 
+      - name: Render tfvars with values kept outside the repository
+        uses: ./.github/actions/render-tfvars
+        with:
+          env: staging
+          aws-account-id: ${{ secrets.AWS_ACCOUNT_ID_STAGING }}
+          client-origins: ${{ vars.CLIENT_WEBAUTHN_ORIGINS_STAGING }}
+          client-rp-ids: ${{ vars.CLIENT_WEBAUTHN_RP_IDS_STAGING }}
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -220,6 +228,14 @@ jobs:
           repository: hous3-digital/vesta-aws-app-ecs-backend
           token: ${{ secrets.GITHUB_TOKEN }}
           persist-credentials: false
+
+      - name: Render tfvars with values kept outside the repository
+        uses: ./.github/actions/render-tfvars
+        with:
+          env: staging
+          aws-account-id: ${{ secrets.AWS_ACCOUNT_ID_STAGING }}
+          client-origins: ${{ vars.CLIENT_WEBAUTHN_ORIGINS_STAGING }}
+          client-rp-ids: ${{ vars.CLIENT_WEBAUTHN_RP_IDS_STAGING }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -321,8 +337,8 @@ jobs:
 
       - name: Validate Privy secrets
         env:
-          PRIVY_APP_ID_SECRET_ID: "arn:aws:secretsmanager:us-east-1:014468369894:secret:PRIVY_APP_ID-Q3bsf0"
-          PRIVY_APP_SECRET_SECRET_ID: "arn:aws:secretsmanager:us-east-1:014468369894:secret:PRIVY_APP_SECRET-pqOmBK"
+          PRIVY_APP_ID_SECRET_ID: "arn:aws:secretsmanager:us-east-1:${{ secrets.AWS_ACCOUNT_ID_STAGING }}:secret:PRIVY_APP_ID-Q3bsf0"
+          PRIVY_APP_SECRET_SECRET_ID: "arn:aws:secretsmanager:us-east-1:${{ secrets.AWS_ACCOUNT_ID_STAGING }}:secret:PRIVY_APP_SECRET-pqOmBK"
         run: |
           PRIVY_APP_ID="$(aws secretsmanager get-secret-value \
             --secret-id "${PRIVY_APP_ID_SECRET_ID}" \
@@ -345,7 +361,7 @@ jobs:
 
       - name: Apply pending migrations
         env:
-          DATABASE_SECRET_ID: "arn:aws:secretsmanager:us-east-1:014468369894:secret:DATABASE_URL-89PrmK"
+          DATABASE_SECRET_ID: "arn:aws:secretsmanager:us-east-1:${{ secrets.AWS_ACCOUNT_ID_STAGING }}:secret:DATABASE_URL-89PrmK"
         run: |
           DATABASE_URL="$(aws secretsmanager get-secret-value \
             --secret-id "${DATABASE_SECRET_ID}" \
@@ -409,6 +425,14 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           persist-credentials: false
+
+      - name: Render tfvars with values kept outside the repository
+        uses: ./.github/actions/render-tfvars
+        with:
+          env: staging
+          aws-account-id: ${{ secrets.AWS_ACCOUNT_ID_STAGING }}
+          client-origins: ${{ vars.CLIENT_WEBAUTHN_ORIGINS_STAGING }}
+          client-rp-ids: ${{ vars.CLIENT_WEBAUTHN_RP_IDS_STAGING }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4

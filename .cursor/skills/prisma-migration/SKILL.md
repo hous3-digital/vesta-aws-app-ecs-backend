@@ -25,7 +25,7 @@ Each step leaves `yarn typecheck` green, so run it after every one.
 4. **Mapper.** `toDomain`, `toCreateInput`, `toUpdateInput` gain the field in the same position it has in the model. No spread.
 5. **Entity.** The prop, the getter, the transition that sets it. A status enum that drives a rule gets its twin in `domain/` with the same values; the mapper converts. Never import a Prisma enum in `domain/` or `application/`.
 6. **Tests.** Unit for the entity rule, integration for the handler rule, e2e when the HTTP contract changes. `yarn test:e2e` runs `migrate deploy` on `vesta_test` (created when missing, otherwise the pending migrations are applied on the existing data), which proves the migration applies on a database that is not the one it was written on; `yarn db:local` on a local database with rows is the proof of the backfill.
-7. **Deploy checklist.** Every migration gets a row in `app/docs/deploy-checklist.md` in the same commit: staging applies it in CI, but prod has no migration job (`main-workflow.yml`), so someone runs `yarn prisma:deploy` against prod by hand before the merge, and the row is what schedules that. SUB-011 is the shape. Add to the row anything else the migration needs outside the repo (a long backfill run by hand, a new env var, a data fix first).
+7. **Deploy checklist.** Every migration gets a row in `../private/backend/docs/deploy-checklist.md` in the same commit: staging applies it in CI, but prod has no migration job (`main-workflow.yml`), so someone runs `yarn prisma:deploy` against prod by hand before the merge, and the row is what schedules that. SUB-011 is the shape. Add to the row anything else the migration needs outside the repo (a long backfill run by hand, a new env var, a data fix first).
 
 ## Two-step patterns
 
@@ -57,7 +57,7 @@ Read `migration.sql` line by line before committing. All of these are blocking:
 
 - `yarn prisma:reset`, `prisma migrate reset`, `prisma db push`, `--force-reset`, `DROP`, `TRUNCATE` on anything but the local database through `make db-reset`. The hook denies the reset forms and asks before `db push`, because they read `app/.env`.
 - Edit a migration that is already applied on staging. `migrate deploy` skips every name already recorded in `_prisma_migrations` without comparing checksums, so the edit silently never runs on staging or prod and the schema drifts with no error. Write a new migration that fixes the previous one.
-- `prisma migrate resolve` on staging or prod without a dated line in `app/docs/decisions.md` saying what was marked and why.
+- `prisma migrate resolve` on staging or prod without a dated line in `../private/backend/docs/decisions.md` saying what was marked and why.
 - Generate a migration against staging (`prisma migrate dev` without `dotenv -e .env.local`).
 - Hand-write the migration folder. The timestamp comes from Prisma so ordering never collides.
 

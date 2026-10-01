@@ -46,7 +46,7 @@ The six `src` files in the ESLint allowlist keep working; the task that touches 
 1. Create the port method and codec as in Mode A, in the target paths.
 2. Move the SDK code for that call into the new adapter; the legacy file delegates to the port or loses the method.
 3. If the legacy file no longer imports the SDK, delete it from `CHAIN_SDK_ALLOWLIST` in `app/eslint.config.js` in the same commit. `yarn lint` proves it.
-4. Update the legacy map row in `AGENTS.md` and, when the file was the last of its module, the F3 front in `app/docs/tech-debt.md`.
+4. Update the legacy map row in `AGENTS.md` and, when the file was the last of its module, the F3 front in `../private/backend/docs/tech-debt.md`.
 
 ## Shapes
 

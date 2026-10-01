@@ -18,7 +18,7 @@ Several rules say "on touch": translate the message, replace the exception, move
 ## Language
 
 - English for identifiers, comments, commit messages, Swagger text, log lines and exception messages.
-- Legacy Portuguese text is translated when the line is touched, including exception messages. Clients branch on `code`, never on the message text. While decision D6 in `app/docs/decisions.md` (production usage map) is open, a translated message on a `/public/*` route is listed in the PR as a behavioral change.
+- Legacy Portuguese text is translated when the line is touched, including exception messages. Clients branch on `code`, never on the message text. While decision D6 in `../private/backend/docs/decisions.md` (production usage map) is open, a translated message on a `/public/*` route is listed in the PR as a behavioral change.
 
 ## Types
 
@@ -75,8 +75,12 @@ Several rules say "on touch": translate the message, replace the exception, move
 - `/public/*` handlers return an explicit output type declared next to the handler or in `{module}.output.ts`, never an entity or a Prisma row: the shape is a contract. Backoffice and admin query handlers may return the DAO row.
 - Trim and normalize input once, at the DTO with a transformer, not in the handler.
 
+## Names that never enter the repository
+
+No client, partner, person, commercial term, AWS account id or client domain in identifiers, comments, examples, fixtures, docs or commit messages (`standard-security`, "Public repository"). A touched line that carries one is rewritten to the role or to a neutral example in the same commit.
+
 ## Comments
 
 - No comment that narrates the code (`// increment counter`). A comment states a constraint, a non-obvious reason or an external quirk.
 - JSDoc on public ports (`domain/*.gateway.ts`, `*.repository.ts`) and on wrappers of external libraries.
-- No deferred-work comments (`TODO`, `FIXME`, `later`, `for now`). Work that is not done goes to `app/docs/tech-debt.md` or to a Track task, where it has an owner and a trigger. A comment in code has neither.
+- No deferred-work comments (`TODO`, `FIXME`, `later`, `for now`). Work that is not done goes to `../private/backend/docs/tech-debt.md` or to a Track task, where it has an owner and a trigger. A comment in code has neither.

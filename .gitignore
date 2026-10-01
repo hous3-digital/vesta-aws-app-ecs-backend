@@ -19,3 +19,11 @@ coverage
 
 # temp files of .cursor/hooks/selftest.js (removed on exit; kept out of git if a run is interrupted)
 selftest-sensor-tmp*
+
+# Private documentation lives in ../private/backend (see AGENTS.md, "Private documentation")
+/tasks/
+/app/docs/as-is/
+/app/docs/audits/
+/app/docs/decisions.md
+/app/docs/tech-debt.md
+/app/docs/deploy-checklist.md
