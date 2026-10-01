@@ -162,7 +162,7 @@ Tests live in `app/__tests__/`, split by layer, one jest config per layer in `ap
 | `@integration` | `__tests__/@integration/` | Handlers and services **that contain a rule**: branching, validation, transformation, error handling              | Passthrough handlers (fetch, call, return), DAOs, gateways that only wrap an SDK |
 | `@e2e`         | `__tests__/@e2e/`         | HTTP contract of every route, booted in-process on the compose Postgres, chain mocked, ZK real. Named by QA CT id | Anything already proven by a lower layer                                         |
 
-- Coverage is collected from `src/**/domain/**` only, and `coverageThreshold` in `app/config/jest-*.config.ts` holds the floor measured when it was set. It only goes up, one task at a time. A thin domain is a finding, not a reason to test services instead.
+- Coverage is collected from `src/**/domain/**` only, and `coverageThreshold` in `app/config/jest-*.config.ts` holds the floor measured when it was set. It only goes up, one task at a time; a floor found above the measured value is a broken gate, not a floor, and is corrected once, to the measurement, with a dated row in `app/docs/decisions.md`. A thin domain is a finding, not a reason to test services instead.
 - Never test DAOs, provider endpoints or chain gateways with mocked networks.
 - If you cannot name the rule a test protects, do not write it.
 - Run a single spec: `yarn test:unit __tests__/@unit/entities/credential.spec.ts`.

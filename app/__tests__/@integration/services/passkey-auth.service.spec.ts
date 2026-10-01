@@ -12,7 +12,7 @@ import type { ChallengeService } from "@src/modules/challenge/application/servic
 import { PasskeyAuthService } from "@src/modules/challenge/application/services/passkey-auth.service";
 import { CredentialStatus } from "@src/modules/credential/domain/credential.entity";
 import type { WalletService } from "@src/modules/wallet/application/services/wallet.service";
-import { ConflictError, ForbiddenError, ValidationError } from "@src/shared/errors";
+import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "@src/shared/errors";
 import { FIXTURE_ISSUER_EXTERNAL_ID } from "@test/constants";
 import { credentialModel } from "@test/mocks/model/credential.model";
 import { passkeyRecord, RECORDED_ASSERTION } from "@test/mocks/model/passkey.model";
@@ -72,8 +72,8 @@ const arrangeAuthentication = (
     issuerId: ISSUER_ID,
     rpId: RP_ID,
   });
-  prisma.passkeyCredential.findUnique.mockResolvedValue(passkey);
-  credentialRepository.findByVcHash.mockResolvedValue(credentialModel({ vcHash: passkey.vcHash }));
+  prisma.passkeyCredential.findFirst.mockResolvedValue(passkey);
+  credentialRepository.findByVcHashForIssuerOrThrow.mockResolvedValue(credentialModel({ vcHash: passkey.vcHash }));
 };
 
 const authenticate = (sut: PasskeyAuthService, response: AuthenticationResponseJSON = RECORDED_ASSERTION.response) =>
@@ -175,7 +175,7 @@ describe("PasskeyAuthService", () => {
       // Arrange
       const { sut, challengeService, credentialRepository, prisma } = makeSut();
       challengeService.consumeContext.mockResolvedValue(registrationContext);
-      credentialRepository.findByVcHash.mockResolvedValue(credentialModel({ vcHash: VC_HASH }));
+      credentialRepository.findByVcHashForIssuerOrThrow.mockResolvedValue(credentialModel({ vcHash: VC_HASH }));
       verifyRegistration.mockResolvedValue({ verified: true, registrationInfo } as never);
 
       // Act
@@ -199,7 +199,7 @@ describe("PasskeyAuthService", () => {
       // Arrange
       const { sut, challengeService, credentialRepository, prisma } = makeSut();
       challengeService.consumeContext.mockResolvedValue(registrationContext);
-      credentialRepository.findByVcHash.mockResolvedValue(credentialModel({ vcHash: VC_HASH }));
+      credentialRepository.findByVcHashForIssuerOrThrow.mockResolvedValue(credentialModel({ vcHash: VC_HASH }));
       verifyRegistration.mockRejectedValue(new Error("Unexpected registration response origin"));
 
       // Act
@@ -215,13 +215,14 @@ describe("PasskeyAuthService", () => {
       // Arrange
       const { sut, challengeService, credentialRepository, prisma } = makeSut();
       challengeService.consumeContext.mockResolvedValue(registrationContext);
-      credentialRepository.findByVcHash.mockResolvedValue(credentialModel({ vcHash: VC_HASH }));
+      credentialRepository.findByVcHashForIssuerOrThrow.mockResolvedValue(credentialModel({ vcHash: VC_HASH }));
       verifyRegistration.mockResolvedValue({ verified: false } as never);
 
       // Act
       const act = register(sut);
 
       // Assert
+      await expect(act).rejects.toBeInstanceOf(ValidationError);
       await expect(act).rejects.toMatchObject({ code: "PASSKEY_VERIFICATION_FAILED" });
       expect(prisma.passkeyCredential.create).not.toHaveBeenCalled();
     });
@@ -235,6 +236,7 @@ describe("PasskeyAuthService", () => {
       const act = register(sut, { id: "cred-1" } as unknown as RegistrationResponseJSON);
 
       // Assert
+      await expect(act).rejects.toBeInstanceOf(ValidationError);
       await expect(act).rejects.toMatchObject({ code: "PASSKEY_VERIFICATION_FAILED" });
       expect(prisma.passkeyCredential.create).not.toHaveBeenCalled();
     });
@@ -253,12 +255,12 @@ describe("PasskeyAuthService", () => {
       expect(prisma.passkeyCredential.create).not.toHaveBeenCalled();
     });
 
-    it("answers 403 CREDENTIAL_ISSUER_MISMATCH and creates nothing when the credential belongs to another issuer", async () => {
+    it("answers 404 CREDENTIAL_NOT_FOUND and creates nothing when the issuer-scoped read finds no credential", async () => {
       // Arrange
       const { sut, challengeService, credentialRepository, prisma } = makeSut();
       challengeService.consumeContext.mockResolvedValue(registrationContext);
-      credentialRepository.findByVcHash.mockResolvedValue(
-        credentialModel({ vcHash: VC_HASH, issuerId: "issuer_other" }),
+      credentialRepository.findByVcHashForIssuerOrThrow.mockRejectedValue(
+        new NotFoundError("CREDENTIAL_NOT_FOUND", "Credential not found", { vcHash: VC_HASH, issuerId: ISSUER_ID }),
       );
       verifyRegistration.mockResolvedValue({ verified: true, registrationInfo } as never);
 
@@ -266,8 +268,8 @@ describe("PasskeyAuthService", () => {
       const act = register(sut);
 
       // Assert
-      await expect(act).rejects.toBeInstanceOf(ForbiddenError);
-      await expect(act).rejects.toMatchObject({ code: "CREDENTIAL_ISSUER_MISMATCH" });
+      await expect(act).rejects.toBeInstanceOf(NotFoundError);
+      await expect(act).rejects.toMatchObject({ code: "CREDENTIAL_NOT_FOUND" });
       expect(prisma.passkeyCredential.create).not.toHaveBeenCalled();
     });
   });
@@ -371,6 +373,7 @@ describe("PasskeyAuthService", () => {
       const act = authenticate(mocks.sut);
 
       // Assert
+      await expect(act).rejects.toBeInstanceOf(ValidationError);
       await expect(act).rejects.toMatchObject({ code: "PASSKEY_VERIFICATION_FAILED" });
       expect(mocks.prisma.passkeyCredential.updateMany).not.toHaveBeenCalled();
     });
@@ -407,6 +410,7 @@ describe("PasskeyAuthService", () => {
       const act = authenticate(mocks.sut, response);
 
       // Assert
+      await expect(act).rejects.toBeInstanceOf(ValidationError);
       await expect(act).rejects.toMatchObject({ code: "PASSKEY_VERIFICATION_FAILED" });
       expect(mocks.prisma.passkeyCredential.updateMany).not.toHaveBeenCalled();
     });
@@ -421,6 +425,7 @@ describe("PasskeyAuthService", () => {
       const act = authenticate(mocks.sut, response);
 
       // Assert
+      await expect(act).rejects.toBeInstanceOf(ValidationError);
       await expect(act).rejects.toMatchObject({ code: "PASSKEY_VERIFICATION_FAILED" });
       expect(mocks.prisma.passkeyCredential.updateMany).not.toHaveBeenCalled();
     });
@@ -444,17 +449,39 @@ describe("PasskeyAuthService", () => {
       expect(mocks.prisma.passkeyCredential.updateMany).not.toHaveBeenCalled();
     });
 
-    it("answers 403 PASSKEY_NOT_REGISTERED when the passkey belongs to another issuer or RP ID", async () => {
+    it("answers 404 PASSKEY_NOT_FOUND when the issuer-scoped read finds no passkey for this issuer and RP ID", async () => {
       // Arrange
       const mocks = makeSut();
-      arrangeAuthentication(mocks, passkeyRecord({ issuerId: "issuer_other" }));
+      arrangeAuthentication(mocks);
+      mocks.prisma.passkeyCredential.findFirst.mockResolvedValue(null);
 
       // Act
       const act = authenticate(mocks.sut);
 
       // Assert
-      await expect(act).rejects.toBeInstanceOf(ForbiddenError);
-      await expect(act).rejects.toMatchObject({ code: "PASSKEY_NOT_REGISTERED" });
+      await expect(act).rejects.toBeInstanceOf(NotFoundError);
+      await expect(act).rejects.toMatchObject({ code: "PASSKEY_NOT_FOUND" });
+      expect(mocks.prisma.passkeyCredential.updateMany).not.toHaveBeenCalled();
+    });
+
+    it("answers 400 PASSKEY_VERIFICATION_FAILED instead of 500 when the assertion has no clientDataJSON", async () => {
+      // Arrange
+      const mocks = makeSut();
+      arrangeAuthentication(mocks);
+      const response = {
+        ...RECORDED_ASSERTION.response,
+        response: {
+          authenticatorData: RECORDED_ASSERTION.response.response.authenticatorData,
+          signature: RECORDED_ASSERTION.response.response.signature,
+        },
+      } as unknown as AuthenticationResponseJSON;
+
+      // Act
+      const act = authenticate(mocks.sut, response);
+
+      // Assert
+      await expect(act).rejects.toBeInstanceOf(ValidationError);
+      await expect(act).rejects.toMatchObject({ code: "PASSKEY_VERIFICATION_FAILED" });
       expect(mocks.prisma.passkeyCredential.updateMany).not.toHaveBeenCalled();
     });
 
@@ -466,7 +493,9 @@ describe("PasskeyAuthService", () => {
       // Arrange
       const mocks = makeSut();
       arrangeAuthentication(mocks);
-      mocks.credentialRepository.findByVcHash.mockResolvedValue(credentialModel({ vcHash: VC_HASH, ...overrides }));
+      mocks.credentialRepository.findByVcHashForIssuerOrThrow.mockResolvedValue(
+        credentialModel({ vcHash: VC_HASH, ...overrides }),
+      );
 
       // Act
       const act = authenticate(mocks.sut);

@@ -4,6 +4,7 @@ import type { PasskeyRecord } from "@test/mocks/model/passkey.model";
 export interface PrismaServiceDouble {
   passkeyCredential: {
     create: jest.MockedFunction<(args: { data: Record<string, unknown> }) => Promise<Record<string, unknown>>>;
+    findFirst: jest.MockedFunction<(args: { where: Record<string, unknown> }) => Promise<PasskeyRecord | null>>;
     findUnique: jest.MockedFunction<(args: { where: Record<string, unknown> }) => Promise<PasskeyRecord | null>>;
     updateMany: jest.MockedFunction<
       (args: { where: Record<string, unknown>; data: Record<string, unknown> }) => Promise<{ count: number }>
@@ -21,6 +22,7 @@ export function mockPrismaService(): PrismaServiceDouble {
   return {
     passkeyCredential: {
       create: jest.fn(async ({ data }: { data: Record<string, unknown> }) => data),
+      findFirst: jest.fn().mockResolvedValue(null),
       findUnique: jest.fn().mockResolvedValue(null),
       updateMany: jest.fn().mockResolvedValue({ count: 1 }),
     },

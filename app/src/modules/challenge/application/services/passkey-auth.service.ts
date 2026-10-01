@@ -1,3 +1,5 @@
+import { createHash } from "crypto";
+
 import {
   BadRequestException,
   ConflictException,
@@ -17,14 +19,14 @@ import type {
   VerifiedAuthenticationResponse,
   VerifiedRegistrationResponse,
 } from "@simplewebauthn/server";
+
 import { PrismaService } from "@src/infra/database/@prisma/prisma.service";
 import { EnvService } from "@src/infra/env/env.service";
 import { ChallengeService } from "@src/modules/challenge/application/services/challenge.service";
 import { Passkey } from "@src/modules/challenge/domain/passkey.entity";
 import { ICredentialRepository } from "@src/modules/credential/domain/credential.repository";
 import { WalletService } from "@src/modules/wallet/application/services/wallet.service";
-import { ConflictError, ForbiddenError, ValidationError } from "@src/shared/errors";
-import { createHash } from "crypto";
+import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "@src/shared/errors";
 
 // O browser recebe timeout de 60s. O servidor mantém uma margem adicional
 // para que latência de rede/serialização após a biometria não invalide uma
@@ -118,13 +120,7 @@ export class PasskeyAuthService {
     }
     if (!verification.verified) throw this.verificationFailed("registration", { issuerId: params.issuerId });
 
-    const credential = await this.credentialRepository.findByVcHash(context.vcHash);
-    if (!credential || credential.issuerId !== params.issuerId) {
-      throw new ForbiddenError("CREDENTIAL_ISSUER_MISMATCH", "Credential does not belong to the authenticated issuer", {
-        issuerId: params.issuerId,
-        vcHash: context.vcHash,
-      });
-    }
+    const credential = await this.credentialRepository.findByVcHashForIssuerOrThrow(context.vcHash, params.issuerId);
 
     const info = verification.registrationInfo;
     await this.prisma.passkeyCredential.create({
@@ -188,20 +184,25 @@ export class PasskeyAuthService {
     }
     const assertion = this.readAssertion(params.response, params.issuerId);
 
-    const record = await this.prisma.passkeyCredential.findUnique({ where: { id: assertion.credentialId } });
-    if (!record || record.issuerId !== params.issuerId || record.rpId !== context.rpId) {
-      throw new ForbiddenError("PASSKEY_NOT_REGISTERED", "Passkey is not registered for this issuer and RP ID", {
+    // Scoped by the issuer and the RP ID in the query: another issuer's passkey is
+    // indistinguishable from a missing one.
+    const record = await this.prisma.passkeyCredential.findFirst({
+      where: { id: assertion.credentialId, issuerId: params.issuerId, rpId: context.rpId },
+    });
+    if (!record) {
+      throw new NotFoundError("PASSKEY_NOT_FOUND", "Passkey not found", {
         issuerId: params.issuerId,
         passkeyId: assertion.credentialId,
       });
     }
-    const credential = await this.credentialRepository.findByVcHash(record.vcHash);
-    if (!credential || !credential.isApproved() || credential.isExpired() || credential.isRevoked()) {
+    const credential = await this.credentialRepository.findByVcHashForIssuerOrThrow(record.vcHash, params.issuerId);
+    if (!credential.isApproved() || credential.isExpired() || credential.isRevoked()) {
       throw new ForbiddenError("CREDENTIAL_NOT_ACTIVE", "Credential is revoked, expired or not approved", {
         issuerId: params.issuerId,
         vcHash: record.vcHash,
       });
     }
+    const expectedOrigin = this.assertAllowedOrigin(this.clientDataOf(params.response, params.issuerId));
 
     // The entity applies the counter rule before the verifier runs, so a cloned authenticator
     // answers a stable code; the verifier's own counter check stays on and is never reached.
@@ -214,7 +215,6 @@ export class PasskeyAuthService {
     });
     const storedCounter = passkey.counter;
     passkey.authenticate(assertion.signCount);
-    const expectedOrigin = this.assertAllowedOrigin(this.clientDataOf(params.response, params.issuerId));
 
     let verification: VerifiedAuthenticationResponse;
     try {
