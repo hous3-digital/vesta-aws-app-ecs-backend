@@ -22,6 +22,18 @@ describe("surface", () => {
     expect(JSON.stringify(response.body)).toContain("ok");
   });
 
+  it("CT-VESTA-SURF-002 the JWKS answers 503 with a stable code while Privy custom auth is not configured", async () => {
+    // Act: .env.test sets no PRIVY_* variable, so the signing key is absent
+    const response = await request(testApp.app.getHttpServer()).get("/.well-known/jwks.json");
+
+    // Assert
+    expect(response.status).toBe(503);
+    expect(response.body.code).toBe("PRIVY_CUSTOM_AUTH_NOT_CONFIGURED");
+    expect(response.body.message).not.toContain("PRIVY_");
+    expect(response.body).not.toHaveProperty("details");
+    expect(response.headers["cache-control"] ?? "").not.toContain("public");
+  });
+
   it("CT-VESTA-SURF-003 a public route without API key returns 401", async () => {
     // Act
     const response = await request(testApp.app.getHttpServer()).get("/public/auth/challenge");
