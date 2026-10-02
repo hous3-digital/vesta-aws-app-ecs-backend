@@ -3,6 +3,8 @@ import { Test } from "@nestjs/testing";
 import { AppModule } from "@src/app.module";
 import { PrismaService } from "@src/infra/database/@prisma/prisma.service";
 import { configureApp } from "@src/infra/http/configure-app";
+import { buildCorsOptions } from "@src/infra/http/cors.config";
+import { E2E_CORS_ORIGIN } from "@test/constants";
 
 export interface TestApp {
   app: INestApplication;
@@ -11,14 +13,14 @@ export interface TestApp {
 }
 
 /**
- * Boots the real AppModule through the same configureApp() as main.ts,
+ * Boots the real AppModule through the same configureApp() as main.ts, CORS included,
  * against the database in .env.test. One call per spec file, in beforeAll.
  */
 export async function createTestApp(): Promise<TestApp> {
   const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
   const app = moduleRef.createNestApplication({ logger: false });
 
-  configureApp(app);
+  configureApp(app, { cors: buildCorsOptions(E2E_CORS_ORIGIN) });
   await app.init();
 
   const prisma = app.get(PrismaService);
