@@ -61,7 +61,8 @@ Key material, a signed XDR, a challenge, a VC document, a CPF, an API key, a JWT
 
 ## Challenges and sessions
 
-- A challenge (WebAuthn, proof, prepare) has a TTL, is bound to its context and is consumed exactly once: `ChallengeService.consumeContext` does `GET` + `DEL` in one Redis transaction, or a single-row delete in Postgres. Verifying a challenge without consuming it makes it replayable.
+- A challenge (WebAuthn, proof, prepare) has a TTL, is bound to its context and is consumed exactly once: `ChallengeService.consumeContext` and `IPrepareSessionStore.consume` do one `GETDEL` in Redis, or a single conditional delete (`deleteMany` with `count === 1`) in Postgres, keyed by the SHA-256 of the bearer value. Verifying a challenge without consuming it makes it replayable.
+- The prepare session lives outside the process (2026-10-02, task 3 of `prd-reliable-operation`): Postgres without `REDIS_URL`, Redis with it, chosen in `proof.module.ts`. A Redis that is configured and does not answer fails the boot (`src/infra/redis/redis-client.factory.ts`); the in-memory store and the silent fallback are gone and never come back.
 - WebAuthn origin and RP id come from `WEBAUTHN_ALLOWED_ORIGINS` and `WEBAUTHN_ALLOWED_RP_IDS` (`passkey-auth.service.ts` asserts the origin); never trust the origin the client claims.
 - Throttling is global, 60 requests per minute per IP (`ThrottlerModule` in `app.module.ts`); login, challenge and proof routes have no stricter limit today. A new route that hands out a challenge or checks a secret declares its own tighter `@Throttle()`.
 - Backoffice JWTs carry `issuerId` and expire. `BACKOFFICE_JWT_EXPIRES_IN=never` is a local convenience and never a deployed value. Guards look the user or key up on every request, so revocation is immediate.
