@@ -1,9 +1,26 @@
+import { createPrivateKey } from "node:crypto";
 import { z } from "zod";
 
 const envConfig = (config: Record<string, unknown>) => {
   const result = envSchema.parse(config);
   return result;
 };
+
+/** `.env` files and secret managers hand over `X=""` for a value nobody set; the optional `PRIVY_*` read it as absent. */
+const emptyAsUndefined = (value: unknown): unknown => (value === "" ? undefined : value);
+
+/** A PEM travels in one line with `\n` escaped (`.env.example`, Secrets Manager); the key needs real line breaks. */
+const unescapePem = (value: string): string => value.replace(/\\n/g, "\n");
+
+/** ES256 needs an EC key on P-256 (`prime256v1`). Anything else fails the boot here, never on the first signature. */
+function isP256PrivateKey(pem: string): boolean {
+  try {
+    const key = createPrivateKey(pem);
+    return key.asymmetricKeyType === "ec" && key.asymmetricKeyDetails?.namedCurve === "prime256v1";
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Rules that depend on more than one variable. Declared before the object so the
@@ -22,6 +39,16 @@ function refineEnv(env: z.infer<typeof envObject>, ctx: z.RefinementCtx): void {
       code: "custom",
       path: ["BACKOFFICE_JWT_EXPIRES_IN"],
       message: "BACKOFFICE_JWT_EXPIRES_IN=never is allowed only when NODE_ENV=local",
+    });
+  }
+  // The signing key and its kid travel together: a JWKS without a kid, or a kid without a key, cannot sign for Privy.
+  const hasSigningKey = env.PRIVY_CUSTOM_AUTH_PRIVATE_KEY !== undefined;
+  const hasKeyId = env.PRIVY_CUSTOM_AUTH_KEY_ID !== undefined;
+  if (hasSigningKey !== hasKeyId) {
+    ctx.addIssue({
+      code: "custom",
+      path: [hasSigningKey ? "PRIVY_CUSTOM_AUTH_KEY_ID" : "PRIVY_CUSTOM_AUTH_PRIVATE_KEY"],
+      message: "PRIVY_CUSTOM_AUTH_PRIVATE_KEY and PRIVY_CUSTOM_AUTH_KEY_ID are set together or not at all",
     });
   }
   // One secret, one purpose: with equal values a leaked admin header forges backoffice sessions.
@@ -69,10 +96,20 @@ const envObject = z.object({
     .regex(/^(\d+[smhd]?|never)$/, "BACKOFFICE_JWT_EXPIRES_IN must be a number with an optional s, m, h or d unit")
     .default("8h"),
 
-  PRIVY_APP_ID: z.string().min(1).optional(),
-  PRIVY_APP_SECRET: z.string().min(32, "PRIVY_APP_SECRET must be at least 32 characters").optional(),
-  PRIVY_CUSTOM_AUTH_PRIVATE_KEY: z.string().min(1).optional(),
-  PRIVY_CUSTOM_AUTH_KEY_ID: z.string().min(1).optional(),
+  PRIVY_APP_ID: z.preprocess(emptyAsUndefined, z.string().min(1).optional()),
+  PRIVY_APP_SECRET: z.preprocess(
+    emptyAsUndefined,
+    z.string().min(32, "PRIVY_APP_SECRET must be at least 32 characters").optional(),
+  ),
+  PRIVY_CUSTOM_AUTH_PRIVATE_KEY: z.preprocess(
+    emptyAsUndefined,
+    z
+      .string()
+      .transform(unescapePem)
+      .refine(isP256PrivateKey, "PRIVY_CUSTOM_AUTH_PRIVATE_KEY must be a PEM-encoded EC P-256 private key")
+      .optional(),
+  ),
+  PRIVY_CUSTOM_AUTH_KEY_ID: z.preprocess(emptyAsUndefined, z.string().min(1).optional()),
   PRIVY_CUSTOM_AUTH_ISSUER: z.string().min(1).default("vesta"),
   WEBAUTHN_ALLOWED_ORIGINS: z.string().min(1).optional(),
   WEBAUTHN_ALLOWED_RP_IDS: z.string().min(1).default("localhost"),
