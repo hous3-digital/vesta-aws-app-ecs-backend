@@ -7,16 +7,37 @@ import type {
   ZkProofResult,
 } from "@src/shared/types/vesta-vc.types";
 import { encodeProof, encodeFr, encodeVerificationKey } from "@src/modules/zk/infra/zk-encoder";
+import { InvalidStateError } from "@src/shared/errors";
 import { createHash } from "crypto";
 import { fork } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
+
+/** The Poseidon hashes of the credential a proof must be bound to, as the VC stores them. */
+export interface ProofBinding {
+  cpfHash: string;
+  birthDateHash: string;
+  fullNameHash: string;
+}
+
+/**
+ * Position of each public signal as snarkjs emits them for `vesta_kyc`: the output `kyc_ok` first,
+ * then the public inputs in declaration order (`decisions.md`, 2026-09-28; confirmed on 2026-10-02).
+ */
+const PUBLIC_SIGNAL = { kycOk: 0, cpfHash: 1, birthDateHash: 2, fullNameHash: 3, minKycLevel: 4 } as const;
+const PUBLIC_SIGNAL_COUNT = 5;
+
+const ZKEY_FILE = "vesta_kyc_final.zkey";
+const WASM_FILE = path.join("vesta_kyc_js", "vesta_kyc.wasm");
+const VERIFICATION_KEY_FILE = "verification_key.json";
 
 @Injectable()
 export class ZkService implements OnModuleInit {
   private readonly logger = new Logger(ZkService.name);
   private readonly artifactsDir: string;
   private readonly mockMode: boolean;
+  private rawVerificationKey: Record<string, unknown> | null = null;
+  private encodedVerificationKey: EncodedVerificationKey | null = null;
 
   public constructor(private readonly envService: EnvService) {
     this.artifactsDir = path.resolve(envService.ZK_ARTIFACTS_DIR);
@@ -25,22 +46,21 @@ export class ZkService implements OnModuleInit {
   }
 
   public onModuleInit(): void {
-    const zkeyPath = path.join(this.artifactsDir, "vesta_kyc_final.zkey");
-    const wasmPath = path.join(this.artifactsDir, "vesta_kyc_js", "vesta_kyc.wasm");
-
     if (this.mockMode) {
       this.logger.warn("ZK_MOCK_MODE=true: proofs are mocked and never valid for on-chain verification");
       return;
     }
 
-    const missing = [zkeyPath, wasmPath].filter((file) => !fs.existsSync(file));
+    const expected = [ZKEY_FILE, WASM_FILE, VERIFICATION_KEY_FILE].map((file) => path.join(this.artifactsDir, file));
+    const missing = expected.filter((file) => !fs.existsSync(file));
     if (missing.length > 0) {
       throw new Error(
-        `ZK artifacts missing in ${this.artifactsDir} with ZK_MOCK_MODE=false (expected ${zkeyPath} and ${wasmPath}). ` +
+        `ZK artifacts missing in ${this.artifactsDir} with ZK_MOCK_MODE=false (expected ${expected.join(", ")}). ` +
           "Ship the artifacts with the image or set ZK_MOCK_MODE=true explicitly.",
       );
     }
 
+    this.readVerificationKey();
     this.logger.log(`ZK artifacts found in ${this.artifactsDir}: real mode enabled`);
   }
 
@@ -64,13 +84,41 @@ export class ZkService implements OnModuleInit {
     return this.buildRealProof(input);
   }
 
+  /**
+   * The verification key encoded for the Soroban verifier. Real mode caches the file read at boot;
+   * mock mode hands the zero key, since mock proofs are never valid on chain anyway.
+   */
   public loadVerificationKey(): EncodedVerificationKey {
-    const vkPath = path.join(this.artifactsDir, "verification_key.json");
-    if (!fs.existsSync(vkPath)) {
-      throw new Error("verification_key.json não encontrado. Configure ZK_ARTIFACTS_DIR corretamente.");
+    if (this.mockMode) {
+      const zeroG1 = Buffer.alloc(64);
+      const zeroG2 = Buffer.alloc(128);
+      return { alpha: zeroG1, beta: zeroG2, gamma: zeroG2, delta: zeroG2, ic: [zeroG1, zeroG1] };
     }
-    const vk = JSON.parse(fs.readFileSync(vkPath, "utf-8")) as Record<string, unknown>;
-    return encodeVerificationKey(vk);
+    this.encodedVerificationKey ??= encodeVerificationKey(this.readVerificationKey());
+    return this.encodedVerificationKey;
+  }
+
+  /**
+   * Verifies a Groth16 proof against the circuit verification key and binds its public signals to the
+   * credential: `kyc_ok` must be claimed and the three hashes must be the ones the VC stores. The
+   * signals are compared before the pairing check because they come from the caller. Mock mode resolves
+   * without checking: the mock prover emits two signals and no caller branches on `isMockMode`.
+   */
+  public async verifyProof(proof: Groth16Proof, publicSignals: string[], binding: ProofBinding): Promise<void> {
+    if (this.mockMode) return;
+
+    const mismatched = this.mismatchedSignals(publicSignals, binding);
+    if (mismatched.length > 0) {
+      throw new InvalidStateError("PROOF_PUBLIC_SIGNALS_MISMATCH", "Public signals do not match the credential", {
+        mismatched,
+      });
+    }
+
+    const snarkjs = await import("snarkjs");
+    const valid = await snarkjs.groth16.verify(this.readVerificationKey(), publicSignals, proof);
+    if (!valid) {
+      throw new InvalidStateError("PROOF_INVALID", "Groth16 proof does not verify against the circuit");
+    }
   }
 
   /** Encodes a proof produced outside this service (the legacy submit route) the way `generateProof` encodes its own. */
@@ -81,10 +129,32 @@ export class ZkService implements OnModuleInit {
     return { encodedProof: encodeProof(proof), encodedPublicSignals: publicSignals.map((signal) => encodeFr(signal)) };
   }
 
+  private mismatchedSignals(publicSignals: string[], binding: ProofBinding): string[] {
+    if (publicSignals.length !== PUBLIC_SIGNAL_COUNT) return ["count"];
+    const expected: Array<[string, number, string]> = [
+      ["kyc_ok", PUBLIC_SIGNAL.kycOk, "1"],
+      ["cpf_hash", PUBLIC_SIGNAL.cpfHash, binding.cpfHash],
+      ["birth_date_hash", PUBLIC_SIGNAL.birthDateHash, binding.birthDateHash],
+      ["full_name_hash", PUBLIC_SIGNAL.fullNameHash, binding.fullNameHash],
+    ];
+    return expected.filter(([, index, value]) => publicSignals[index] !== value).map(([name]) => name);
+  }
+
+  private readVerificationKey(): Record<string, unknown> {
+    if (this.rawVerificationKey) return this.rawVerificationKey;
+    const vkPath = path.join(this.artifactsDir, VERIFICATION_KEY_FILE);
+    try {
+      this.rawVerificationKey = JSON.parse(fs.readFileSync(vkPath, "utf-8")) as Record<string, unknown>;
+    } catch (cause) {
+      throw new Error(`Cannot read the ZK verification key at ${vkPath}: ${(cause as Error).message}`, { cause });
+    }
+    return this.rawVerificationKey;
+  }
+
   private buildRealProof(input: ZkProofInput): Promise<ZkProofResult> {
     return new Promise<ZkProofResult>((resolve, reject) => {
-      const wasmPath = path.join(this.artifactsDir, "vesta_kyc_js", "vesta_kyc.wasm");
-      const zkeyPath = path.join(this.artifactsDir, "vesta_kyc_final.zkey");
+      const wasmPath = path.join(this.artifactsDir, WASM_FILE);
+      const zkeyPath = path.join(this.artifactsDir, ZKEY_FILE);
 
       const normalized = input.fullName.toUpperCase().trim().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\s+/g, " ");
       const fullNameHex = Buffer.from(normalized).toString("hex").slice(0, 60);

@@ -10,9 +10,7 @@ import { StellarService } from "@src/modules/stellar/stellar.service";
 import { VcService } from "@src/modules/vc/vc.service";
 import { WalletService } from "@src/modules/wallet/application/services/wallet.service";
 import { ZkService } from "@src/modules/zk/application/services/zk.service";
-import type { KycLevel, VestaVC, ZkProofResult } from "@src/shared/types/vesta-vc.types";
-import * as fs from "fs";
-import * as path from "path";
+import type { KycLevel, VestaVC } from "@src/shared/types/vesta-vc.types";
 
 export interface ProofPublicPrepareResult {
   prepareSessionId: string;
@@ -99,9 +97,12 @@ export class ProofPublicPrepareHandler implements ICommandHandler<ProofPublicPre
       fullName: command.privateInputs.fullName,
     });
 
-    if (!this.zkService.isMockMode()) {
-      await this.verifyProofLocally(zkResult);
-    }
+    // The proof is ours, but verifying it here catches artifacts that drifted from the circuit before anything reaches the chain.
+    await this.zkService.verifyProof(zkResult.proof, zkResult.publicSignals, {
+      cpfHash: vc.credential_subject.cpf_hash,
+      birthDateHash: vc.credential_subject.birth_date_hash,
+      fullNameHash: vc.credential_subject.full_name_hash,
+    });
 
     const credential = existingCredential ?? (await this.upsertCredential(vc, vcHash));
 
@@ -142,22 +143,10 @@ export class ProofPublicPrepareHandler implements ICommandHandler<ProofPublicPre
     // Determina source da inner tx: wallet do usuário (privyEnabled + wallet existe) ou deployer
     const source = privyEnabled && userWalletAddress ? userWalletAddress : this.stellarService.getDeployerAddress();
 
-    let encodedVk;
-    try {
-      encodedVk = this.zkService.loadVerificationKey();
-    } catch {
-      if (!this.zkService.isMockMode()) {
-        throw new BadRequestException(
-          "verification_key.json não encontrado. Configure ZK_ARTIFACTS_DIR ou ative ZK_MOCK_MODE=true.",
-        );
-      }
-      encodedVk = this.buildMockVk();
-    }
-
     const txBuild = await this.stellarService.buildUnsignedZkProofTx({
       source,
       encodedProof: zkResult.encodedProof,
-      encodedVk,
+      encodedVk: this.zkService.loadVerificationKey(),
       encodedPublicSignals: zkResult.encodedPublicSignals,
       vcHash,
       verifierId: command.verifierId,
@@ -201,34 +190,6 @@ export class ProofPublicPrepareHandler implements ICommandHandler<ProofPublicPre
         mock: this.zkService.isMockMode(),
       },
     };
-  }
-
-  private async verifyProofLocally(zkResult: ZkProofResult): Promise<void> {
-    try {
-      const vkPath = path.join(this.zkService.getArtifactsDir(), "verification_key.json");
-      if (!fs.existsSync(vkPath)) {
-        this.logger.warn("verification_key.json não encontrado — pulando verificação local");
-        return;
-      }
-      const vk = JSON.parse(fs.readFileSync(vkPath, "utf-8")) as Record<string, unknown>;
-      const snarkjs = await import("snarkjs");
-      const valid: boolean = await (
-        snarkjs as unknown as {
-          groth16: {
-            verify: (vk: Record<string, unknown>, publicSignals: string[], proof: unknown) => Promise<boolean>;
-          };
-        }
-      ).groth16.verify(vk, zkResult.publicSignals, zkResult.proof);
-      if (!valid) {
-        throw new UnprocessableEntityException(
-          "Prova ZK inválida (verificação local falhou). Artefatos inconsistentes — rebuilde o circuito.",
-        );
-      }
-      this.logger.log("Prova ZK verificada localmente (snarkjs) ✓");
-    } catch (err) {
-      if (err instanceof UnprocessableEntityException) throw err;
-      this.logger.warn(`Verificação local da prova ZK falhou com erro inesperado: ${(err as Error).message}`);
-    }
   }
 
   private async upsertCredential(vc: VestaVC, vcHash: string): Promise<Credential> {
@@ -285,11 +246,5 @@ export class ProofPublicPrepareHandler implements ICommandHandler<ProofPublicPre
 
     // Used as a marker that CredentialStatus enum is referenced — avoids unused import
     void CredentialStatus;
-  }
-
-  private buildMockVk() {
-    const zeroBuf64 = Buffer.alloc(64);
-    const zeroBuf128 = Buffer.alloc(128);
-    return { alpha: zeroBuf64, beta: zeroBuf128, gamma: zeroBuf128, delta: zeroBuf128, ic: [zeroBuf64, zeroBuf64] };
   }
 }

@@ -1,4 +1,5 @@
 import { BadRequestException } from "@nestjs/common";
+import { InvalidStateError } from "@src/shared/errors";
 import { Id } from "@src/shared/value-objects/id.value-object";
 import type { KycLevel } from "@src/shared/types/vesta-vc.types";
 import type { VestaVC } from "@src/shared/types/vesta-vc.types";
@@ -204,6 +205,21 @@ export class Credential {
   public attachDocument(vcDocument: VestaVC): void {
     this._vcDocument = vcDocument;
     this._updatedAt = new Date();
+  }
+
+  /**
+   * A proof can only be bound to a credential whose VC document is stored. Credentials issued before
+   * the document was persisted cannot be verified: nothing is deleted, the issuer reissues them.
+   */
+  public ensureDocument(): VestaVC {
+    if (!this._vcDocument) {
+      throw new InvalidStateError(
+        "CREDENTIAL_REISSUE_REQUIRED",
+        "Credential predates the stored VC document and must be reissued before it can be verified",
+        { credentialId: this._id.value },
+      );
+    }
+    return this._vcDocument;
   }
 
   public isExpired(): boolean {

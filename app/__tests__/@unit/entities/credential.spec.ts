@@ -170,6 +170,17 @@ describe("Credential", () => {
       expect(credential.privyUserId).toBe("did:privy:1");
     });
 
+    it("CT-VESTA-PROOF-008 ensureDocument rejects a credential issued before the VC document was stored", () => {
+      // Arrange
+      const credential = restoreWith(CredentialStatus.Active);
+
+      // Act
+      const act = () => credential.ensureDocument();
+
+      // Assert
+      expect(act).toThrow(expect.objectContaining({ code: "CREDENTIAL_REISSUE_REQUIRED" }));
+    });
+
     it("attachDocument stores the VC document", () => {
       // Arrange
       const credential = restoreWith(CredentialStatus.Active);
