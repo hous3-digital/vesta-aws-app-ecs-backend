@@ -28,3 +28,6 @@ export class ForbiddenError extends DomainError {}
 
 /** The input is well-formed but violates a domain rule. Maps to 400. */
 export class ValidationError extends DomainError {}
+
+/** The feature the route depends on is not configured or its provider is unreachable. Maps to 503. */
+export class UnavailableError extends DomainError {}

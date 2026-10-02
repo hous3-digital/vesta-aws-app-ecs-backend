@@ -50,7 +50,7 @@ Several rules say "on touch": translate the message, replace the exception, move
 
 ## Errors
 
-- The domain throws `DomainError` subclasses from `@src/shared/errors`: `NotFoundError`, `ConflictError`, `InvalidStateError`, `ForbiddenError`, `ValidationError`. Each takes a stable `code` (`CREDENTIAL_NOT_FOUND`), a message for developers and optional `details` that are logged and never returned. `DomainErrorFilter` in `src/infra/http` maps them to HTTP. Entities never import `@nestjs/common`.
+- The domain throws `DomainError` subclasses from `@src/shared/errors`: `NotFoundError`, `ConflictError`, `InvalidStateError`, `ForbiddenError`, `ValidationError`, `UnavailableError` (503, since 2026-10-02: the feature the route depends on is not configured or its provider is unreachable, `PRIVY_CUSTOM_AUTH_NOT_CONFIGURED`). Each takes a stable `code` (`CREDENTIAL_NOT_FOUND`), a message for developers and optional `details` that are logged and never returned. `DomainErrorFilter` in `src/infra/http` maps them to HTTP. Entities never import `@nestjs/common`.
 - Legacy entities throw `BadRequestException` directly; when such a line is touched, replace it with the domain error.
 - `HttpException` subclasses are for the `api/` layer only: auth failures, throttling, malformed requests the DTO could not express.
 - Never expose stack, SQL, XDR or chain payloads in a response.
