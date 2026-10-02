@@ -387,6 +387,7 @@ export const ModelName = {
   Credential: 'Credential',
   PasskeyCredential: 'PasskeyCredential',
   AuthChallenge: 'AuthChallenge',
+  PrepareSession: 'PrepareSession',
   Attestation: 'Attestation',
   CommissionLedgerEntry: 'CommissionLedgerEntry',
   PayoutRequest: 'PayoutRequest',
@@ -415,7 +416,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "credential" | "passkeyCredential" | "authChallenge" | "attestation" | "commissionLedgerEntry" | "payoutRequest" | "payoutAttempt" | "payoutCycle" | "payoutCycleItem" | "organizationWallet" | "issuer" | "backofficeUser" | "verifier" | "ingress" | "egress" | "apiKey"
+    modelProps: "credential" | "passkeyCredential" | "authChallenge" | "prepareSession" | "attestation" | "commissionLedgerEntry" | "payoutRequest" | "payoutAttempt" | "payoutCycle" | "payoutCycleItem" | "organizationWallet" | "issuer" | "backofficeUser" | "verifier" | "ingress" | "egress" | "apiKey"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -638,6 +639,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.AuthChallengeCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.AuthChallengeCountAggregateOutputType> | number
+        }
+      }
+    }
+    PrepareSession: {
+      payload: Prisma.$PrepareSessionPayload<ExtArgs>
+      fields: Prisma.PrepareSessionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PrepareSessionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrepareSessionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PrepareSessionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrepareSessionPayload>
+        }
+        findFirst: {
+          args: Prisma.PrepareSessionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrepareSessionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PrepareSessionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrepareSessionPayload>
+        }
+        findMany: {
+          args: Prisma.PrepareSessionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrepareSessionPayload>[]
+        }
+        create: {
+          args: Prisma.PrepareSessionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrepareSessionPayload>
+        }
+        createMany: {
+          args: Prisma.PrepareSessionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PrepareSessionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrepareSessionPayload>[]
+        }
+        delete: {
+          args: Prisma.PrepareSessionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrepareSessionPayload>
+        }
+        update: {
+          args: Prisma.PrepareSessionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrepareSessionPayload>
+        }
+        deleteMany: {
+          args: Prisma.PrepareSessionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PrepareSessionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PrepareSessionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrepareSessionPayload>[]
+        }
+        upsert: {
+          args: Prisma.PrepareSessionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrepareSessionPayload>
+        }
+        aggregate: {
+          args: Prisma.PrepareSessionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePrepareSession>
+        }
+        groupBy: {
+          args: Prisma.PrepareSessionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PrepareSessionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PrepareSessionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PrepareSessionCountAggregateOutputType> | number
         }
       }
     }
@@ -1696,6 +1771,16 @@ export const AuthChallengeScalarFieldEnum = {
 export type AuthChallengeScalarFieldEnum = (typeof AuthChallengeScalarFieldEnum)[keyof typeof AuthChallengeScalarFieldEnum]
 
 
+export const PrepareSessionScalarFieldEnum = {
+  sessionHash: 'sessionHash',
+  payload: 'payload',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt'
+} as const
+
+export type PrepareSessionScalarFieldEnum = (typeof PrepareSessionScalarFieldEnum)[keyof typeof PrepareSessionScalarFieldEnum]
+
+
 export const AttestationScalarFieldEnum = {
   id: 'id',
   vcHash: 'vcHash',
@@ -2303,6 +2388,7 @@ export type GlobalOmitConfig = {
   credential?: Prisma.CredentialOmit
   passkeyCredential?: Prisma.PasskeyCredentialOmit
   authChallenge?: Prisma.AuthChallengeOmit
+  prepareSession?: Prisma.PrepareSessionOmit
   attestation?: Prisma.AttestationOmit
   commissionLedgerEntry?: Prisma.CommissionLedgerEntryOmit
   payoutRequest?: Prisma.PayoutRequestOmit

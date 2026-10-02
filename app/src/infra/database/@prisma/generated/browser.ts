@@ -33,6 +33,11 @@ export type PasskeyCredential = Prisma.PasskeyCredentialModel
  */
 export type AuthChallenge = Prisma.AuthChallengeModel
 /**
+ * Model PrepareSession
+ * One-time bearer token between /public/proof/prepare and /submit-signed; the id is stored as its SHA-256.
+ */
+export type PrepareSession = Prisma.PrepareSessionModel
+/**
  * Model Attestation
  * 
  */

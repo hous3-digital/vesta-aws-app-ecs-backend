@@ -478,8 +478,9 @@ export type $ApiKeyPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     id: string
     issuerId: string | null
     /**
-     * Clear key of rows created before the hash migration. Never written by new
-     * code; dropped in the contraction release once every reader uses keyHash.
+     * Clear key of rows created before the hash migration. Not written once the
+     * api-key module lands; dropped in the contraction release once every reader
+     * uses keyHash.
      */
     key: string | null
     keyHash: string | null

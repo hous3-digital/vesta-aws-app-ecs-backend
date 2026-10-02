@@ -11,6 +11,7 @@
 export type * from './models/Credential'
 export type * from './models/PasskeyCredential'
 export type * from './models/AuthChallenge'
+export type * from './models/PrepareSession'
 export type * from './models/Attestation'
 export type * from './models/CommissionLedgerEntry'
 export type * from './models/PayoutRequest'

@@ -47,6 +47,15 @@ Table auth_challenges {
   createdAt DateTime [not null]
 }
 
+Table prepare_sessions {
+  sessionHash String [unique, not null]
+  payload Json [not null]
+  expiresAt DateTime [not null]
+  createdAt DateTime [not null]
+
+  Note: 'One-time bearer token between /public/proof/prepare and /submit-signed; the id is stored as its SHA-256.'
+}
+
 Table attestation {
   id String [unique, not null]
   vcHash String [not null]
@@ -239,8 +248,9 @@ Table egress {
 Table api_keys {
   id String [unique, not null]
   issuerId String
-  key String [unique, note: 'Clear key of rows created before the hash migration. Never written by new
-code; dropped in the contraction release once every reader uses keyHash.']
+  key String [unique, note: 'Clear key of rows created before the hash migration. Not written once the
+api-key module lands; dropped in the contraction release once every reader
+uses keyHash.']
   keyHash String [unique]
   keyPrefix String
   name String [not null]

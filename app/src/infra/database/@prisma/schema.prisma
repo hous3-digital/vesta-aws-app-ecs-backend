@@ -138,6 +138,17 @@ model AuthChallenge {
   @@map("auth_challenges")
 }
 
+/// One-time bearer token between /public/proof/prepare and /submit-signed; the id is stored as its SHA-256.
+model PrepareSession {
+  sessionHash String   @unique @map("session_hash")
+  payload     Json
+  expiresAt   DateTime @map("expires_at")
+  createdAt   DateTime @map("created_at")
+
+  @@index([expiresAt])
+  @@map("prepare_sessions")
+}
+
 model Attestation {
   id                String   @unique @map("attestation_id")
   vcHash            String   @map("vc_hash")

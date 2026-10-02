@@ -146,13 +146,13 @@ export type IssuerAggregateArgs<ExtArgs extends runtime.Types.Extensions.Interna
   where?: Prisma.IssuerWhereInput
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-   *
+   * 
    * Determine the order of Issuers to fetch.
    */
   orderBy?: Prisma.IssuerOrderByWithRelationInput | Prisma.IssuerOrderByWithRelationInput[]
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-   *
+   * 
    * Sets the start position
    */
   cursor?: Prisma.IssuerWhereUniqueInput
@@ -182,13 +182,13 @@ export type IssuerAggregateArgs<ExtArgs extends runtime.Types.Extensions.Interna
   _avg?: IssuerAvgAggregateInputType
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-   *
+   * 
    * Select which fields to sum
   **/
   _sum?: IssuerSumAggregateInputType
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-   *
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: IssuerMinAggregateInputType
