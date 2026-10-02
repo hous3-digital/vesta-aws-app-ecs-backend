@@ -1,8 +1,9 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
 import { EnvService } from "@src/infra/env/env.service";
-import { createHash, randomBytes } from "crypto";
-import Redis from "ioredis";
 import { PrismaService } from "@src/infra/database/@prisma/prisma.service";
+import { connectRedis } from "@src/infra/redis/redis-client.factory";
+import { createHash, randomBytes } from "crypto";
+import type Redis from "ioredis";
 
 const DEFAULT_CHALLENGE_TTL_SECONDS = 60;
 const CHALLENGE_PREFIX = "challenge:";
@@ -42,15 +43,9 @@ export class ChallengeService implements OnModuleInit, OnModuleDestroy {
       return;
     }
 
-    try {
-      this.redis = new Redis(redisUrl, { maxRetriesPerRequest: 3, lazyConnect: true });
-      await this.redis.connect();
-      this.logger.log("Challenge store conectado ao Redis");
-    } catch (err) {
-      this.logger.error(`Falha ao conectar ao Redis: ${(err as Error).message} — fallback para PostgreSQL`);
-      this.redis?.disconnect();
-      this.redis = null;
-    }
+    // A configured Redis that does not answer fails the boot (2026-10-02); no silent fallback to Postgres.
+    this.redis = await connectRedis(redisUrl);
+    this.logger.log("Challenge store: Redis");
   }
 
   public async onModuleDestroy(): Promise<void> {
@@ -94,7 +89,7 @@ export class ChallengeService implements OnModuleInit, OnModuleDestroy {
           createdAt: new Date(),
         },
       });
-      void this.prisma.authChallenge.deleteMany({ where: { expiresAt: { lt: new Date() } } });
+      await this.sweepExpired();
     }
 
     this.logger.debug("Challenge gerado");
@@ -107,10 +102,8 @@ export class ChallengeService implements OnModuleInit, OnModuleDestroy {
 
   public async consumeContext(challenge: string): Promise<ChallengeContext | null> {
     if (this.redis) {
-      const key = `${CHALLENGE_PREFIX}${challenge}`;
-      const transaction = await this.redis.multi().get(key).del(key).exec();
-      const raw = transaction?.[0]?.[1];
-      if (typeof raw !== "string") {
+      const raw = await this.redis.getdel(`${CHALLENGE_PREFIX}${challenge}`);
+      if (raw === null) {
         this.logger.warn("Challenge invalid or already consumed");
         return null;
       }
@@ -131,6 +124,15 @@ export class ChallengeService implements OnModuleInit, OnModuleDestroy {
       return null;
     }
     return stored.context as ChallengeContext;
+  }
+
+  /** Housekeeping, never a reason to fail the challenge: a failure is logged and the next write retries it. */
+  private async sweepExpired(): Promise<void> {
+    try {
+      await this.prisma.authChallenge.deleteMany({ where: { expiresAt: { lt: new Date() } } });
+    } catch (cause) {
+      this.logger.warn(`Expired challenges were not swept: ${(cause as Error).message}`);
+    }
   }
 
   private hash(challenge: string): string {
