@@ -3,6 +3,7 @@ import { generateKeyPairSync } from "node:crypto";
 import type { Response } from "express";
 import { WalletJwksController } from "@src/modules/wallet/wallet-jwks.controller";
 import { WalletService } from "@src/modules/wallet/application/services/wallet.service";
+import { UnavailableError } from "@src/shared/errors";
 
 const makeService = () => {
   const { privateKey, publicKey } = generateKeyPairSync("ec", {
@@ -70,5 +71,18 @@ describe("Privy custom-auth JWKS", () => {
     expect(response.setHeader).toHaveBeenCalledWith("Cache-Control", "public, max-age=60");
     expect(response.json).toHaveBeenCalledWith({ keys: [expect.objectContaining({ alg: "ES256" })] });
     expect(response.json).not.toHaveBeenCalledWith(expect.objectContaining({ data: expect.anything() }));
+  });
+
+  it("does not mark the response as cacheable when the signing key is not configured", () => {
+    const { service } = makeService();
+    jest.spyOn(service, "getCustomAuthJwks").mockImplementation(() => {
+      throw new UnavailableError("PRIVY_CUSTOM_AUTH_NOT_CONFIGURED", "Privy custom auth is not configured");
+    });
+    const response = { json: jest.fn(), setHeader: jest.fn() } as unknown as Response;
+    const controller = new WalletJwksController(service);
+
+    expect(() => controller.getJwks(response)).toThrow(UnavailableError);
+    expect(response.setHeader).not.toHaveBeenCalled();
+    expect(response.json).not.toHaveBeenCalled();
   });
 });

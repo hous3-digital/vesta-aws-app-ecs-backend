@@ -11,6 +11,11 @@ export type EnvServiceDouble = Pick<
   | "ZK_MOCK_MODE"
   | "WEBAUTHN_ALLOWED_ORIGINS"
   | "WEBAUTHN_ALLOWED_RP_IDS"
+  | "PRIVY_APP_ID"
+  | "PRIVY_APP_SECRET"
+  | "PRIVY_CUSTOM_AUTH_PRIVATE_KEY"
+  | "PRIVY_CUSTOM_AUTH_KEY_ID"
+  | "PRIVY_CUSTOM_AUTH_ISSUER"
 >;
 
 /** Only the variables a handler or service reads; the value is a test constant, never a real secret. */
@@ -25,6 +30,11 @@ export function mockEnvService(overrides: Partial<EnvServiceDouble> = {}): EnvSe
     ZK_MOCK_MODE: true,
     WEBAUTHN_ALLOWED_ORIGINS: "https://app.example.com",
     WEBAUTHN_ALLOWED_RP_IDS: "app.example.com",
+    PRIVY_APP_ID: undefined,
+    PRIVY_APP_SECRET: undefined,
+    PRIVY_CUSTOM_AUTH_PRIVATE_KEY: undefined,
+    PRIVY_CUSTOM_AUTH_KEY_ID: undefined,
+    PRIVY_CUSTOM_AUTH_ISSUER: "vesta",
     ...overrides,
   };
 }

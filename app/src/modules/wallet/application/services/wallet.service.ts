@@ -6,6 +6,7 @@ import { IIssuerRepository } from "@src/modules/issuer/domain/issuer.repository"
 import { StellarService } from "@src/modules/stellar/stellar.service";
 // Privy server SDK — instalado via @privy-io/server-auth
 import { PrivyClient } from "@privy-io/server-auth";
+import { UnavailableError } from "@src/shared/errors";
 import { Id } from "@src/shared/value-objects/id.value-object";
 import { JwtService } from "@nestjs/jwt";
 import { Keypair } from "@stellar/stellar-sdk";
@@ -108,6 +109,14 @@ export class WalletService implements OnModuleInit {
     this.client = new PrivyClient(appId, appSecret);
     this.enabled = true;
     this.logger.log("Privy client initialized");
+
+    // The key itself was validated by env.schema.ts; here only its presence decides what the routes answer.
+    if (!this.envService.PRIVY_CUSTOM_AUTH_PRIVATE_KEY || !this.envService.PRIVY_CUSTOM_AUTH_KEY_ID) {
+      this.logger.warn(
+        "Privy custom auth disabled: PRIVY_CUSTOM_AUTH_PRIVATE_KEY and PRIVY_CUSTOM_AUTH_KEY_ID are not set; " +
+          "the JWKS route and passkey login for Privy-enabled issuers answer 503 PRIVY_CUSTOM_AUTH_NOT_CONFIGURED",
+      );
+    }
   }
 
   /**
@@ -286,7 +295,9 @@ export class WalletService implements OnModuleInit {
   }
 
   public getPrivyAppId(): string {
-    if (!this.envService.PRIVY_APP_ID) throw new BadRequestException("Integração Privy não configurada");
+    if (!this.envService.PRIVY_APP_ID) {
+      throw new UnavailableError("PRIVY_NOT_CONFIGURED", "Privy is not configured", { variables: ["PRIVY_APP_ID"] });
+    }
     return this.envService.PRIVY_APP_ID;
   }
 
@@ -432,14 +443,10 @@ export class WalletService implements OnModuleInit {
     if (this.customAuthJwks) return this.customAuthJwks;
 
     const { privateKey, keyId } = this.requireCustomAuthSigningKey();
-    const publicJwk = createPublicKey(privateKey).export({ format: "jwk" });
-    if (
-      publicJwk.kty !== "EC" ||
-      publicJwk.crv !== "P-256" ||
-      typeof publicJwk.x !== "string" ||
-      typeof publicJwk.y !== "string"
-    ) {
-      throw new Error("PRIVY_CUSTOM_AUTH_PRIVATE_KEY deve ser uma chave EC P-256 para ES256");
+    const { x, y } = createPublicKey(privateKey).export({ format: "jwk" });
+    // env.schema.ts guarantees an EC P-256 key, so a JWK without coordinates is a broken invariant, not a config state.
+    if (typeof x !== "string" || typeof y !== "string") {
+      throw new Error("Privy custom auth public key has no EC coordinates");
     }
 
     this.customAuthJwks = {
@@ -450,21 +457,23 @@ export class WalletService implements OnModuleInit {
           kid: keyId,
           kty: "EC",
           use: "sig",
-          x: publicJwk.x,
-          y: publicJwk.y,
+          x,
+          y,
         },
       ],
     };
     return this.customAuthJwks;
   }
 
+  /** The PEM arrives with real line breaks: env.schema.ts unescapes and validates it at boot. */
   private requireCustomAuthSigningKey(): { privateKey: string; keyId: string } {
-    const privateKey = this.envService.PRIVY_CUSTOM_AUTH_PRIVATE_KEY?.replace(/\\n/g, "\n");
+    const privateKey = this.envService.PRIVY_CUSTOM_AUTH_PRIVATE_KEY;
     const keyId = this.envService.PRIVY_CUSTOM_AUTH_KEY_ID;
     if (!privateKey || !keyId) {
-      throw new Error(
-        "Privy custom auth não configurado: defina PRIVY_CUSTOM_AUTH_PRIVATE_KEY e PRIVY_CUSTOM_AUTH_KEY_ID",
-      );
+      // The variable names go to the log through `details`; the body tells the client only that the feature is off.
+      throw new UnavailableError("PRIVY_CUSTOM_AUTH_NOT_CONFIGURED", "Privy custom auth is not configured", {
+        variables: ["PRIVY_CUSTOM_AUTH_PRIVATE_KEY", "PRIVY_CUSTOM_AUTH_KEY_ID"],
+      });
     }
     return { privateKey, keyId };
   }
