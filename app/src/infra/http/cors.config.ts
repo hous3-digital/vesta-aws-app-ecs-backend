@@ -1,6 +1,5 @@
 import type { CorsOptions } from "@nestjs/common/interfaces/external/cors-options.interface";
-
-type NodeEnv = "local" | "test" | "development" | "production";
+import type { NodeEnv } from "@src/infra/env/env.schema";
 
 /** Explicit lists, never a wildcard (`standard-security`, CORS). The write methods are what the backoffice needs (#356). */
 export const CORS_ALLOWED_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"] as const;
@@ -11,29 +10,33 @@ export const CORS_ALLOWED_HEADERS = ["Authorization", "Content-Type", "X-Api-Key
 /** Seconds a browser may reuse a preflight answer (`Access-Control-Max-Age`), so one `OPTIONS` covers ten minutes of writes. */
 export const CORS_PREFLIGHT_MAX_AGE_SECONDS = 600;
 
-const HOST_CHARACTERS = "[a-z0-9.-]+";
+/** `scheme://host[:port]`, the shape of the `Origin` header; no path, no trailing slash. */
+const EXACT_ORIGIN = /^https?:\/\/[a-z0-9.-]+(?::\d{1,5})?$/;
 
-/** Scheme, host and optional port, the shape a browser puts in the `Origin` header. No path, no trailing slash. */
-const ORIGIN_ENTRY = /^https?:\/\/[a-z0-9.*-]+(?::\d{1,5})?$/i;
+/** `scheme://*.domain[:port]`: the wildcard is the whole leftmost label and the domain it belongs to is named. */
+const WILDCARD_ORIGIN = /^https?:\/\/\*\.[a-z0-9.-]+(?::\d{1,5})?$/;
 
-/** A wildcard standing for the whole host (`https://*`, `https://*:3000`) would allow every site. */
-const WILDCARD_WHOLE_HOST = /^https?:\/\/\*(?::\d{1,5})?$/i;
+/** What the wildcard stands for: one or more host labels. */
+const WILDCARD_LABELS = "[a-z0-9.-]+";
 
 /**
- * Parses `CORS_ALLOWED_ORIGINS`: comma-separated, each entry an exact origin or a wildcard pattern.
- * A wildcard matches host characters only and the pattern is anchored, so `https://*.example.com`
- * never matches `https://app.example.com.evil.net`. An entry a browser could never send (no scheme,
- * a path, a trailing slash) or a wildcard covering the whole host throws, so the mistake fails the
- * boot instead of silently blocking a front.
+ * Parses `CORS_ALLOWED_ORIGINS`: comma-separated, each entry an exact origin or `scheme://*.domain`.
+ * Entries are lowercased because the browser sends scheme and host in lowercase. A wildcard pattern
+ * is anchored, so `https://*.example.com` never matches `https://app.example.com.evil.net`. An entry
+ * the browser could never send, or a wildcard that is not the whole leftmost label, throws so the
+ * mistake fails the boot instead of silently blocking a front.
  */
 export function parseCorsOrigins(raw: string): Array<string | RegExp> {
   return raw
     .split(",")
-    .map((entry) => entry.trim())
+    .map((entry) => entry.trim().toLowerCase())
     .filter((entry) => entry.length > 0)
     .map((entry) => {
-      assertOriginEntry(entry);
-      return entry.includes("*") ? toAnchoredPattern(entry) : entry;
+      if (EXACT_ORIGIN.test(entry)) return entry;
+      if (WILDCARD_ORIGIN.test(entry)) return toAnchoredPattern(entry);
+      throw new Error(
+        `CORS_ALLOWED_ORIGINS entry "${entry}" is not an origin: expected scheme://host[:port] or scheme://*.domain[:port], no path or trailing slash`,
+      );
     });
 }
 
@@ -42,13 +45,7 @@ export function parseCorsOrigins(raw: string): Array<string | RegExp> {
  * header and the SDK an API key, nothing relies on cookies.
  */
 export function buildCorsOptions(allowedOrigins: string): CorsOptions {
-  return {
-    origin: parseCorsOrigins(allowedOrigins),
-    methods: [...CORS_ALLOWED_METHODS],
-    allowedHeaders: [...CORS_ALLOWED_HEADERS],
-    credentials: false,
-    maxAge: CORS_PREFLIGHT_MAX_AGE_SECONDS,
-  };
+  return policyFor(parseCorsOrigins(allowedOrigins));
 }
 
 /**
@@ -58,9 +55,12 @@ export function buildCorsOptions(allowedOrigins: string): CorsOptions {
  */
 export function corsOptionsFor(input: { allowedOrigins: string; nodeEnv: NodeEnv }): CorsOptions | null {
   if (input.allowedOrigins.trim().length > 0) return buildCorsOptions(input.allowedOrigins);
-  if (input.nodeEnv !== "local") return null;
+  return input.nodeEnv === "local" ? policyFor(true) : null;
+}
+
+function policyFor(origin: CorsOptions["origin"]): CorsOptions {
   return {
-    origin: true,
+    origin,
     methods: [...CORS_ALLOWED_METHODS],
     allowedHeaders: [...CORS_ALLOWED_HEADERS],
     credentials: false,
@@ -68,20 +68,7 @@ export function corsOptionsFor(input: { allowedOrigins: string; nodeEnv: NodeEnv
   };
 }
 
-function assertOriginEntry(entry: string): void {
-  if (!ORIGIN_ENTRY.test(entry)) {
-    throw new Error(
-      `CORS_ALLOWED_ORIGINS entry "${entry}" is not an origin: expected scheme://host[:port] with no path or trailing slash`,
-    );
-  }
-  if (WILDCARD_WHOLE_HOST.test(entry)) {
-    throw new Error(
-      `CORS_ALLOWED_ORIGINS entry "${entry}" would allow every host; name the domain the wildcard belongs to`,
-    );
-  }
-}
-
 function toAnchoredPattern(entry: string): RegExp {
-  const escaped = entry.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, HOST_CHARACTERS);
-  return new RegExp(`^${escaped}$`, "i");
+  const escaped = entry.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace("*", WILDCARD_LABELS);
+  return new RegExp(`^${escaped}$`);
 }

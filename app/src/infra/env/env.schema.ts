@@ -109,4 +109,6 @@ const envObject = z.object({
 
 const envSchema = envObject.superRefine(refineEnv);
 
+export type NodeEnv = z.infer<typeof envObject>["NODE_ENV"];
+
 export const validate = { validate: envConfig };

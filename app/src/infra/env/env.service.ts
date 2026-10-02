@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import type { NodeEnv } from "@src/infra/env/env.schema";
 
 @Injectable()
 export class EnvService {
@@ -14,7 +15,7 @@ export class EnvService {
   }
 
   public get NODE_ENV() {
-    return this.configService.get("NODE_ENV") as "local" | "test" | "development" | "production";
+    return this.configService.get("NODE_ENV") as NodeEnv;
   }
 
   public get PORT() {

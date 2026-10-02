@@ -87,6 +87,22 @@ describe("parseCorsOrigins", () => {
     expect(regex.test("http://app.example.com")).toBe(false);
   });
 
+  it("lowercases an entry, because the browser sends scheme and host in lowercase", () => {
+    // Act
+    const origins = parseCorsOrigins("HTTPS://Backoffice.Example.com");
+
+    // Assert
+    expect(origins).toEqual([ORIGIN]);
+  });
+
+  it("lets a wildcard cover nested subdomains of the named domain", () => {
+    // Act
+    const [pattern] = parseCorsOrigins("https://*.example.com");
+
+    // Assert
+    expect((pattern as RegExp).test("https://app.staging.example.com")).toBe(true);
+  });
+
   it("trims entries and drops empty ones", () => {
     // Arrange
     const raw = ` ${ORIGIN} , ,https://demo.example.org,`;
@@ -112,6 +128,9 @@ describe("parseCorsOrigins", () => {
     ["a path", "https://backoffice.example.com/app"],
     ["a wildcard as the whole host", "https://*"],
     ["a wildcard as the whole host with a port", "https://*:3000"],
+    ["a wildcard glued to the domain", "https://*example.com"],
+    ["a wildcard inside a label", "https://app-*.example.com"],
+    ["a wildcard in the middle of the host", "https://app.*.com"],
   ])("rejects an entry with %s instead of ignoring it silently", (_label, entry) => {
     // Act
     const act = (): unknown => parseCorsOrigins(`${ORIGIN},${entry}`);
