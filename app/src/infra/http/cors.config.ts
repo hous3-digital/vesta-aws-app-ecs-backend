@@ -19,6 +19,9 @@ const WILDCARD_ORIGIN = /^https?:\/\/\*\.[a-z0-9.-]+(?::\d{1,5})?$/;
 /** What the wildcard stands for: one or more host labels. */
 const WILDCARD_LABELS = "[a-z0-9.-]+";
 
+/** In the cors library `origin: true` echoes whatever `Origin` the request carries, so any site. Local machines only. */
+const ANY_ORIGIN: CorsOptions["origin"] = true;
+
 /**
  * Parses `CORS_ALLOWED_ORIGINS`: comma-separated, each entry an exact origin or `scheme://*.domain`.
  * Entries are lowercased because the browser sends scheme and host in lowercase. A wildcard pattern
@@ -55,7 +58,8 @@ export function buildCorsOptions(allowedOrigins: string): CorsOptions {
  */
 export function corsOptionsFor(input: { allowedOrigins: string; nodeEnv: NodeEnv }): CorsOptions | null {
   if (input.allowedOrigins.trim().length > 0) return buildCorsOptions(input.allowedOrigins);
-  return input.nodeEnv === "local" ? policyFor(true) : null;
+  if (input.nodeEnv === "local") return policyFor(ANY_ORIGIN);
+  return null;
 }
 
 function policyFor(origin: CorsOptions["origin"]): CorsOptions {
