@@ -4,8 +4,8 @@ import { Reflector } from "@nestjs/core";
 import { ApiTransformInterceptor } from "@src/utils/interceptors/api-transform.interceptor";
 
 export interface ConfigureAppOptions {
-  /** CORS policy to enable; omitted means CORS stays off (production without an origin list). */
-  cors?: CorsOptions;
+  /** CORS policy to enable; `null` (or omitted) keeps CORS off, see `corsOptionsFor`. */
+  cors?: CorsOptions | null;
 }
 
 /**

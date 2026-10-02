@@ -4,7 +4,7 @@ import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { AppModule } from "@src/app.module";
 import { EnvService } from "@src/infra/env/env.service";
 import { configureApp } from "@src/infra/http/configure-app";
-import { buildCorsOptions } from "@src/infra/http/cors.config";
+import { corsOptionsFor } from "@src/infra/http/cors.config";
 import { WinstonModule, utilities as nestWinstonModuleUtilities } from "nest-winston";
 import { join } from "path";
 import * as winston from "winston";
@@ -81,10 +81,9 @@ async function bootstrap() {
     console.log(`[STARTUP] Swagger disponível em http://0.0.0.0:${envService.PORT}/docs`);
   }
 
-  // Without an origin list CORS stays off in production and falls back to the library defaults elsewhere.
-  const corsOrigins = envService.CORS_ALLOWED_ORIGINS;
-  const cors = corsOrigins ? buildCorsOptions(corsOrigins) : envService.IS_PRODUCTION ? undefined : {};
-  configureApp(app, { cors });
+  configureApp(app, {
+    cors: corsOptionsFor({ allowedOrigins: envService.CORS_ALLOWED_ORIGINS, nodeEnv: envService.NODE_ENV }),
+  });
 
   app.useStaticAssets(join(process.cwd(), "dist", "public"), { prefix: "/public" });
   app.setBaseViewsDir(join(process.cwd(), "dist"));

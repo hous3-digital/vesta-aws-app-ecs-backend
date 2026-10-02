@@ -93,4 +93,29 @@ describe("surface", () => {
     // Assert
     expect(response.headers["access-control-allow-origin"]).toBeUndefined();
   });
+
+  it("CT-VESTA-SEC-002 the preflight of an SDK call with the API key header is accepted on /public", async () => {
+    // Act
+    const response = await request(testApp.app.getHttpServer())
+      .options("/public/auth/challenge")
+      .set("Origin", E2E_CORS_ORIGIN)
+      .set("Access-Control-Request-Method", "GET")
+      .set("Access-Control-Request-Headers", "x-api-key,content-type");
+
+    // Assert
+    expect(response.status).toBe(204);
+    expect(response.headers["access-control-allow-origin"]).toBe(E2E_CORS_ORIGIN);
+    expect(response.headers["access-control-allow-headers"]).toContain("X-Api-Key");
+  });
+
+  it("CT-VESTA-SEC-002 an actual cross-origin request carries the allow-origin header and varies on Origin", async () => {
+    // Act
+    const response = await request(testApp.app.getHttpServer()).get("/health").set("Origin", E2E_CORS_ORIGIN);
+
+    // Assert
+    expect(response.status).toBe(200);
+    expect(response.headers["access-control-allow-origin"]).toBe(E2E_CORS_ORIGIN);
+    expect(response.headers["vary"]).toContain("Origin");
+    expect(response.headers["access-control-allow-credentials"]).toBeUndefined();
+  });
 });
