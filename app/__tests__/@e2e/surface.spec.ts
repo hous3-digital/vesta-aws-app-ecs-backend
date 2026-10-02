@@ -1,5 +1,5 @@
 import request = require("supertest");
-import { FIXTURE_API_KEY } from "@test/constants";
+import { E2E_CORS_ORIGIN, FIXTURE_API_KEY, FIXTURE_VERIFIER_ID } from "@test/constants";
 import { createTestApp, TestApp } from "@test/helpers/create-test-app.helper";
 
 describe("surface", () => {
@@ -20,6 +20,18 @@ describe("surface", () => {
     // Assert
     expect(response.status).toBe(200);
     expect(JSON.stringify(response.body)).toContain("ok");
+  });
+
+  it("CT-VESTA-SURF-002 the JWKS answers 503 with a stable code while Privy custom auth is not configured", async () => {
+    // Act: .env.test sets no PRIVY_* variable, so the signing key is absent
+    const response = await request(testApp.app.getHttpServer()).get("/.well-known/jwks.json");
+
+    // Assert
+    expect(response.status).toBe(503);
+    expect(response.body.code).toBe("PRIVY_CUSTOM_AUTH_NOT_CONFIGURED");
+    expect(response.body.message).not.toContain("PRIVY_");
+    expect(response.body).not.toHaveProperty("details");
+    expect(response.headers["cache-control"] ?? "").not.toContain("public");
   });
 
   it("CT-VESTA-SURF-003 a public route without API key returns 401", async () => {
@@ -61,5 +73,61 @@ describe("surface", () => {
 
     // Assert
     expect(response.status).toBe(401);
+  });
+
+  it("CT-VESTA-SEC-002 the preflight of a backoffice PATCH is accepted without credentials", async () => {
+    // Act
+    const response = await request(testApp.app.getHttpServer())
+      .options(`/backoffice/admin/verifiers/${FIXTURE_VERIFIER_ID}`)
+      .set("Origin", E2E_CORS_ORIGIN)
+      .set("Access-Control-Request-Method", "PATCH")
+      .set("Access-Control-Request-Headers", "authorization,content-type");
+
+    // Assert
+    expect(response.status).toBe(204);
+    expect(response.headers["access-control-allow-origin"]).toBe(E2E_CORS_ORIGIN);
+    expect(response.headers["access-control-allow-methods"]).toContain("PATCH");
+    expect(response.headers["access-control-allow-methods"]).toContain("DELETE");
+    expect(response.headers["access-control-allow-headers"]).toBe(
+      "Authorization,Content-Type,X-Api-Key,Idempotency-Key",
+    );
+    expect(response.headers["access-control-max-age"]).toBe("600");
+    expect(response.headers["access-control-allow-credentials"]).toBeUndefined();
+  });
+
+  it("CT-VESTA-SEC-002 the preflight from an origin outside the list carries no allow-origin header", async () => {
+    // Act
+    const response = await request(testApp.app.getHttpServer())
+      .options(`/backoffice/admin/verifiers/${FIXTURE_VERIFIER_ID}`)
+      .set("Origin", "https://evil.example.net")
+      .set("Access-Control-Request-Method", "PATCH");
+
+    // Assert
+    expect(response.headers["access-control-allow-origin"]).toBeUndefined();
+  });
+
+  it("CT-VESTA-SEC-002 the preflight of an SDK call with the API key header is accepted on /public", async () => {
+    // Act
+    const response = await request(testApp.app.getHttpServer())
+      .options("/public/auth/challenge")
+      .set("Origin", E2E_CORS_ORIGIN)
+      .set("Access-Control-Request-Method", "GET")
+      .set("Access-Control-Request-Headers", "x-api-key,content-type");
+
+    // Assert
+    expect(response.status).toBe(204);
+    expect(response.headers["access-control-allow-origin"]).toBe(E2E_CORS_ORIGIN);
+    expect(response.headers["access-control-allow-headers"]).toContain("X-Api-Key");
+  });
+
+  it("CT-VESTA-SEC-002 an actual cross-origin request carries the allow-origin header and varies on Origin", async () => {
+    // Act
+    const response = await request(testApp.app.getHttpServer()).get("/health").set("Origin", E2E_CORS_ORIGIN);
+
+    // Assert
+    expect(response.status).toBe(200);
+    expect(response.headers["access-control-allow-origin"]).toBe(E2E_CORS_ORIGIN);
+    expect(response.headers["vary"]).toContain("Origin");
+    expect(response.headers["access-control-allow-credentials"]).toBeUndefined();
   });
 });

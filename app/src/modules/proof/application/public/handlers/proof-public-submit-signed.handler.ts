@@ -3,7 +3,7 @@ import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 import { Attestation } from "@src/modules/proof/domain/attestation.entity";
 import { IAttestationRepository } from "@src/modules/proof/domain/attestation.repository";
 import { ProofPublicSubmitSignedCommand } from "@src/modules/proof/application/public/commands/proof-public-submit-signed.command";
-import { PrepareSessionService } from "@src/modules/proof/application/services/prepare-session.service";
+import { IPrepareSessionStore } from "@src/modules/proof/domain/prepare-session.store";
 import { StellarService } from "@src/modules/stellar/stellar.service";
 import { WalletService } from "@src/modules/wallet/application/services/wallet.service";
 
@@ -45,11 +45,11 @@ export class ProofPublicSubmitSignedHandler implements ICommandHandler<
     private readonly attestationRepository: IAttestationRepository,
     private readonly stellarService: StellarService,
     private readonly walletService: WalletService,
-    private readonly prepareSessionService: PrepareSessionService,
+    private readonly prepareSessionStore: IPrepareSessionStore,
   ) {}
 
   public async execute(command: ProofPublicSubmitSignedCommand): Promise<ProofPublicSubmitSignedResult> {
-    const session = await this.prepareSessionService.consume(command.prepareSessionId);
+    const session = await this.prepareSessionStore.consume(command.prepareSessionId);
     if (!session) {
       throw new BadRequestException(
         "prepareSessionId inválido, expirado ou já consumido. Reinicie o fluxo via /public/proof/prepare.",

@@ -10,7 +10,7 @@ import { encodeFr, encodeProof } from "@src/modules/zk/infra/zk-encoder";
 import type { Groth16Proof } from "@src/shared/types/vesta-vc.types";
 import type { StellarService } from "@src/modules/stellar/stellar.service";
 import type { WalletService } from "@src/modules/wallet/application/services/wallet.service";
-import type { PrepareSessionService } from "@src/modules/proof/application/services/prepare-session.service";
+import { mockPrepareSessionStore } from "@test/mocks/repository/prepare-session.store.mock";
 
 const stellarResult = { txHash: "tx", ledger: 10, onChainResult: true, mock: true };
 
@@ -88,10 +88,13 @@ describe("proof issuer propagation", () => {
       kycLevel: "basic",
       userWalletAddress: "GUSER",
       expectedSource: "GUSER",
+      innerTxHash: "inner_tx_hash",
       sourceAccountSignedByBackend: true,
       mock: true,
       zkProof: { protocol: "groth16", curve: "bn128", publicSignals: ["1"] },
     };
+    const prepareSessionStore = mockPrepareSessionStore();
+    prepareSessionStore.consume.mockResolvedValue(session);
     const handler = new ProofPublicSubmitSignedHandler(
       { saveOrThrow: save } as unknown as IAttestationRepository,
       {
@@ -99,7 +102,7 @@ describe("proof issuer propagation", () => {
         getContractId: () => "contract",
       } as unknown as StellarService,
       {} as WalletService,
-      { consume: jest.fn().mockResolvedValue(session) } as unknown as PrepareSessionService,
+      prepareSessionStore,
     );
 
     await handler.execute(new ProofPublicSubmitSignedCommand("prepare", "signed-xdr", null));

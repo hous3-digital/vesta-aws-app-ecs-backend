@@ -12,7 +12,9 @@ export class WalletJwksController {
 
   @Get("/jwks.json")
   public getJwks(@Res() response: Response): void {
+    // Resolve the keys first: a 503 from the service must not go out with a public cache header.
+    const jwks = this.walletService.getCustomAuthJwks();
     response.setHeader("Cache-Control", "public, max-age=60");
-    response.json(this.walletService.getCustomAuthJwks());
+    response.json(jwks);
   }
 }

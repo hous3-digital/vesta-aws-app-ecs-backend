@@ -6,6 +6,7 @@ import {
   ForbiddenError,
   InvalidStateError,
   NotFoundError,
+  UnavailableError,
   ValidationError,
 } from "@src/shared/errors";
 
@@ -28,6 +29,10 @@ describe("DomainErrorFilter", () => {
     [new InvalidStateError("CREDENTIAL_NOT_PENDING", "Only pending credentials"), HttpStatus.UNPROCESSABLE_ENTITY],
     [new ForbiddenError("ISSUER_MISMATCH", "Resource belongs to another issuer"), HttpStatus.FORBIDDEN],
     [new ValidationError("EXPIRATION_TOO_LONG", "Expiration above the limit"), HttpStatus.BAD_REQUEST],
+    [
+      new UnavailableError("PRIVY_CUSTOM_AUTH_NOT_CONFIGURED", "Privy custom auth is not configured"),
+      HttpStatus.SERVICE_UNAVAILABLE,
+    ],
     [new UnmappedError("UNMAPPED", "No mapping"), HttpStatus.INTERNAL_SERVER_ERROR],
   ])("maps %p to its HTTP status", (error, expectedStatus) => {
     // Arrange

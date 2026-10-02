@@ -1,9 +1,19 @@
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import type { NodeEnv } from "@src/infra/env/env.schema";
 
 @Injectable()
 export class EnvService {
   public constructor(private readonly configService: ConfigService) {}
+
+  /**
+   * `env.schema.ts` turns `""` into `undefined` for the optional `PRIVY_*`, but `ConfigService.get`
+   * falls back to `process.env`, where the empty string still lives. Read absent as absent here too.
+   */
+  private optionalString(name: string): string | undefined {
+    const value = this.configService.get(name) as string | undefined;
+    return value === "" ? undefined : value;
+  }
 
   public get IS_PRODUCTION() {
     return this.configService.get("NODE_ENV") === "production";
@@ -14,7 +24,7 @@ export class EnvService {
   }
 
   public get NODE_ENV() {
-    return this.configService.get("NODE_ENV") as "local" | "test" | "development" | "production";
+    return this.configService.get("NODE_ENV") as NodeEnv;
   }
 
   public get PORT() {
@@ -82,19 +92,19 @@ export class EnvService {
   }
 
   public get PRIVY_APP_ID() {
-    return this.configService.get("PRIVY_APP_ID") as string | undefined;
+    return this.optionalString("PRIVY_APP_ID");
   }
 
   public get PRIVY_APP_SECRET() {
-    return this.configService.get("PRIVY_APP_SECRET") as string | undefined;
+    return this.optionalString("PRIVY_APP_SECRET");
   }
 
   public get PRIVY_CUSTOM_AUTH_PRIVATE_KEY() {
-    return this.configService.get("PRIVY_CUSTOM_AUTH_PRIVATE_KEY") as string | undefined;
+    return this.optionalString("PRIVY_CUSTOM_AUTH_PRIVATE_KEY");
   }
 
   public get PRIVY_CUSTOM_AUTH_KEY_ID() {
-    return this.configService.get("PRIVY_CUSTOM_AUTH_KEY_ID") as string | undefined;
+    return this.optionalString("PRIVY_CUSTOM_AUTH_KEY_ID");
   }
 
   public get PRIVY_CUSTOM_AUTH_ISSUER() {

@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Logger, Module } from "@nestjs/common";
 import { CqrsModule } from "@nestjs/cqrs";
 import { DatabaseModule } from "@src/infra/database/database.module";
 import { EnvModule } from "@src/infra/env/env.module";
@@ -13,8 +13,13 @@ import { ProofPublicController } from "@src/modules/proof/api/public/proof-publi
 import { ProofPublicPrepareHandler } from "@src/modules/proof/application/public/handlers/proof-public-prepare.handler";
 import { ProofPublicSubmitHandler } from "@src/modules/proof/application/public/handlers/proof-public-submit.handler";
 import { ProofPublicSubmitSignedHandler } from "@src/modules/proof/application/public/handlers/proof-public-submit-signed.handler";
-import { PrepareSessionService } from "@src/modules/proof/application/services/prepare-session.service";
+import { PrismaService } from "@src/infra/database/@prisma/prisma.service";
+import { EnvService } from "@src/infra/env/env.service";
+import { connectRedis } from "@src/infra/redis/redis-client.factory";
 import { IAttestationRepository } from "@src/modules/proof/domain/attestation.repository";
+import { IPrepareSessionStore } from "@src/modules/proof/domain/prepare-session.store";
+import { PrepareSessionPostgresStore } from "@src/modules/proof/infra/prepare-session-postgres.store";
+import { PrepareSessionRedisStore } from "@src/modules/proof/infra/prepare-session-redis.store";
 import { AttestationRepository } from "@src/modules/proof/infra/attestation.repository";
 import { AttestationPublicController } from "@src/modules/proof/api/public/attestation-public.controller";
 import { AttestationIssuerResolutionHandler } from "@src/modules/proof/application/public/handlers/attestation-issuer-resolution.handler";
@@ -38,8 +43,24 @@ import { AttestationIssuerResolutionHandler } from "@src/modules/proof/applicati
     ProofPublicSubmitSignedHandler,
     ProofPublicSubmitHandler,
     AttestationIssuerResolutionHandler,
-    PrepareSessionService,
     { provide: IAttestationRepository, useClass: AttestationRepository },
+    {
+      provide: IPrepareSessionStore,
+      inject: [EnvService, PrismaService],
+      useFactory: prepareSessionStoreFor,
+    },
   ],
 })
 export class ProofModule {}
+
+/** Redis when REDIS_URL is set, Postgres otherwise; a configured Redis that does not answer fails the boot here. */
+async function prepareSessionStoreFor(env: EnvService, prisma: PrismaService): Promise<IPrepareSessionStore> {
+  const logger = new Logger(ProofModule.name);
+  if (env.REDIS_URL) {
+    const store = new PrepareSessionRedisStore(await connectRedis(env.REDIS_URL));
+    logger.log("Prepare session store: Redis");
+    return store;
+  }
+  logger.log("Prepare session store: Postgres (REDIS_URL not set)");
+  return new PrepareSessionPostgresStore(prisma);
+}

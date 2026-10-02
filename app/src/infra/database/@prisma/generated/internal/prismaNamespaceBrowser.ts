@@ -54,6 +54,7 @@ export const ModelName = {
   Credential: 'Credential',
   PasskeyCredential: 'PasskeyCredential',
   AuthChallenge: 'AuthChallenge',
+  PrepareSession: 'PrepareSession',
   Attestation: 'Attestation',
   CommissionLedgerEntry: 'CommissionLedgerEntry',
   PayoutRequest: 'PayoutRequest',
@@ -137,6 +138,16 @@ export const AuthChallengeScalarFieldEnum = {
 } as const
 
 export type AuthChallengeScalarFieldEnum = (typeof AuthChallengeScalarFieldEnum)[keyof typeof AuthChallengeScalarFieldEnum]
+
+
+export const PrepareSessionScalarFieldEnum = {
+  sessionHash: 'sessionHash',
+  payload: 'payload',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt'
+} as const
+
+export type PrepareSessionScalarFieldEnum = (typeof PrepareSessionScalarFieldEnum)[keyof typeof PrepareSessionScalarFieldEnum]
 
 
 export const AttestationScalarFieldEnum = {

@@ -6,6 +6,7 @@ import {
   ForbiddenError,
   InvalidStateError,
   NotFoundError,
+  UnavailableError,
   ValidationError,
 } from "@src/shared/errors";
 
@@ -22,6 +23,7 @@ const STATUS_BY_ERROR: ReadonlyArray<[new (...args: never[]) => DomainError, Htt
   [InvalidStateError, HttpStatus.UNPROCESSABLE_ENTITY],
   [ForbiddenError, HttpStatus.FORBIDDEN],
   [ValidationError, HttpStatus.BAD_REQUEST],
+  [UnavailableError, HttpStatus.SERVICE_UNAVAILABLE],
 ];
 
 /**

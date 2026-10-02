@@ -5,7 +5,7 @@ import { Credential, CredentialStatus } from "@src/modules/credential/domain/cre
 import { ICredentialRepository } from "@src/modules/credential/domain/credential.repository";
 import { IIssuerRepository } from "@src/modules/issuer/domain/issuer.repository";
 import { ProofPublicPrepareCommand } from "@src/modules/proof/application/public/commands/proof-public-prepare.command";
-import { PrepareSessionService } from "@src/modules/proof/application/services/prepare-session.service";
+import { IPrepareSessionStore, PREPARE_SESSION_TTL_SECONDS } from "@src/modules/proof/domain/prepare-session.store";
 import { StellarService } from "@src/modules/stellar/stellar.service";
 import { VcService } from "@src/modules/vc/vc.service";
 import { WalletService } from "@src/modules/wallet/application/services/wallet.service";
@@ -42,7 +42,7 @@ export class ProofPublicPrepareHandler implements ICommandHandler<ProofPublicPre
     private readonly stellarService: StellarService,
     private readonly vcService: VcService,
     private readonly challengeService: ChallengeService,
-    private readonly prepareSessionService: PrepareSessionService,
+    private readonly prepareSessionStore: IPrepareSessionStore,
   ) {}
 
   public async execute(command: ProofPublicPrepareCommand): Promise<ProofPublicPrepareResult> {
@@ -165,25 +165,27 @@ export class ProofPublicPrepareHandler implements ICommandHandler<ProofPublicPre
 
     const requiresUserSignature = privyEnabled && !!userWalletAddress && !txBuild.sourceAccountSignedByBackend;
 
-    const prepareSessionId = await this.prepareSessionService.create({
-      vcHash,
-      proofHash: zkResult.proofHash,
-      kycLevel: effectiveKycLevel,
-      verifierId: command.verifierId,
-      issuerId: issuer?.externalId ?? null,
-      issuerDid: issuer?.did?.value ?? credential.issuerDid,
-      userWalletAddress,
-      expectedSource: source,
-      innerTxHash: txBuild.innerTxHash,
-      sourceAccountSignedByBackend: txBuild.sourceAccountSignedByBackend,
-      vc,
-      mock: this.stellarService.isMockMode(),
-      zkProof: {
-        protocol: zkResult.proof.protocol,
-        curve: zkResult.proof.curve,
-        publicSignals: zkResult.publicSignals,
+    const prepareSessionId = await this.prepareSessionStore.create(
+      {
+        vcHash,
+        proofHash: zkResult.proofHash,
+        kycLevel: effectiveKycLevel,
+        verifierId: command.verifierId,
+        issuerId: issuer?.externalId ?? null,
+        issuerDid: issuer?.did?.value ?? credential.issuerDid,
+        userWalletAddress,
+        expectedSource: source,
+        innerTxHash: txBuild.innerTxHash,
+        sourceAccountSignedByBackend: txBuild.sourceAccountSignedByBackend,
+        mock: this.stellarService.isMockMode(),
+        zkProof: {
+          protocol: zkResult.proof.protocol,
+          curve: zkResult.proof.curve,
+          publicSignals: zkResult.publicSignals,
+        },
       },
-    });
+      PREPARE_SESSION_TTL_SECONDS,
+    );
 
     return {
       prepareSessionId,
