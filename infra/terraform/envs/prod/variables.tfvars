@@ -46,7 +46,7 @@ environment = [
   },
   {
     name  = "CORS_ALLOWED_ORIGINS",
-    value = "https://backoffice.hous3-trust.com,https://backoffice.vestazk.com,https://vesta-demo-stellar.vercel.app,http://localhost:5173,__CLIENT_ORIGINS__"
+    value = "https://backoffice.hous3-trust.com,https://backoffice.vestazk.com,https://vesta-demo-stellar.vercel.app,__CLIENT_ORIGINS__"
   },
   {
     name  = "WEBAUTHN_ALLOWED_ORIGINS",
