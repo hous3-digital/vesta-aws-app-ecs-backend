@@ -1,5 +1,11 @@
 import request = require("supertest");
 import { FIXTURE_API_KEY } from "@test/constants";
+import {
+  GROTH16_FIXTURE_BINDING,
+  GROTH16_FIXTURE_IDENTITY,
+  GROTH16_FIXTURE_PROOF,
+  GROTH16_FIXTURE_PUBLIC_SIGNALS,
+} from "@test/constants/groth16-proof.constant";
 import { CredentialApiFixture } from "@test/@e2e/fixtures/credential-api.fixture";
 import { ProofApiFixture } from "@test/@e2e/fixtures/proof-api.fixture";
 import { createTestApp, TestApp } from "@test/helpers/create-test-app.helper";
@@ -28,8 +34,8 @@ describe("/public/proof", () => {
   const api = () => request(testApp.app.getHttpServer());
   const withKey = (req: request.Test) => req.set("X-Api-Key", FIXTURE_API_KEY);
 
-  const issueCredential = async (): Promise<IssuedCredential> => {
-    const body = CredentialApiFixture.issue();
+  const issueCredential = async (overrides: Record<string, unknown> = {}): Promise<IssuedCredential> => {
+    const body = CredentialApiFixture.issue(overrides);
     const response = await withKey(api().post("/public/credential")).send(body);
     issuedVcHashes.push(response.body.data.vcHash);
     return {
@@ -156,6 +162,83 @@ describe("/public/proof", () => {
       // Assert
       expect(response.status).toBe(503);
       expect(response.body).toMatchObject({ code: "REGISTRY_NOT_CONFIGURED" });
+    });
+  });
+  describe("submit (legacy, proof generated outside the API)", () => {
+    // The fixture proof is bound to this identity; the CPF is deduplicated per issuer, so it is issued once.
+    let fixtureHolder: IssuedCredential;
+
+    const submit = (issued: IssuedCredential, body: Record<string, unknown> = {}) =>
+      withKey(api().post("/public/proof/submit")).send(
+        ProofApiFixture.submit(issued, GROTH16_FIXTURE_PROOF, GROTH16_FIXTURE_PUBLIC_SIGNALS, body),
+      );
+
+    /** A run that died before afterAll leaves the fixture holder behind and the next issue would answer 409. */
+    const forgetFixtureHolder = async (): Promise<void> => {
+      const leftovers = await testApp.prisma.credential.findMany({
+        where: { vcDocument: { path: ["credential_subject", "cpf_hash"], equals: GROTH16_FIXTURE_BINDING.cpfHash } },
+        select: { vcHash: true },
+      });
+      const vcHashes = leftovers.map((row) => row.vcHash);
+      const attestations = await testApp.prisma.attestation.findMany({ where: { vcHash: { in: vcHashes } } });
+      const attestationIdsToDrop = attestations.map((row) => row.id);
+      await testApp.prisma.commissionLedgerEntry.deleteMany({ where: { attestationId: { in: attestationIdsToDrop } } });
+      await testApp.prisma.attestation.deleteMany({ where: { id: { in: attestationIdsToDrop } } });
+      await testApp.prisma.credential.deleteMany({ where: { vcHash: { in: vcHashes } } });
+    };
+
+    beforeAll(async () => {
+      await forgetFixtureHolder();
+      fixtureHolder = await issueCredential(GROTH16_FIXTURE_IDENTITY);
+    });
+
+    it("CT-VESTA-PROOF-008 rejects a valid proof bound to another credential with 422 PROOF_PUBLIC_SIGNALS_MISMATCH", async () => {
+      // Arrange
+      const someoneElse = await issueCredential();
+
+      // Act
+      const response = await submit(someoneElse);
+
+      // Assert
+      expect(response.status).toBe(422);
+      expect(response.body).toMatchObject({ code: "PROOF_PUBLIC_SIGNALS_MISMATCH" });
+    });
+
+    it("CT-VESTA-PROOF-008 rejects a tampered proof with 422 PROOF_INVALID", async () => {
+      // Arrange
+      const tampered = { ...GROTH16_FIXTURE_PROOF, pi_a: ["0", "0", "1"] };
+
+      // Act
+      const response = await submit(fixtureHolder, { proof: tampered });
+
+      // Assert
+      expect(response.status).toBe(422);
+      expect(response.body).toMatchObject({ code: "PROOF_INVALID" });
+    });
+
+    it("CT-VESTA-PROOF-008 rejects a proof whose points are not integers with 400 PROOF_MALFORMED", async () => {
+      // Arrange
+      const issued = await issueCredential();
+      const malformed = { ...GROTH16_FIXTURE_PROOF, pi_a: ["not-a-number", "0", "1"] };
+
+      // Act
+      const response = await submit(issued, { proof: malformed });
+
+      // Assert
+      expect(response.status).toBe(400);
+      expect(response.body).toMatchObject({ code: "PROOF_MALFORMED" });
+    });
+
+    it("CT-VESTA-PROOF-008 accepts a real proof of the issued credential and anchors it through the mocked Stellar", async () => {
+      // Act
+      const response = await submit(fixtureHolder);
+
+      // Assert
+      expect(response.status).toBe(201);
+      expect(response.body.data.verified).toBe(true);
+      expect(response.body.data.stellar.mock).toBe(true);
+      expect(response.body.data.attestation.vcHash).toBe(fixtureHolder.vcHash);
+      attestationIds.push(response.body.data.attestation.id);
     });
   });
 });
