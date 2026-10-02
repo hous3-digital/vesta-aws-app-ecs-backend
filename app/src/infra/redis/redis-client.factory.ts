@@ -13,17 +13,17 @@ const logger = new Logger("Redis");
  */
 export async function connectRedis(url: string): Promise<Redis> {
   const client = new Redis(url, { lazyConnect: true, maxRetriesPerRequest: 3 });
-  let firstError: Error | null = null;
+  const seen: Error[] = [];
   client.on("error", (error: Error) => {
-    firstError ??= error;
+    seen.push(error);
     logger.warn(`Redis error: ${error.message}`);
   });
   try {
     await client.connect();
   } catch (cause) {
     client.disconnect();
-    const reason = firstError ?? (cause as Error);
-    throw new Error(`Redis at REDIS_URL is not reachable: ${reason.message}`, { cause: reason });
+    const detail = seen[0]?.message ?? (cause as Error).message;
+    throw new Error(`Redis at REDIS_URL is not reachable: ${detail}`, { cause });
   }
   return client;
 }
