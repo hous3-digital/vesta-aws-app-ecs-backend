@@ -1,10 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  Logger,
-  NotFoundException,
-  UnprocessableEntityException,
-} from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 import { ProofPublicSubmitCommand } from "@src/modules/proof/application/public/commands/proof-public-submit.command";
 import { Attestation } from "@src/modules/proof/domain/attestation.entity";
@@ -13,7 +7,8 @@ import { ICredentialRepository } from "@src/modules/credential/domain/credential
 import { IIssuerRepository } from "@src/modules/issuer/domain/issuer.repository";
 import { StellarService } from "@src/modules/stellar/stellar.service";
 import { ZkService } from "@src/modules/zk/application/services/zk.service";
-import type { Groth16Proof } from "@src/shared/types/vesta-vc.types";
+import { InvalidStateError, NotFoundError, ValidationError } from "@src/shared/errors";
+import type { Groth16Proof, ZkProofResult } from "@src/shared/types/vesta-vc.types";
 import { createHash } from "crypto";
 
 @Injectable()
@@ -33,16 +28,20 @@ export class ProofPublicSubmitHandler implements ICommandHandler<ProofPublicSubm
     const credential = await this.credentialRepository.findByVcHash(command.vcHash);
 
     if (!credential) {
-      throw new NotFoundException(`Credencial não encontrada: ${command.vcHash}`);
+      throw new NotFoundError("CREDENTIAL_NOT_FOUND", "Credential not found", { vcHash: command.vcHash });
     }
 
     if (!credential.isApproved()) {
-      throw new UnprocessableEntityException(`Credencial com status '${credential.status}' — apenas 'approved' aceita`);
+      throw new InvalidStateError("CREDENTIAL_NOT_APPROVED", "Only an active credential can be verified", {
+        status: credential.status,
+      });
     }
 
     if (credential.isExpired()) {
-      throw new UnprocessableEntityException("Credencial expirada");
+      throw new InvalidStateError("CREDENTIAL_EXPIRED", "Credential has expired");
     }
+
+    const subject = credential.ensureDocument().credential_subject;
 
     const issuer = await this.issuerRepository.findByExternalId(credential.issuerId);
     if (!issuer) {
@@ -59,31 +58,19 @@ export class ProofPublicSubmitHandler implements ICommandHandler<ProofPublicSubm
       curve: command.proof.curve ?? "bn128",
     };
 
-    const { encodedProof, encodedPublicSignals } = this.zkService.encodeSubmittedProof(proof, command.publicSignals);
+    const { encodedProof, encodedPublicSignals } = this.encodeOrThrow(proof, command.publicSignals);
 
-    let encodedVk;
-    try {
-      encodedVk = this.zkService.loadVerificationKey();
-    } catch {
-      if (!this.zkService.isMockMode()) {
-        throw new BadRequestException("verification_key.json não encontrado.");
-      }
-      const zeroBuf64 = Buffer.alloc(64);
-      const zeroBuf128 = Buffer.alloc(128);
-      encodedVk = {
-        alpha: zeroBuf64,
-        beta: zeroBuf128,
-        gamma: zeroBuf128,
-        delta: zeroBuf128,
-        ic: [zeroBuf64, zeroBuf64],
-      };
-    }
+    await this.zkService.verifyProof(proof, command.publicSignals, {
+      cpfHash: subject.cpf_hash,
+      birthDateHash: subject.birth_date_hash,
+      fullNameHash: subject.full_name_hash,
+    });
 
     const proofHash = createHash("sha256").update(JSON.stringify(proof)).digest("hex");
 
     const stellarResult = await this.stellarService.submitZkProof({
       encodedProof,
-      encodedVk,
+      encodedVk: this.zkService.loadVerificationKey(),
       encodedPublicSignals,
       vcHash: command.vcHash,
       verifierId: command.verifierId,
@@ -119,5 +106,19 @@ export class ProofPublicSubmitHandler implements ICommandHandler<ProofPublicSubm
         createdAt: attestation.createdAt.toISOString(),
       },
     };
+  }
+
+  /** The encoder parses every coordinate as a bigint; anything else is a malformed proof, not a server error. */
+  private encodeOrThrow(
+    proof: Groth16Proof,
+    publicSignals: string[],
+  ): Pick<ZkProofResult, "encodedProof" | "encodedPublicSignals"> {
+    try {
+      return this.zkService.encodeSubmittedProof(proof, publicSignals);
+    } catch (cause) {
+      throw new ValidationError("PROOF_MALFORMED", "Proof points and public signals must be decimal field elements", {
+        cause: (cause as Error).message,
+      });
+    }
   }
 }
