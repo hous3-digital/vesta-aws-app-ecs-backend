@@ -1,4 +1,5 @@
-import { createHash, randomBytes } from "node:crypto";
+import { sha256Hex } from "@src/shared/crypto/sha256-hex";
+import { randomBytes } from "node:crypto";
 
 /** `prep_` + 32 hex, the shape the SDK already receives. */
 export function newPrepareSessionId(): string {
@@ -7,5 +8,5 @@ export function newPrepareSessionId(): string {
 
 /** The id is a bearer, so both stores key by its SHA-256 and the clear id never lands anywhere. */
 export function hashPrepareSessionId(sessionId: string): string {
-  return createHash("sha256").update(sessionId).digest("hex");
+  return sha256Hex(sessionId);
 }

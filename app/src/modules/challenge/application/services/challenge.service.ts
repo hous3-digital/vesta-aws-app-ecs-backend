@@ -2,7 +2,8 @@ import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from "@nestjs/commo
 import { EnvService } from "@src/infra/env/env.service";
 import { PrismaService } from "@src/infra/database/@prisma/prisma.service";
 import { connectRedis } from "@src/infra/redis/redis-client.factory";
-import { createHash, randomBytes } from "crypto";
+import { sha256Hex } from "@src/shared/crypto/sha256-hex";
+import { randomBytes } from "crypto";
 import type Redis from "ioredis";
 
 const DEFAULT_CHALLENGE_TTL_SECONDS = 60;
@@ -136,6 +137,6 @@ export class ChallengeService implements OnModuleInit, OnModuleDestroy {
   }
 
   private hash(challenge: string): string {
-    return createHash("sha256").update(challenge).digest("hex");
+    return sha256Hex(challenge);
   }
 }
