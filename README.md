@@ -171,22 +171,22 @@ Tres contextos de autenticacao:
 
 Endpoints publicos (contrato do SDK):
 
-| Metodo | Rota                                                   | Descricao                                                              |
-| ------ | ------------------------------------------------------ | ---------------------------------------------------------------------- |
-| `GET`  | `/health`                                              | Health check                                                           |
-| `GET`  | `/public/auth/challenge`                               | Gerar challenge WebAuthn (TTL 60s)                                     |
-| `POST` | `/public/auth/passkey/registration/{options,verify}`   | Registro de passkey                                                    |
-| `POST` | `/public/auth/passkey/authentication/{options,verify}` | Autenticacao por passkey                                               |
-| `POST` | `/public/credential`                                   | Emitir credencial (VC)                                                 |
-| `POST` | `/public/credential/verify`                            | Verificar status de uma VC por hash                                    |
-| `POST` | `/public/credential/revoke`                            | Revogar uma VC                                                         |
-| `POST` | `/public/credential/recover`                           | Recuperar credencial por passkey                                       |
-| `POST` | `/public/credential/kyc-status`                        | Webhook de status de KYC do provedor                                   |
-| `POST` | `/public/proof/prepare`                                | Fase 1: gera prova ZK e monta a transacao Soroban sem assinatura       |
-| `POST` | `/public/proof/submit-signed`                          | Fase 2: recebe a transacao assinada, faz fee-bump e submete ao Soroban |
-| `POST` | `/public/proof/submit`                                 | Submeter prova ZK externa (fluxo legado)                               |
-| `GET`  | `/public/attestations/:attestationId/issuer`           | Resolver o issuer por tras de uma attestation                          |
-| `GET`  | `/.well-known/jwks.json`                               | JWKS da custom auth Privy                                              |
+| Metodo | Rota                                                   | Descricao                                                                                                                                                                                                                      |
+| ------ | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `GET`  | `/health`                                              | Health check                                                                                                                                                                                                                   |
+| `GET`  | `/public/auth/challenge`                               | Gerar challenge WebAuthn (TTL 60s)                                                                                                                                                                                             |
+| `POST` | `/public/auth/passkey/registration/{options,verify}`   | Registro de passkey                                                                                                                                                                                                            |
+| `POST` | `/public/auth/passkey/authentication/{options,verify}` | Autenticacao por passkey                                                                                                                                                                                                       |
+| `POST` | `/public/credential`                                   | Emitir credencial (VC)                                                                                                                                                                                                         |
+| `POST` | `/public/credential/verify`                            | Verificar status de uma VC por hash                                                                                                                                                                                            |
+| `POST` | `/public/credential/revoke`                            | Revogar uma VC                                                                                                                                                                                                                 |
+| `POST` | `/public/credential/recover`                           | Recuperar credencial por passkey                                                                                                                                                                                               |
+| `POST` | `/public/credential/kyc-status`                        | Webhook de status de KYC do provedor                                                                                                                                                                                           |
+| `POST` | `/public/proof/prepare`                                | Fase 1: gera prova ZK e monta a transacao Soroban sem assinatura                                                                                                                                                               |
+| `POST` | `/public/proof/submit-signed`                          | Fase 2: recebe a transacao assinada, faz fee-bump e submete ao Soroban                                                                                                                                                         |
+| `POST` | `/public/proof/submit`                                 | Submeter prova ZK externa (fluxo legado); verificada localmente e amarrada a credencial antes da simulacao: 422 `PROOF_INVALID`, 422 `PROOF_PUBLIC_SIGNALS_MISMATCH`, 400 `PROOF_MALFORMED`, 422 `CREDENTIAL_REISSUE_REQUIRED` |
+| `GET`  | `/public/attestations/:attestationId/issuer`           | Resolver o issuer por tras de uma attestation                                                                                                                                                                                  |
+| `GET`  | `/.well-known/jwks.json`                               | JWKS da custom auth Privy                                                                                                                                                                                                      |
 
 Backoffice (`/backoffice/auth`, `credentials`, `verifications`, `commissions`, `payouts`, `profile`, `api-keys`, `admin/verifiers`) e admin (`/admin/api-keys`, `issuers`, `backoffice-users`, `payout-cycles`) estao descritos com schemas de request/response em **`GET /docs`** (Swagger UI).
 
